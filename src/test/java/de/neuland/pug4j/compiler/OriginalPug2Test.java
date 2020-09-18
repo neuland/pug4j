@@ -10,7 +10,6 @@ import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,34 +28,32 @@ public class OriginalPug2Test {
 
     private static String[] ignoredCases = new String[] {
             "regression.784",       // javascript replace not supported
-//            "filter-in-include",
-//            "filters.markdown",     // additional empty line
-//            "filters-empty",
-//            "filters.custom",
-//            "filters.include",
-//            "filters.include.custom",
+
             "filters.stylus",
-//            "filters.inline",       // wrong line break, probably same as "inline-tag"
             "filters.less",
-//            "filters.coffeescript",
-
-
-//            "escape-test",          // html tag <textarea> closed on next line
-//            "mixin-block-with-space",  //piped text does not appear
-//            "inline-tag",              // fails to treat pipes as new lines
-//            "includes",                 // different line breaks
-
-
-//            "styles",               // JSON representation compiles to Objects, not CSS !
-
 
             // try to read files in ../
-//            "mixin-via-include",
-//            "layout.append.without-block",
-//            "layout.prepend.without-block",
-//            "layout.multi.append.prepend.block",
-//            "include-extends-relative",
-//            "layout.prepend",
+            "attrs-data",
+            "layout.append.without-block",
+            "layout.prepend.without-block",
+            "filter-in-include",
+            "filters.nested",
+            "escape-test",
+            "filters.custom",
+            "styles",
+            "block-code",
+            "filters.include",
+            "filters.include.custom",
+            "attrs.js",
+            "includes",
+            "pipeless-filters",
+            "layout.prepend",
+            "each.else",
+            "filters.inline",
+            "code.conditionals",
+            "filters.coffeescript",
+            "layout.append",
+            "blocks-in-if"
 
     };
 
