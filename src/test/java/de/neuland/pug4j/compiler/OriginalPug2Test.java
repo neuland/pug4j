@@ -19,15 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class OriginalPug2Test {
 //    private static String[] ignoredCases = new String[]{};
+
     private static String[] ignoredCases = new String[] {
             "regression.784",       // javascript replace not supported
 //            "filter-in-include",
@@ -76,6 +75,7 @@ public class OriginalPug2Test {
         jade.setFilter("plain", new PlainFilter());
         jade.setFilter("cdata", new CDATAFilter());
         jade.setFilter("markdown", new MarkdownFilter());
+        jade.setFilter("markdown-it", new MarkdownFilter());
         jade.setPrettyPrint(true);
         PugTemplate template = jade.getTemplate("" + file);
         Writer writer = new StringWriter();

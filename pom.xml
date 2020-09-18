@@ -32,7 +32,6 @@
         <developerConnection>scm:git:git@github.com:neuland/pug4j.git</developerConnection>
       <tag>HEAD</tag>
   </scm>
-
     <developers>
         <developer>
             <name>Artur Tomas</name>
