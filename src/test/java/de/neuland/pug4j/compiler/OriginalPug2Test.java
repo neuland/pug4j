@@ -66,8 +66,11 @@ public class OriginalPug2Test {
     @Test
     public void shouldCompileJadeToHtml() throws Exception {
         PugConfiguration jade = new PugConfiguration();
-        String basePath = TestFileHelper.getOriginalPug2ResourcePath("");
-        jade.setTemplateLoader(new FileTemplateLoader(basePath,"pug"));
+        String fileTemplateLoaderPath = TestFileHelper.getOriginalPug2ResourcePath("");
+        FileTemplateLoader fileTemplateLoader = new FileTemplateLoader(fileTemplateLoaderPath, "pug");
+        String basePath = "cases";
+        fileTemplateLoader.setBase(basePath);
+        jade.setTemplateLoader(fileTemplateLoader);
         jade.setMode(Pug4J.Mode.XHTML); // original jade uses xhtml by default
         jade.setFilter("plain", new PlainFilter());
         jade.setFilter("cdata", new CDATAFilter());
@@ -81,7 +84,7 @@ public class OriginalPug2Test {
         jade.renderTemplate(template,model, writer);
         String html = writer.toString();
 
-        String pathToExpectedHtml = basePath + file.replace(".pug", ".html");
+        String pathToExpectedHtml = fileTemplateLoaderPath +basePath+ file.replace(".pug", ".html");
         String expected = readFile(pathToExpectedHtml).trim().replaceAll("\r", "");
 
         assertEquals(file, expected, html.trim());
@@ -93,13 +96,13 @@ public class OriginalPug2Test {
 
     @Parameterized.Parameters(name="{0}")
     public static Collection<String[]> data() {
-        File folder = new File(TestFileHelper.getOriginalPug2ResourcePath(""));
+        File folder = new File(TestFileHelper.getOriginalPug2ResourcePath("/cases"));
         Collection<File> files = FileUtils.listFiles(folder, new String[]{"pug"}, false);
 
         Collection<String[]> data = new ArrayList<String[]>();
         for (File file : files) {
             if (!ArrayUtils.contains(ignoredCases, file.getName().replace(".pug", ""))) {
-                data.add(new String[]{file.getName()});
+                data.add(new String[]{"/"+file.getName()});
             }
 
         }

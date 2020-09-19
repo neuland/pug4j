@@ -36,7 +36,7 @@ public class JadeRunFullTemplateTest {
         root.put("hallo", null);
         PugModel model = new PugModel(root);
 
-        PugTemplate temp = cfg.getTemplate(getResourcePath("fullrun"));
+        PugTemplate temp = cfg.getTemplate("fullrun");
 
         StringWriter out = new StringWriter();
         try {
@@ -61,7 +61,7 @@ public class JadeRunFullTemplateTest {
         root.put("users", users);
         PugModel model = new PugModel(root);
 
-        PugTemplate temp = cfg.getTemplate(getResourcePath("each_loop"));
+        PugTemplate temp = cfg.getTemplate("each_loop");
 
         StringWriter out = new StringWriter();
         try {

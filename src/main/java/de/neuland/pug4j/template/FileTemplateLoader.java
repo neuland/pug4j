@@ -1,6 +1,7 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,9 +16,10 @@ import java.nio.file.Paths;
 public class FileTemplateLoader implements TemplateLoader {
 
     private Charset encoding = StandardCharsets.UTF_8;
-	private String basePath = "";
+	private String templateLoaderPath;
 	private String extension = "pug";
-	
+	private String basePath="";
+
 	public FileTemplateLoader() {
 	}
 
@@ -30,25 +32,29 @@ public class FileTemplateLoader implements TemplateLoader {
 		this.extension = extension;
 	}
 
-	public FileTemplateLoader(String basePath) {
-		if(!Files.isDirectory(Paths.get(basePath))){
-			throw new PugTemplateLoaderException("Directory '"+basePath+"' does not exist.");
+	public FileTemplateLoader(String templateLoaderPath) {
+		if(!Files.isDirectory(Paths.get(templateLoaderPath))){
+			throw new PugTemplateLoaderException("Directory '"+ templateLoaderPath +"' does not exist.");
 		}
-		this.basePath = basePath;
+		if(templateLoaderPath.endsWith("/"))
+			this.templateLoaderPath = templateLoaderPath;
+		else
+			this.templateLoaderPath = templateLoaderPath+"/";
+
 	}
 
-	public FileTemplateLoader(String basePath, Charset encoding) {
-		this(basePath);
+	public FileTemplateLoader(String templateLoaderPath, Charset encoding) {
+		this(templateLoaderPath);
 		this.encoding = encoding;
 	}
 
-	public FileTemplateLoader(String basePath, String extension) {
-		this(basePath);
+	public FileTemplateLoader(String templateLoaderPath, String extension) {
+		this(templateLoaderPath);
 		this.extension = extension;
 	}
 
-	public FileTemplateLoader(String basePath, Charset encoding, String extension) {
-		this(basePath,extension);
+	public FileTemplateLoader(String templateLoaderPath, Charset encoding, String extension) {
+		this(templateLoaderPath,extension);
 		this.encoding = encoding;
 	}
 
@@ -64,10 +70,13 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	private File getFile(String name) {
-		if(Paths.get(name).isAbsolute())
-        	return Paths.get(name).toFile();
+		if(!StringUtils.isBlank(templateLoaderPath))
+			if(Paths.get(name).isAbsolute()) {
+				return Paths.get(templateLoaderPath+basePath+name.substring(1)).toFile();
+			}else
+				return Paths.get(templateLoaderPath).resolve(name).toFile();
 		else
-			return Paths.get(basePath).resolve(name).toFile();
+			return Paths.get(name).toFile();
 	}
 
 	public String getExtension() {
@@ -75,7 +84,14 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	@Override
-	public String getBasePath() {
+	public String getBase() {
 		return basePath;
+	}
+
+	public void setBase(String basePath) {
+		if (basePath.endsWith("/"))
+			this.basePath = basePath;
+		else
+			this.basePath = basePath+"/";
 	}
 }

@@ -9,34 +9,23 @@ import java.nio.file.Paths;
 
 public class PathHelper {
     public String resolvePath(String parentFileName, String templateName, String basePathString) {
-        if(!Paths.get(parentFileName).isAbsolute()){
-            parentFileName = resolveAbsolutePath(parentFileName,basePathString);
+        if(basePathString.startsWith("/"))
+            throw new PugTemplateLoaderException("basePath " + basePathString + " must be relative");
+
+        if(parentFileName.startsWith("/")){
+            parentFileName = Paths.get(basePathString + parentFileName.substring(1)).normalize().toString();
         }
-        if(Paths.get(basePathString).isAbsolute()) {
-            Path basePath = Paths.get(basePathString);
-
-            if (Paths.get(templateName).isAbsolute()) {
-                templateName = basePath.toString() + templateName;
-            }
-
-            Path parentPath = basePath.resolve(Paths.get(parentFileName)).getParent().normalize();
-
-            Path templatePath = parentPath.resolve(Paths.get(templateName)).normalize();
-            templatePath = templatePath.normalize();
-            return templatePath.toString();
-        }else{
-            Path basePath = Paths.get(parentFileName).getParent();
-            if (Paths.get(templateName).isAbsolute()) {
-                templateName = basePath.toString() + templateName;
-            }
-            if(basePath == null) {
-                Path templatePath = Paths.get(templateName);
-                return templatePath.toString();
-            }
-            Path templatePath = basePath.resolve(Paths.get(templateName)).normalize();
-            templatePath = templatePath.normalize();
-            return templatePath.toString();
+        if(templateName.startsWith("/")){
+            return Paths.get(basePathString + templateName.substring(1)).normalize().toString();
         }
+
+        Path parent = Paths.get(parentFileName).getParent();
+        if(parent==null)
+            return templateName;
+        Path resolve = parent.resolve(Paths.get(templateName)).normalize();
+        return resolve.toString();
+
+
     }
     private String resolveAbsolutePath(String filename,String basePath) {
         if(Paths.get(filename).isAbsolute()){

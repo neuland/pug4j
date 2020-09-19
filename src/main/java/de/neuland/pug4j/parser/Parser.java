@@ -531,7 +531,7 @@ public class Parser {
 
         //TODO: check where logik will be
         String templateName = pathToken.getValue().trim();
-        String path = pathHelper.resolvePath(filename, templateName,templateLoader.getBasePath());
+        String path = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
 
         try {
             if (filters.size()>0) {
@@ -623,7 +623,7 @@ public class Parser {
     private Parser createParser(String templateName) {
         templateName = ensurePugExtension(templateName);
         try {
-            String resolvedPath = pathHelper.resolvePath(filename, templateName,templateLoader.getBasePath());
+            String resolvedPath = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
             return new Parser(resolvedPath, templateLoader, expressionHandler);
         } catch (IOException e) {
             throw new PugParserException(

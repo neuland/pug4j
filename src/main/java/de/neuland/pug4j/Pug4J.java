@@ -86,7 +86,8 @@ public class Pug4J {
     }
 
 	public static PugTemplate getTemplate(String filename) throws IOException {
-		return createTemplate(filename, new FileTemplateLoader(Charset.forName("UTF-8")), new JexlExpressionHandler());
+		FileTemplateLoader loader = new FileTemplateLoader(Charset.forName("UTF-8"));
+		return createTemplate(filename, loader, new JexlExpressionHandler());
 	}
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
 		return createTemplate(filename, new FileTemplateLoader(Charset.forName("UTF-8"),extension), new JexlExpressionHandler());

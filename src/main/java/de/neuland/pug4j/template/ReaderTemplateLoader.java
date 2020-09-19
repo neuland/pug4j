@@ -54,8 +54,8 @@ public class ReaderTemplateLoader implements TemplateLoader {
 	}
 
 	@Override
-	public String getBasePath() {
-		return null;
+	public String getBase() {
+		return "";
 	}
 
 }
