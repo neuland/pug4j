@@ -5,7 +5,7 @@
     <version>2.0.0-alpha-3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>pug4j</name>
-    <description>Java implementation of the jade templating language</description>
+    <description>Java implementation of the pug templating language</description>
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>

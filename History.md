@@ -1,10 +1,16 @@
 # History
+## 2.0.0-alpha-2 / 2020-09-19
+* Optimized Path Handling, to work again with spring integration
 
-## 2.0.0 / 2019
+## 2.0.0-alpha-1 / 2020-09-18
 * Upgrading Flexmark lib to latest version
 * Changed compiler level to 1.8 and above
-* Upgraded to jexl 3
-* Renaming to Pug4J
+* Fixed issue #176: Upgraded to jexl 3
+* Fixed issue #130: Renaming to Pug4J - All classes are updated to Pug naming.
+* Default file extension is now .pug
+* basePath is now templateLoaderPath
+* Rewritten to be compatible with pug 2.0.4 syntax
+* Fixed issue #194: Defining functions doesn't work
 
 ## 1.3.2 / 2020-03-17
 * Fixed issue #193: Mixin's block argument can't execute multiple times in a loop

@@ -1,7 +1,7 @@
-[![Build Status](https://secure.travis-ci.org/neuland/jade4j.png?branch=master)](http://travis-ci.org/neuland/jade4j)
+[![Build Status](https://secure.travis-ci.org/neuland/pug4j.png?branch=master)](http://travis-ci.org/neuland/pug4j)
 
 # pug4j (formerly known as jade4j) - a jade implementation written in Java
-pug4j's intention is to be able to process jade templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original jade syntax.
+pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
 
 ## Contents
 
@@ -126,7 +126,7 @@ String html = Pug4J.render("./index.pug", model);
 If you use this in production you would probably do the template parsing only once per template and call the render method with different models.
 
 ```java
-JadeTemplate template = Pug4J.getTemplate("./index.pug");
+PugTemplate template = Pug4J.getTemplate("./index.pug");
 String html = Pug4J.render(template, model);
 ```
 
@@ -184,7 +184,7 @@ By default, Pug4J produces compressed HTML without unneeded whitespace. You can 
 config.setPrettyPrint(true);
 ```
 
-Pug detects if it has to generate (X)HTML or XML code by your specified [doctype](https://github.com/visionmedia/jade#a6-11).
+Pug detects if it has to generate (X)HTML or XML code by your specified [doctype](https://github.com/pugjs/pug#syntax).
 
 If you are rendering partial templates that don't include a doctype pug4j generates HTML code. You can also set the `mode` manually:
 
@@ -197,7 +197,7 @@ config.setMode(Pug4J.Mode.XML);    // <input checked="true"></input>
 <a name="api-filters"></a>
 ### Filters
 
-Filters allow embedding content like `markdown` or `coffeescript` into your jade template:
+Filters allow embedding content like `markdown` or `coffeescript` into your pug template:
 
     script
       :coffeescript
@@ -296,7 +296,7 @@ You can read more about this in the [JEXL documentation](http://commons.apache.o
 
 <a name="framework-integrations"></a>
 ## Framework Integrations
-- [neuland/spring-jade4j](https://github.com/neuland/spring-jade4j) jade4j for Spring.
+- [neuland/spring-pug4j](https://github.com/neuland/spring-pug4j) pug4j spring integration.
 - [jooby-jade](https://github.com/jooby-project/jooby/tree/master/jooby-jade) jade4j for [Jooby](http://jooby.org).
 - [vertx-web](http://vertx.io/docs/vertx-web/js/#_jade_template_engine) jade4j for [Vert.X](http://vertx.io/)
 
