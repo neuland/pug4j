@@ -1,10 +1,7 @@
 package de.neuland.pug4j.lexer;
 
 import java.io.BufferedReader;
-import java.io.LineNumberReader;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +47,7 @@ public class Scanner {
             input = sb.toString();
             if (StringUtils.isNotBlank(input)) {
                 input = removeUTF8BOM(input);
-                input = input.replaceAll("\\r\\n|\\r", "\\n");
+                input = input.replaceAll("\r\n|\r", "\n");
             }
             in.close();
             reader.close();
