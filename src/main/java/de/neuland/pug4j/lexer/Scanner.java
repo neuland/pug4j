@@ -47,7 +47,7 @@ public class Scanner {
             input = sb.toString();
             if (StringUtils.isNotBlank(input)) {
                 input = removeUTF8BOM(input);
-                input = input.replaceAll("\r\n|\r", "\n");
+                input = input.replaceAll("\\r\\n|\\r", "\n");
             }
             in.close();
             reader.close();
