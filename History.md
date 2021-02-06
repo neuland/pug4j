@@ -1,4 +1,7 @@
 # History
+## 2.0.0-alpha-3 / 2021-02-06
+* Fixed pug4j issue #1: Pug4J.render() method not outputting correct HTML. (Thanks to Selaron)
+
 ## 2.0.0-alpha-2 / 2020-09-19
 * Optimized Path Handling, to work again with spring integration
 
