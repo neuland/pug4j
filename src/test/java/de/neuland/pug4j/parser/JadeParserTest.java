@@ -53,4 +53,9 @@ public class JadeParserTest extends ParserTest {
         assertThat(blockNode.hasNodes(), equalTo(false));
     }
 
+    @Test
+    public void testBadExpression(){
+        loadInParser("bad_expression.jade");
+    }
+
 }
