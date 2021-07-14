@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 import de.neuland.pug4j.template.FileTemplateLoader;
@@ -26,7 +27,7 @@ public class PugExceptionTest {
 		} catch (PugException e) {
 			assertTrue(e.getMessage().startsWith("unable to evaluate [non.existing.query()]"));
 			assertEquals(9, e.getLineNumber());
-			assertEquals(errorJade, e.getFilename());
+			assertEquals(Paths.get(errorJade).getFileName().toString(), e.getFilename());
 			String expectedHtml = readFile(exceptionHtml);
 			String html = e.toHtmlString("<html><head><title>broken");
 			assertEquals(removeAbsolutePath(expectedHtml), removeAbsolutePath(html));

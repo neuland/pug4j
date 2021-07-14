@@ -8,6 +8,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -86,11 +88,14 @@ public class Pug4J {
     }
 
 	public static PugTemplate getTemplate(String filename) throws IOException {
-		FileTemplateLoader loader = new FileTemplateLoader(Charset.forName("UTF-8"));
-		return createTemplate(filename, loader, new JexlExpressionHandler());
+		Path path = Paths.get(filename);
+		FileTemplateLoader loader = new FileTemplateLoader(path.getParent().toString(),Charset.forName("UTF-8"));
+		return createTemplate(path.getFileName().toString(), loader, new JexlExpressionHandler());
 	}
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
-		return createTemplate(filename, new FileTemplateLoader(Charset.forName("UTF-8"),extension), new JexlExpressionHandler());
+		Path path = Paths.get(filename);
+		FileTemplateLoader loader = new FileTemplateLoader(path.getParent().toString(),Charset.forName("UTF-8"), extension);
+		return createTemplate(path.getFileName().toString(), loader, new JexlExpressionHandler());
 	}
 
 	private static PugTemplate getTemplate(Reader reader, String name) throws IOException {
