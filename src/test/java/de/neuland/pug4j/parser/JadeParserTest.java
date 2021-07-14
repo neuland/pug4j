@@ -1,14 +1,17 @@
 package de.neuland.pug4j.parser;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import de.neuland.pug4j.exceptions.PugParserException;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.neuland.pug4j.parser.node.BlockNode;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.parser.node.TagNode;
+import org.junit.rules.ExpectedException;
+import shadow.org.assertj.core.internal.bytebuddy.matcher.StringMatcher;
 
 public class JadeParserTest extends ParserTest {
 
@@ -53,8 +56,14 @@ public class JadeParserTest extends ParserTest {
         assertThat(blockNode.hasNodes(), equalTo(false));
     }
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Test
-    public void testBadExpression(){
+    public void testBadExpression() {
+        exceptionRule.expect(PugParserException.class);
+        exceptionRule.expectMessage(containsString("parsing"));
+        exceptionRule.expectMessage(containsString("token"));
         loadInParser("bad_expression.jade");
     }
 
