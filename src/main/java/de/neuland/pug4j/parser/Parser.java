@@ -76,7 +76,12 @@ public class Parser {
             } else if(peek() instanceof TextHtml){
                 block.getNodes().addAll(parseTextHtml());
             } else {
-                Node expr = parseExpr();
+                Node expr = null;
+                try {
+                    expr = parseExpr();
+                } catch (Exception e) {
+                    throw error("new code", "Error parsing token", peek());
+                }
                 if (expr != null) {
                     if(expr instanceof BlockNode && !((BlockNode) expr).isYield()){
                         block.getNodes().addAll(expr.getNodes());
