@@ -1,6 +1,7 @@
 package de.neuland.pug4j;
 
 import de.neuland.pug4j.exceptions.PugLexerException;
+import de.neuland.pug4j.template.PugTemplate;
 import junit.framework.TestCase;
 import org.junit.Test;
 
@@ -16,6 +17,13 @@ public class Pug4JTest {
     public void testRenderDefault() throws Exception{
         final Path path = Paths.get("src/test/resources/compiler/extends.pug");
         final String html = Pug4J.render(path.toAbsolutePath().toString(), new HashMap<String, Object>());
+        assertEquals("<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",html);
+    }
+    @Test
+    public void testTemplateDefault() throws Exception{
+        final Path path = Paths.get("src/test/resources/compiler/extends.pug");
+        PugTemplate template = Pug4J.getTemplate(path.toAbsolutePath().toString());
+        final String html = Pug4J.render(template, new HashMap<String, Object>());
         assertEquals("<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",html);
     }
     @Test
