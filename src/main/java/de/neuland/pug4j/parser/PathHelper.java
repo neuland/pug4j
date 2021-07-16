@@ -9,13 +9,13 @@ import java.nio.file.Paths;
 
 public class PathHelper {
     public String resolvePath(String parentFileName, String templateName, String basePathString) {
-        if(basePathString.startsWith("/"))
+        if(Paths.get(basePathString).isAbsolute())
             throw new PugTemplateLoaderException("basePath " + basePathString + " must be relative");
 
-        if(parentFileName.startsWith("/")){
+        if(Paths.get(parentFileName).isAbsolute() && basePathString.length() > 0){
             parentFileName = Paths.get(basePathString + parentFileName.substring(1)).normalize().toString();
         }
-        if(templateName.startsWith("/")){
+        if(Paths.get(templateName).isAbsolute() && basePathString.length() > 0){
             return Paths.get(basePathString + templateName.substring(1)).normalize().toString();
         }
 
@@ -27,15 +27,4 @@ public class PathHelper {
 
 
     }
-    private String resolveAbsolutePath(String filename,String basePath) {
-        if(Paths.get(filename).isAbsolute()){
-            return filename;
-        }else{
-            if(!Paths.get(basePath).isAbsolute()){
-                throw new PugTemplateLoaderException("Can't resolve absolute path for '"+filename+"' if basePath has not been set.");
-            }
-            return Paths.get(basePath).resolve(filename).normalize().toString();
-        }
-    }
-
 }

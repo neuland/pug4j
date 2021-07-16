@@ -17,12 +17,12 @@ public class PathHelperTest extends ParserTest {
     @Test
     public void name() throws IOException {
         String resolvePath = pathHelper.resolvePath("/pages/index.pug", "subdir/layout.pug","");
-        assertEquals("pages/subdir/layout.pug",resolvePath);
+        assertEquals("/pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name2() {
         String resolvePath = pathHelper.resolvePath("/pages/subdir/test.pug", "layout.pug","");
-        assertEquals("pages/subdir/layout.pug",resolvePath);
+        assertEquals("/pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name3() {
@@ -54,14 +54,14 @@ public class PathHelperTest extends ParserTest {
     @Test
     public void name8() {
         String resolvePath = pathHelper.resolvePath("/pages/subdir/test.pug", "/layout.pug","");
-        assertEquals("layout.pug",resolvePath);
+        assertEquals("/layout.pug",resolvePath);
 
     }
 
-//    @Test
-//    public void shouldResolvePathWindows() throws Exception {
-//        String result = pathHelper.resolvePath("C:/kek/index.jade","../_layout.jade", "C:/kek");
-//        assertEquals(FilenameUtils.separatorsToSystem("C:\\_layout.jade"),result);
-//
-//    }
+    @Test
+    public void shouldResolvePathWindows() throws Exception {
+        String result = pathHelper.resolvePath("C:/kek/index.jade","../_layout.jade", "C:/kek");
+        assertEquals(FilenameUtils.separatorsToSystem("C:\\_layout.jade"),result);
+
+    }
 }

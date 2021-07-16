@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 public class FileTemplateLoader implements TemplateLoader {
 
     private Charset encoding = StandardCharsets.UTF_8;
-	private String templateLoaderPath = "/";
+	private String templateLoaderPath = "";
 	private String extension = "pug";
 	private String basePath="";
 
