@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Scanner {
 
     private String input;
+    private String originalInput;
     public static final String UTF8_BOM = "\uFEFF";
 
     public Scanner(Reader reader) {
@@ -49,6 +50,7 @@ public class Scanner {
                 input = removeUTF8BOM(input);
                 input = input.replaceAll("\\r\\n|\\r", "\n");
             }
+            originalInput = input;
             in.close();
             reader.close();
         } catch (Exception e) {
@@ -88,6 +90,10 @@ public class Scanner {
 
     public String getInput() {
         return input;
+    }
+
+    public String getOriginalInput() {
+        return originalInput;
     }
 
     public Matcher getMatcherForPattern(String regexp) {

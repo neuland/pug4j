@@ -8,8 +8,8 @@
 {"type":"attribute","line":1,"col":21,"name":"class","val":"rho--modifier"}
 {"type":"endattributes","line":1,"col":42}
 {"type":"text","line":1,"col":44,"val":"with inline link"}
-{"type":"end-jade-interpolation","line":1,"col":1}
-{"type":"text","line":1,"col":2,"val":""}
+{"type":"end-jade-interpolation","line":1,"col":60}
+{"type":"text","line":1,"col":61,"val":""}
 {"type":"newline","line":2,"col":1}
 {"type":"tag","line":2,"col":1,"val":"p","selfClosing":false}
 {"type":"text","line":2,"col":3,"val":"Some text "}
@@ -20,8 +20,8 @@
 {"type":"attribute","line":2,"col":21,"name":"href","val":"#"}
 {"type":"attribute","line":2,"col":31,"name":"class","val":"rho--modifier"}
 {"type":"endattributes","line":2,"col":52}
-{"type":"end-jade-interpolation","line":2,"col":2}
-{"type":"text","line":2,"col":3,"val":""}
+{"type":"end-jade-interpolation","line":2,"col":53}
+{"type":"text","line":2,"col":54,"val":""}
 {"type":"newline","line":3,"col":1}
 {"type":"tag","line":3,"col":1,"val":"p","selfClosing":false}
 {"type":"text","line":3,"col":3,"val":"Some text "}
@@ -33,6 +33,6 @@
 {"type":"attribute","line":3,"col":31,"name":"class","val":"rho--modifier"}
 {"type":"endattributes","line":3,"col":52}
 {"type":"text","line":3,"col":54,"val":"with inline link"}
-{"type":"end-jade-interpolation","line":3,"col":3}
-{"type":"text","line":3,"col":4,"val":""}
-{"type":"eos","line":3,"col":4}
+{"type":"end-jade-interpolation","line":3,"col":70}
+{"type":"text","line":3,"col":71,"val":""}
+{"type":"eos","line":3,"col":71}

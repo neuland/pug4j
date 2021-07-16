@@ -126,7 +126,7 @@ html
   body
     h1= exception
     p#detail= message
-    h2 In #{filename} at line #{linenumber}.
+    h2 In #{filename} at line #{linenumber}, column #{column}.
     div
       if lines
         for line, i in lines

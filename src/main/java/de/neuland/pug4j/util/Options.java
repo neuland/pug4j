@@ -7,6 +7,7 @@ public class Options {
     private int start = 0;
     private int end = 0;
     boolean includeLineComment = false;
+    boolean ignoreNesting = false;
 
     public int getStart() {
         return start;
@@ -32,4 +33,11 @@ public class Options {
         this.includeLineComment = includeLineComment;
     }
 
+    public boolean isIgnoreNesting() {
+        return ignoreNesting;
+    }
+
+    public void setIgnoreNesting(boolean ignoreNesting) {
+        this.ignoreNesting = ignoreNesting;
+    }
 }

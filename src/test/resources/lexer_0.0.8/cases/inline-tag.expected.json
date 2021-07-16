@@ -3,8 +3,8 @@
 {"type":"start-jade-interpolation","line":1,"col":8}
 {"type":"tag","line":1,"col":10,"val":"strong","selfClosing":false}
 {"type":"text","line":1,"col":17,"val":"foo"}
-{"type":"end-jade-interpolation","line":1,"col":1}
-{"type":"text","line":1,"col":2,"val":" bong"}
+{"type":"end-jade-interpolation","line":1,"col":20}
+{"type":"text","line":1,"col":21,"val":" bong"}
 {"type":"newline","line":3,"col":1}
 {"type":"tag","line":3,"col":1,"val":"p","selfClosing":false}
 {"type":"dot","line":3,"col":2}
@@ -15,8 +15,8 @@
 {"type":"start-jade-interpolation","line":5,"col":3}
 {"type":"tag","line":5,"col":5,"val":"strong","selfClosing":false}
 {"type":"text","line":5,"col":12,"val":"foo"}
-{"type":"end-jade-interpolation","line":5,"col":5}
-{"type":"text","line":5,"col":6,"val":""}
+{"type":"end-jade-interpolation","line":5,"col":15}
+{"type":"text","line":5,"col":16,"val":""}
 {"type":"newline","line":6,"col":1}
 {"type":"text","line":6,"col":3,"val":"bong"}
 {"type":"newline","line":7,"col":1}
@@ -31,8 +31,8 @@
 {"type":"start-jade-interpolation","line":10,"col":5}
 {"type":"tag","line":10,"col":7,"val":"strong","selfClosing":false}
 {"type":"text","line":10,"col":14,"val":"foo"}
-{"type":"end-jade-interpolation","line":10,"col":10}
-{"type":"text","line":10,"col":11,"val":""}
+{"type":"end-jade-interpolation","line":10,"col":17}
+{"type":"text","line":10,"col":18,"val":""}
 {"type":"newline","line":11,"col":1}
 {"type":"text","line":11,"col":5,"val":"bong"}
 {"type":"outdent","line":13,"col":1}
@@ -45,7 +45,7 @@
 {"type":"start-jade-interpolation","line":15,"col":6}
 {"type":"tag","line":15,"col":8,"val":"strong","selfClosing":false}
 {"type":"text","line":15,"col":15,"val":"escaped"}
-{"type":"end-jade-interpolation","line":15,"col":15}
-{"type":"text","line":15,"col":16,"val":""}
-{"type":"end-pipeless-text","line":15,"col":16}
-{"type":"eos","line":15,"col":16}
+{"type":"end-jade-interpolation","line":15,"col":22}
+{"type":"text","line":15,"col":23,"val":""}
+{"type":"end-pipeless-text","line":15,"col":23}
+{"type":"eos","line":15,"col":23}

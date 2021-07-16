@@ -37,10 +37,12 @@ public class PugExceptionTest {
 	@Test
 	public void testMessage() throws Exception {
 		try {
-			throw new PugLexerException("invalid indentation; expecting 2 spaces", "index.jade", 10, new FileTemplateLoader(TestFileHelper.getLexerResourcePath("")));
+			throw new PugLexerException("invalid indentation; expecting 2 spaces", "index.jade", 10,20, new FileTemplateLoader(TestFileHelper.getLexerResourcePath("")));
 		}catch(Exception e){
-			assertEquals("invalid indentation; expecting 2 spaces in index.jade:10",e.getMessage());
-			assertEquals("class de.neuland.pug4j.exceptions.PugLexerException: invalid indentation; expecting 2 spaces in index.jade:10",e.toString());
+			assertEquals("invalid indentation; expecting 2 spaces",e.getMessage());
+			assertEquals("class de.neuland.pug4j.exceptions.PugLexerException: index.jade:10:20\n" +
+					"\n" +
+					"invalid indentation; expecting 2 spaces",e.toString());
 		}
 
 	}

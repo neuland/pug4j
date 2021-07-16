@@ -60,14 +60,14 @@ public class CharacterParserTest {
 
     @Test
     public void testFindsCodeUpToACustomDelimiter() throws Exception {
-        CharacterParser.Match section = characterParser.parseUntil("foo.bar(\"%>\").baz%> bing bong", "%>");
+        CharacterParser.Match section = characterParser.parseUntil("foo.bar(\"%>\").baz%> bing bong", "%");
         assertEquals(0,section.getStart());
         assertEquals(17,section.getEnd());//exclusive end of string
         assertEquals("foo.bar(\"%>\").baz",section.getSrc());
 
         Options options = new Options();
         options.setStart(2);
-        section = characterParser.parseUntil("<%foo.bar(\"%>\").baz%> bing bong", "%>",options);
+        section = characterParser.parseUntil("<%foo.bar(\"%>\").baz%> bing bong", "%",options);
         assertEquals(2,section.getStart());
         assertEquals(19,section.getEnd());//exclusive end of string
         assertEquals("foo.bar(\"%>\").baz",section.getSrc());

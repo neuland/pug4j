@@ -34,18 +34,18 @@ public class CharacterParser {
             super(message);
         }
     }
-    public State parse(String src) throws SyntaxError {
+    public State parse(String src) {
         Options options = new Options();
         options.setEnd(src.length());
         return this.parse(src,this.defaultState(),options);
     }
-    public State parse(String src,State state) throws SyntaxError {
+    public State parse(String src,State state) {
         Options options = new Options();
         options.setEnd(src.length());
         return this.parse(src,state,options);
     }
 
-    public State parse(String src,State state,Options options) throws SyntaxError {
+    public State parse(String src,State state,Options options){
       if(options == null) {
           options = new Options();
           options.setEnd(src.length());
@@ -56,10 +56,15 @@ public class CharacterParser {
       int end = options.getEnd();
       int index = start;
       while (index < end) {
-        if (state.getRoundDepth() < 0 || state.getCurlyDepth() < 0 || state.getSquareDepth() < 0) {
-          throw new SyntaxError("Mismatched Bracket: " + src.charAt(index - 1));
+        try {
+            this.parseChar(src.charAt(index++), state);
+        }catch(StringIndexOutOfBoundsException ex){
+            CharacterParserException characterParserException = new CharacterParserException("Character must be a string of length 1");
+            //err.name = 'InvalidArgumentError';
+            characterParserException.setCode("CHARACTER_PARSER:CHAR_LENGTH_NOT_ONE");
+            characterParserException.setIndex(index);
+            throw characterParserException;
         }
-        this.parseChar(src.charAt(index++), state);
       }
       return state;
     }
@@ -187,12 +192,26 @@ public class CharacterParser {
         int start = options.getStart();
         int index = start;
         State state = this.defaultState();
-        while (state.isString() || state.isRegexp() || state.isBlockComment() ||
-                (!includeLineComment && state.isLineComment()) || !startsWith(src, delimiter, index)) {
-            this.parseChar(src.charAt(index++), state);
+        while (index < src.length()) {
+            if((options.isIgnoreNesting() || !state.isNesting(options)) && startsWith(src, delimiter, index)){
+                int end = index;
+                return new Match(start, end, src.substring(start, end));
+            }
+            try {
+                this.parseChar(src.charAt(index), state);
+            }catch (StringIndexOutOfBoundsException ex){
+                CharacterParserException characterParserException = new CharacterParserException("Character must be a string of length 1");
+                //err.name = 'InvalidArgumentError';
+                characterParserException.setCode("CHARACTER_PARSER:CHAR_LENGTH_NOT_ONE");
+                characterParserException.setIndex(index);
+                throw characterParserException;
+            }
+            index++;
         }
-        int end = index;
-        return new Match(start, end, src.substring(start, end));
+        CharacterParserException characterParserException = new CharacterParserException("The end of the string was reached with no closing bracket found.");
+        characterParserException.setCode("CHARACTER_PARSER:END_OF_STRING_REACHED");
+        characterParserException.setIndex(index);
+        throw characterParserException;
     }
 
 //    function parseChar(character, state) {
@@ -272,7 +291,7 @@ public class CharacterParser {
 //      return state;
 //    }
         public State parseChar(char character,State state){
-//            if (character.length !== 1) throw new Error('Character must be a string of length 1');
+//            if (character. !== 1) throw new CharacterParserException("Character must be a string of length 1");
             if(state == null)
                 state = this.defaultState();
 
@@ -388,6 +407,9 @@ public class CharacterParser {
         }
         public boolean isComment(){
             return this.lineComment || this.blockComment;
+        }
+        public boolean isNesting(Options options){
+            return this.isString() || this.isComment() || this.regexp || this.roundDepth > 0 || this.curlyDepth > 0 || this.squareDepth > 0;
         }
         public boolean isNesting(){
             return this.isString() || this.isComment() || this.regexp || this.roundDepth > 0 || this.curlyDepth > 0 || this.squareDepth > 0;
