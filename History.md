@@ -1,4 +1,9 @@
 # History
+## 2.0.0-alpha-4 / 2021-07-16
+* Fixed pug4j issue #3: Fix static PUG4J API to handle new templateLoaderPath. Adding Tests.
+* Fixed pug4j issue #6: Improved Error Handling to be inline with pug.js
+* Improved file path resolving
+
 ## 2.0.0-alpha-3 / 2021-02-06
 * Fixed pug4j issue #1: Pug4J.render() method not outputting correct HTML. (Thanks to Selaron)
 
