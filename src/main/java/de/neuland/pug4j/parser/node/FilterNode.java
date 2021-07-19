@@ -6,6 +6,7 @@ import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.Utils;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
@@ -13,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FilterNode extends AttrsNode {
 
-	private List<Attr> attributes = new LinkedList<Attr>();
 	private LinkedList<Node> filters = new LinkedList<>();
 
 	@Override
@@ -23,30 +23,42 @@ public class FilterNode extends AttrsNode {
 		for (Node node : nodes) {
 			values.add(node.getValue());
 		}
-
+		ExpressionHandler expressionHandler = template.getExpressionHandler();
 		String result = StringUtils.join(values, "");
 		Filter filter = model.getFilter(getValue());
 		if (filter != null) {
-			result = filter.convert(result, attributes, model);
+			result = filter.convert(result, convertToFilterAttributes(template,model), model);
 		}
 		for (Node filterValue : filters) {
 			filter = model.getFilter(filterValue.getValue());
 			if (filter != null) {
-				result = filter.convert(result, attributes, model);
+				result = filter.convert(result, convertToFilterAttributes(template, model), model);
 			}
 		}
 
 		try {
-			result = Utils.interpolate(result, model, false,template.getExpressionHandler());
+
+			result = Utils.interpolate(result, model, false, expressionHandler);
 		} catch (ExpressionException e) {
 			throw new PugCompilerException(this, template.getTemplateLoader(), e);
 		}
 		writer.append(result);
 	}
 
-	public void setAttributes(List<Attr> attributes) {
-		this.attributes = attributes;
-
+	private Map<String, Object> convertToFilterAttributes(PugTemplate template, PugModel model) {
+		Map evaluatedAttributes = new HashMap<String,Object>() ;
+		for (Attr attribute : attributes) {
+			if(attribute.getValue() instanceof ExpressionString) {
+				try {
+					evaluatedAttributes.put(attribute.getName(),template.getExpressionHandler().evaluateExpression(((ExpressionString)attribute.getValue()).getValue(),model));
+				} catch (ExpressionException e) {
+					throw new PugCompilerException(this, template.getTemplateLoader(), e);
+				}
+			}
+			else
+				evaluatedAttributes.put(attribute.getName(),attribute.getValue());
+		}
+		return evaluatedAttributes;
 	}
 
 	public void setFilter(LinkedList<Node> filters) {

@@ -2,9 +2,8 @@ package de.neuland.pug4j.filter;
 
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
-import de.neuland.pug4j.parser.node.Attr;
 
-import java.util.List;
+import java.util.Map;
 
 public class MarkdownFilter extends CachingFilter {
 
@@ -12,7 +11,7 @@ public class MarkdownFilter extends CachingFilter {
     HtmlRenderer renderer = HtmlRenderer.builder().build();
 
 	@Override
-	protected String convert(String source, List<Attr> attributes) {
+	protected String convert(String source, Map<String, Object> attributes) {
 		return renderer.render(parser.parse(source)).trim();
 	}
 

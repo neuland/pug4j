@@ -4,8 +4,11 @@ import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.filter.CDATAFilter;
+import de.neuland.pug4j.filter.CustomTestFilter;
+import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.filter.MarkdownFilter;
 import de.neuland.pug4j.filter.PlainFilter;
+import de.neuland.pug4j.parser.node.Attr;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
@@ -33,19 +36,18 @@ public class OriginalPug2Test {
             "filters.less",
 
             // try to read files in ../
-            "attrs-data",
-            "layout.append.without-block",
-            "layout.prepend.without-block",
-            "filter-in-include",
-            "filters.nested",
-            "escape-test",
-            "filters.custom",
+            "attrs-data", // nice to have
+            "layout.append.without-block", // should be possible to fix
+            "layout.prepend.without-block", // should be possible to fix same as "layout.append.without-block"
+            "filter-in-include", // replace with testcase with customfilter
+            "filters.nested", //replace with customerfilter test
+            "escape-test", // fix linebreak
             "styles",
             "block-code",
             "filters.include",
             "filters.include.custom",
             "attrs.js",
-            "includes",
+            "includes", // Verbatim Filter
             "pipeless-filters",
             "layout.prepend",
             "each.else",
@@ -76,6 +78,16 @@ public class OriginalPug2Test {
         jade.setFilter("cdata", new CDATAFilter());
         jade.setFilter("markdown", new MarkdownFilter());
         jade.setFilter("markdown-it", new MarkdownFilter());
+        jade.setFilter("custom", new Filter() {
+            @Override
+            public String convert(String source, Map<String, Object> attributes, Map<String, Object> model) {
+                Object opt = attributes.get("opt");
+                Object num = attributes.get("num");
+                assertEquals("val",opt);
+                assertEquals(2,num);
+                return "BEGIN"+source+"END";
+            }
+        });
         jade.setPrettyPrint(true);
         PugTemplate template = jade.getTemplate("" + file);
         Writer writer = new StringWriter();
