@@ -1176,7 +1176,7 @@ public class Parser {
             Token textToken = advance();
             LinkedList<Node> nodes = new LinkedList<>();
             TextNode textNode = new TextNode();
-            textNode.setValue(filterToken.getValue());
+            textNode.setValue(textToken.getValue());
             textNode.setLineNumber(textToken.getStartLineNumber());
             textNode.setColumn(textToken.getStartColumn());
             textNode.setFileName(this.filename);
