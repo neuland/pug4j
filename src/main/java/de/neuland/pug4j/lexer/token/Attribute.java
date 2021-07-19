@@ -6,15 +6,15 @@ package de.neuland.pug4j.lexer.token;
 public class Attribute extends Token {
     String name;
     Object attributeValue;
-    boolean escaped;
+    boolean mustEscape;
 
     public Attribute() {
     }
 
-    public Attribute(String name, Object attributeValue, boolean escape) {
+    public Attribute(String name, Object attributeValue, boolean mustEscape) {
         this.name = name;
         this.attributeValue = attributeValue;
-        this.escaped = escape;
+        this.mustEscape = mustEscape;
     }
 
     public String getName() {
@@ -25,12 +25,12 @@ public class Attribute extends Token {
         return attributeValue;
     }
 
-    public boolean isEscaped() {
-        return escaped;
+    public boolean mustEscape() {
+        return mustEscape;
     }
 
-    public void setEscaped(boolean escaped) {
-        this.escaped = escaped;
+    public void setMustEscape(boolean mustEscape) {
+        this.mustEscape = mustEscape;
     }
 
     @Override

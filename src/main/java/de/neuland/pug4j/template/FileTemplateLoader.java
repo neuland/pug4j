@@ -1,6 +1,7 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -65,10 +66,20 @@ public class FileTemplateLoader implements TemplateLoader {
 
 	@Override
 	public Reader getReader(String name) throws IOException {
+		if(name == null){
+			throw new IllegalArgumentException("Filename not provided!");
+		}
+		name = ensurePugExtension(name);
 		File templateSource = getFile(name);
 		return new InputStreamReader(new FileInputStream(templateSource), encoding);
 	}
 
+	private String ensurePugExtension(String templateName) {
+		if ( StringUtils.isBlank(FilenameUtils.getExtension(templateName))) {
+			return templateName + "." + getExtension();
+		}
+		return templateName;
+	}
 	private File getFile(String name) {
 		if(!StringUtils.isBlank(templateLoaderPath))
 			if(Paths.get(name).isAbsolute()) {

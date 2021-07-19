@@ -88,15 +88,14 @@ public class Pug4J {
     }
 
 	public static PugTemplate getTemplate(String filename) throws IOException {
-		Path path = Paths.get(filename);
 
 		FileTemplateLoader loader;
-		if(filename.endsWith(".jade")){
-			loader = new FileTemplateLoader(path.getParent().toString(),Charset.forName("UTF-8"),"jade");
+		if(filename != null && filename.endsWith(".jade")){
+			loader = new FileTemplateLoader(Charset.forName("UTF-8"),"jade");
 		}else{
-			loader = new FileTemplateLoader(path.getParent().toString(),Charset.forName("UTF-8"));
+			loader = new FileTemplateLoader(Charset.forName("UTF-8"));
 		}
-		return createTemplate(path.getFileName().toString(), loader, new JexlExpressionHandler());
+		return createTemplate(filename, new FileTemplateLoader(Charset.forName("UTF-8")), new JexlExpressionHandler());
 	}
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
 		Path path = Paths.get(filename);

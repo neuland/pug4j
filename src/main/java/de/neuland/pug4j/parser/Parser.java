@@ -11,7 +11,6 @@ import de.neuland.pug4j.template.TemplateLoader;
 import de.neuland.pug4j.util.CharacterParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -398,83 +397,13 @@ public class Parser {
         blocks.put(name, blockNode);
         return blockNode;
 
-        //TODO: check were this logik is in the future
-//        Block block = (Block) token;
-//        String mode = block.getMode();
-//        String name = block.getValue().trim();
-//
-//        this.inBlock++;
-//        BlockNode blockNode;
-//        if (peek() instanceof Indent) {
-//            blockNode = block();
-//        } else {
-//            blockNode = new BlockNode();
-//            blockNode.setLineNumber(block.getStartLineNumber());
-//            blockNode.setFileName(filename);
-//            LiteralNode node = new LiteralNode();
-//            node.setValue("");
-//            blockNode.push(node);
-//        }
-//        this.inBlock--;
-//        blockNode.setName(name);
-//        blockNode.setLineNumber(line());
-//
-//        BlockNode prev;
-//        if (this.blocks.get(name) == null)
-//            prev = new BlockNode();
-//        else
-//            prev = this.blocks.get(name);
-//
-//
-//        if ("replace".equals(prev.getMode())) {
-//            this.blocks.put(name, prev);
-//            return prev;
-//        }
-//        LinkedList<Node> allNodes = new LinkedList<Node>();
-//        allNodes.addAll(prev.getPrepended());
-//        allNodes.addAll(blockNode.getNodes());
-//        allNodes.addAll(prev.getAppended());
-//        //ok
-//
-//
-//        if ("append".equals(mode)) {
-//            LinkedList<Node> appendedNodes = new LinkedList<Node>();
-//            if (prev.getParser() == this) {
-//                appendedNodes.addAll(prev.getAppended());
-//                appendedNodes.addAll(blockNode.getNodes());
-//            } else {
-//                appendedNodes.addAll(blockNode.getNodes());
-//                appendedNodes.addAll(prev.getAppended());
-//            }
-//            prev.setAppended(appendedNodes);
-//        } else if ("prepend".equals(mode)) {
-//            LinkedList<Node> prependedNodes = new LinkedList<Node>();
-//            if (prev.getParser() == this) {
-//                prependedNodes.addAll(blockNode.getNodes());
-//                prependedNodes.addAll(prev.getPrepended());
-//            } else {
-//                prependedNodes.addAll(prev.getPrepended());
-//                prependedNodes.addAll(blockNode.getNodes());
-//            }
-//            prev.setPrepended(prependedNodes);
-//
-//        }
-//
-//        blockNode.setNodes(allNodes);
-//        blockNode.setAppended(prev.getAppended());
-//        blockNode.setPrepended(prev.getPrepended());
-//        blockNode.setMode(mode);
-//        blockNode.setParser(this);
-//        blockNode.setSubBlock(this.inBlock > 0);
-//
-//        blocks.put(name, blockNode);
-//        return blockNode;
     }
+
     //done
     private Node parseMixinBlock() {
         Token tok = expect(MixinBlock.class);
         if (this.inMixin == 0) {
-            throw error("BLOCK_OUTISDE_MIXIN","Anonymous blocks are not allowed unless they are part of a mixin.",tok);
+            throw error("BLOCK_OUTSIDE_MIXIN","Anonymous blocks are not allowed unless they are part of a mixin.",tok);
         }
 
         MixinBlockNode mixinBlockNode = new MixinBlockNode();
@@ -488,6 +417,9 @@ public class Parser {
         Include includeToken = (Include)expect(Include.class);
 
 //        IncludeNode node = new IncludeNode();
+//        FileReference file = new FileReference();
+//        file.setFilename(this.filename);
+
 
 
         LinkedList<Node> filters = new LinkedList<Node>();
@@ -496,30 +428,17 @@ public class Parser {
         }
 
         Path pathToken = (Path) expect(Path.class);
-
-//        FileReference file = new FileReference();
-//        file.setFilename(this.filename);
 //        String filePath = pathToken.getValue().trim();
 //        file.setPath(filePath);
 //        file.setLine(pathToken.getStartLineNumber());
 //        file.setColumn(pathToken.getStartColumn());
 //        node.setFile(file);
-
-//        String extension = FilenameUtils.getExtension(path);
+//
+//
+//        String extension = FilenameUtils.getExtension(filePath);
 //        if(templateLoader.getExtension().equals(extension) && filters.size()==0){
-//            Parser parser = createParser(path);
-//            parser.setBlocks(new LinkedHashMap<String, BlockNode>(blocks));
-//            parser.setMixins(mixins);
-//            contexts.push(parser);
-//            Node ast = parser.parse();
-//            contexts.pop();
-//            ast.setFileName(path);
-//            if (peek() instanceof Indent && ast != null) {
-//                ((BlockNode) ast).getIncludeBlock().push(block());
-//            }else{
-//                ast.setBlock(emptyBlock(includeToken.getStartLineNumber()));
-//            }
-//            return ast;
+//            node.setBlock(peek() instanceof Indent?this.block():this.emptyBlock(includeToken.getStartLineNumber()));
+//            //warning jade is deprecated
 //        }else{
 //            node.setRaw(true);
 //            node.setFilters(filters);
@@ -566,6 +485,7 @@ public class Parser {
                 Reader reader = templateLoader.getReader(path);
                 LiteralNode node = new LiteralNode();
                 node.setLineNumber(lexer.getLineno());
+                node.setColumn(lexer.getColno());
                 node.setFileName(filename);
                 node.setValue(IOUtils.toString(reader));
                 return node;
@@ -630,7 +550,7 @@ public class Parser {
                     this.filename,
                     lexer.getLineno(),
                     templateLoader,
-                    "The template [" + templateName + "] could not be opened. Maybe it is located outside the base path?\n" + e.getMessage()
+                    "The template [" + templateName + "] could not be opened. \n" + e.getMessage()
             );
         }
     }
@@ -980,10 +900,11 @@ public class Parser {
 
         Token token = advance();
         while(token instanceof Attribute){
+
             Attribute attr = (Attribute) token;
             String name = attr.getName();
             Object value = attr.getAttributeValue();
-            attrsNode.setAttribute(name, value, attr.isEscaped());
+            attrsNode.setAttribute(name, value, attr.mustEscape());
 
             token = advance();
         }
@@ -991,48 +912,6 @@ public class Parser {
         expect(EndAttributes.class);
     }
 
-    private Node[] parseInlineTagsInText(String str) {
-        int line = this.line();
-        Matcher matcher = Pattern.compile("(\\\\)?#\\[((?:.|\\n)*)$").matcher(str);
-        TextNode text = new TextNode();
-        text.setLineNumber(line);
-        text.setFileName(filename);
-        if (matcher.find(0) && matcher.groupCount() > 1) {
-            if (matcher.group(1) != null) { // escape
-                text.setValue(str.substring(0, matcher.start()) + "#[");//Not sure if Matcher.end() is correct
-                Node[] rest = this.parseInlineTagsInText(matcher.group(2));
-                if (rest[0] instanceof TextNode) {
-                    text.setValue(text.getValue() + rest[0].getValue());
-                    rest = ArrayUtils.remove(rest, 0);
-                }
-                Node[] textNodes = {text};
-                return ArrayUtils.addAll(textNodes, rest);
-            } else {
-                text.setValue(str.substring(0, matcher.start()));//Not sure if Matcher.end() is correct
-                Node[] textNodes = {text};
-                Node[] buffer = textNodes;
-                String rest = matcher.group(2);
-                CharacterParser.Match range = null;
-                try {
-                    range = characterParser.parseMax(rest);
-                } catch (CharacterParser.SyntaxError syntaxError) {
-                    throw new PugParserException(this.filename, line, templateLoader, " See " + matcher.group(0));
-                }
-                Parser inner = null;
-                try {
-                    inner = new Parser(range.getSrc(), this.filename, this.templateLoader, this.expressionHandler); //Need to be reviewed
-                } catch (IOException e) {
-                    throw new PugParserException(this.filename, line, templateLoader, "Could not parse text");
-                }
-                buffer = ArrayUtils.add(buffer, inner.parse());
-                return ArrayUtils.addAll(buffer, this.parseInlineTagsInText(rest.substring(range.getEnd() + 1)));
-            }
-        } else {
-            text.setValue(str);
-            Node[] textNodes = {text};
-            return textNodes;
-        }
-    }
     //done
     private BlockNode parseTextBlock() {
         Token token = accept(StartPipelessText.class);
@@ -1319,31 +1198,6 @@ public class Parser {
 
         node.setBlock(blockNode);
         return node;
-    }
-
-    private Node parseASTFilter() {
-        Token token = expect(Filter.class);
-        Filter filterToken = (Filter) token;
-        AttributeList attr = (AttributeList) accept(AttributeList.class);
-
-        token = expect(Colon.class);
-
-        FilterNode node = new FilterNode();
-        node.setValue(filterToken.getValue());
-        node.setBlock(block());
-        node.setLineNumber(line());
-        node.setFileName(filename);
-        node.setAttributes(convertToNodeAttributes(attr));
-        return node;
-    }
-
-    private List<Attr> convertToNodeAttributes(AttributeList attr) {
-        List<Attribute> attributes = attr.getAttributes();
-        List<Attr> attributeNodes = new LinkedList<Attr>();
-        for (Attribute attribute : attributes) {
-            attributeNodes.add(new Attr(attribute.getName(), attribute.getValue(), attribute.isEscaped()));
-        }
-        return attributeNodes;
     }
 
     private Token lookahead(int i) {

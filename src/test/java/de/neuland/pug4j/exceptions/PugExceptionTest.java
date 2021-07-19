@@ -27,7 +27,7 @@ public class PugExceptionTest {
 		} catch (PugException e) {
 			assertTrue(e.getMessage().startsWith("unable to evaluate [non.existing.query()]"));
 			assertEquals(9, e.getLineNumber());
-			assertEquals(Paths.get(errorJade).getFileName().toString(), e.getFilename());
+			assertEquals(errorJade, e.getFilename());
 			String expectedHtml = readFile(exceptionHtml);
 			String html = e.toHtmlString("<html><head><title>broken");
 			assertEquals(removeAbsolutePath(expectedHtml), removeAbsolutePath(html));
@@ -48,7 +48,7 @@ public class PugExceptionTest {
 	}
 
 	private String removeAbsolutePath(String html) {
-		html = html.replaceAll("(<h2>In ).*(compiler/exceptions/error\\.jade at line 9\\.</h2>)", "$1\\.\\./$2");
+		html = html.replaceAll("(<h2>In ).*(compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>)", "$1\\.\\./$2");
 		html = html.replaceAll("(\\s)[^\\s]*(compiler/exceptions/error\\.jade:9)", "$1\\.\\./$2");
 		return html;
 	}

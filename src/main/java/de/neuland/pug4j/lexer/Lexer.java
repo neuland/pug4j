@@ -12,7 +12,6 @@ import de.neuland.pug4j.util.Options;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -75,7 +74,7 @@ public class Lexer {
     public Lexer(String filename, TemplateLoader templateLoader,ExpressionHandler expressionHandler) throws IOException {
         this.expressionHandler = expressionHandler;
         this.templateLoader = templateLoader;
-        this.filename = ensurePugExtension(filename);
+        this.filename = filename;
         Reader reader = templateLoader.getReader(this.filename);
         options = new LinkedList<String>();
         scanner = new Scanner(reader);
@@ -98,7 +97,7 @@ public class Lexer {
     public Lexer(String input,String filename, TemplateLoader templateLoader,ExpressionHandler expressionHandler) throws IOException {
         this.expressionHandler = expressionHandler;
         this.templateLoader = templateLoader;
-        this.filename = ensurePugExtension(filename);
+        this.filename = filename;
         options = new LinkedList<String>();
         scanner = new Scanner(input);
         deferredTokens = new LinkedList<Token>();
@@ -250,22 +249,7 @@ public class Lexer {
         }
         return this.tokens.get(index);
     }
-//    /**
-//     * Return the indexOf `(` or `{` or `[` / `)` or `}` or `]` delimiters.
-//     *
-//     * @return {Number}
-//     * @api private
-//     */
-//
-//    bracketExpression: function(skip){
-//      skip = skip || 0;
-//      var start = this.input[skip];
-//      if (start != '(' && start != '{' && start != '[') throw new Error('unrecognized start character');
-//      var end = ({'(': ')', '{': '}', '[': ']'})[start];
-//      var range = characterParser.parseMax(this.input, {start: skip + 1});
-//      if (this.input[range.end] !== end) throw new Error('start character ' + start + ' does not match end character ' + this.input[range.end]);
-//      return range;
-//    },
+
     private CharacterParser.Match bracketExpression(){
         return bracketExpression(0);
     }
@@ -1236,13 +1220,14 @@ public class Lexer {
         }
         return true;
     }
+
     private enum Loc {
     	KEY, KEY_CHAR, VALUE, STRING
     }
+
     /**
      * Attributes.
      */
-
     private boolean attrs() {
         if (scanner.getInput().length()>1 && '(' == scanner.getInput().charAt(0)) {
             Token startAttributesToken = tok(new StartAttributes());
@@ -1328,7 +1313,7 @@ public class Lexer {
         if (valueResponse.getValue()!=null) {
             if ("".equals(valueResponse.getValue())) {
                 tok.setAttributeValue(true);
-                tok.setEscaped(false);
+                tok.setMustEscape(false);
             } else if (doubleQuotedRe.matcher(valueResponse.getValue()).matches()
                     || quotedRe.matcher(valueResponse.getValue()).matches()) {
                 //toConstant
@@ -1339,18 +1324,18 @@ public class Lexer {
                 String cleanValue = cleanRe.matcher(val).replaceAll("");
 
                 tok.setAttributeValue(cleanValue);
-                tok.setEscaped(valueResponse.isMustEscape());
+                tok.setMustEscape(valueResponse.isMustEscape());
             } else {
                 ExpressionString expressionString = new ExpressionString(valueResponse.getValue());
                 expressionString.setEscape(valueResponse.isMustEscape());
                 assertExpression(valueResponse.getValue());
                 tok.setAttributeValue(expressionString);
-                tok.setEscaped(valueResponse.isMustEscape());
+                tok.setMustEscape(valueResponse.isMustEscape());
             }
         } else {
             // was a boolean attribute (ex: `input(disabled)`)
             tok.setAttributeValue(true);
-            tok.setEscaped(true);
+            tok.setMustEscape(true);
         }
 
         str = valueResponse.getRemainingSource();
@@ -1495,109 +1480,6 @@ public class Lexer {
             return new AttributeValueResponse(val, escapeAttr, str.substring(i));
         }
     }
-//        AttributeList tok = new AttributeList();
-//        tok(tok);
-//
-//
-//        String quote = "";
-//
-//        boolean escapedAttr = true;
-//        String key = "";
-//        String val = "";
-//        String interpolatable = "";
-//        CharacterParser.State state = characterParser.defaultState();
-//        Loc loc = Loc.KEY;
-//
-//        this.lineno += str.split("\n").length - 1;
-//
-//        for (int i = 0; i <= str.length(); i++) {
-//            if (isEndOfAttribute(i, str, key, val, loc, state)) {
-//                val = val.trim();
-//                val = val.replaceAll("\\n","");
-//                if (!val.isEmpty())
-//                    try {
-//                        expressionHandler.assertExpression(val);
-//                    } catch (ExpressionException e) {
-//                        throw new PugLexerException(e.getMessage(), filename, lineno, templateLoader);
-//                    }
-//                val = StringEscapeUtils.unescapeJson(val);
-//                key = key.trim();
-//                key = key.replaceAll("^['\"]|['\"]$", "");
-//                if ("".equals(val)) {
-//                    tok.addBooleanAttribute(key, Boolean.TRUE);
-//                } else if (doubleQuotedRe.matcher(val).matches()
-//                        || quotedRe.matcher(val).matches()) {
-//                    tok.addAttribute(key, cleanRe.matcher(val).replaceAll(""),escapedAttr);
-//                } else {
-//                    tok.addExpressionAttribute(key, val,escapedAttr);
-//                }
-//                key = val = "";
-//                loc = Loc.KEY;
-//                escapedAttr = false;
-//            } else {
-//                switch (loc) {
-//                    case KEY_CHAR:
-//                        if (String.valueOf(str.charAt(i)).equals(quote)) {
-//                            loc = Loc.KEY;
-//                            List<Character> expectedCharacter = Arrays.asList(' ', ',', '!', '=', '\n');
-//                            if (i + 1 < str.length() && expectedCharacter.indexOf(str.charAt(i + 1)) == -1)
-//                                throw new PugLexerException("Unexpected character " + str.charAt(i + 1) + " expected ` `, `\\n`, `,`, `!` or `=`", filename, getLineno(), templateLoader);
-//                        } else {
-//                            key += str.charAt(i);
-//                        }
-//                        break;
-//                    case KEY:
-//                        if (key.isEmpty() && !str.isEmpty() && (str.charAt(i) == '"' || str.charAt(i) == '\'')) {
-//                            loc = Loc.KEY_CHAR;
-//                            quote = String.valueOf(str.charAt(i));
-//                        } else if (!str.isEmpty() &&(str.charAt(i) == '!' || str.charAt(i) == '=')) {
-//                            escapedAttr = str.charAt(i) != '!';
-//                            if (str.charAt(i) == '!') i++;
-//                            if (str.charAt(i) != '=')
-//                                throw new PugLexerException("Unexpected character " + str.charAt(i) + " expected `=`", filename, getLineno(), templateLoader);
-//                            loc = Loc.VALUE;
-//                            state = characterParser.defaultState();
-//                        } else if(!str.isEmpty()){
-//                            key += str.charAt(i);
-//                        }
-//                        break;
-//                    case VALUE:
-//                        state = characterParser.parseChar(str.charAt(i), state);
-//                        if (state.isString()) {
-//                            loc = Loc.STRING;
-//                            quote = String.valueOf(str.charAt(i));
-//                            interpolatable = String.valueOf(str.charAt(i));
-//                        } else {
-//                            val += str.charAt(i);
-//                        }
-//                        break;
-//                    case STRING:
-//                        state = characterParser.parseChar(str.charAt(i), state);
-//                        interpolatable += str.charAt(i);
-//                        if (!state.isString()) {
-//                            loc = Loc.VALUE;
-//                            val += interpolate(interpolatable, quote);
-//                        }
-//                        break;
-//                }
-//            }
-//        }
-//
-//        if (scanner.getInput().length()>0 && '/' == scanner.getInput().charAt(0)) {
-//            this.consume(1);
-//            tok.setSelfClosing(true);
-//        }
-
-//    }
-
-//      var captures;
-//      if (/^&attributes\b/.test(this.input)) {
-//        this.consume(11);
-//        var args = this.bracketExpression();
-//        this.consume(args.end + 1);
-//        return this.tok('&attributes', args.src);
-//      }
-//    },
 
     /**
      * &attributes block
@@ -1618,23 +1500,6 @@ public class Lexer {
             return true;
         }
         return false;
-    }
-    private int indexOfDelimiters(char start, char end) {
-        String str = scanner.getInput();
-        int nstart = 0;
-        int nend = 0;
-        int pos = 0;
-        for (int i = 0, len = str.length(); i < len; i++) {
-            if (start == str.charAt(i)) {
-                nstart++;
-            } else if (end == str.charAt(i)) {
-                if (++nend == nstart) {
-                    pos = i;
-                    break;
-                }
-            }
-        }
-        return pos;
     }
 
 	/*
@@ -1765,14 +1630,6 @@ public class Lexer {
         }
         return null;
     }
-
-    //    tokEnd: function(tok){
-//        tok.loc.end = {
-//                line: this.lineno,
-//                column: this.colno
-//    };
-//        return tok;
-//    },
 
     private Token tokEnd(Token token){
         token.setEndLineNumber(this.lineno);
