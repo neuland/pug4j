@@ -22,12 +22,12 @@ public class BlockNode extends Node {
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 
 		// Pretty print multi-line text
-		if (writer.isPp() && getNodes().size() > 1 && !writer.isEscape() && getNodes().get(0) instanceof TextNode && getNodes().get(1) instanceof TextNode)
+		if (writer.isPp() && getNodes().size() > 1 && !writer.isEscape() && isTextNode(getNodes().get(0)) && isTextNode(getNodes().get(1)))
 			writer.prettyIndent(1, true);
 
 		for (int i = 0; i < getNodes().size(); ++i) {
 			// Pretty print text
-			if (writer.isPp() && i > 0 && !writer.isEscape() && getNodes().get(i) instanceof TextNode && getNodes().get(i - 1) instanceof TextNode && "\n".equals(getNodes().get(i - 1).getValue()))
+			if (writer.isPp() && i > 0 && !writer.isEscape() && isTextNode(getNodes().get(i)) && isTextNode(getNodes().get(i - 1)) && (getNodes().get(i - 1).getValue() != null && getNodes().get(i - 1).getValue().contains("\n")))
 				writer.prettyIndent(1, false);
 
 			getNodes().get(i).execute(writer, model, template);
