@@ -318,4 +318,7 @@ public abstract class AttrsNode extends Node {
         return ArrayUtils.contains(bodylessTags, name);
     }
 
+    public LinkedList<Attr> getAttributes() {
+        return attributes;
+    }
 }
