@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public abstract class AttrsNode extends Node {
 
-    private static final String[] bodylessTags = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
+    private static final String[] selfClosingTags = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
     protected LinkedList<Attr> attributes = new LinkedList<Attr>();
 	protected LinkedList<String> attributeBlocks = new LinkedList<String>();
 	protected List<String> attributeNames = new LinkedList<String>();
@@ -314,8 +314,8 @@ public abstract class AttrsNode extends Node {
         }
     }
 
-    protected boolean isBodyless() {
-        return ArrayUtils.contains(bodylessTags, name);
+    protected boolean isSelfClosingTag() {
+        return ArrayUtils.contains(selfClosingTags, name);
     }
 
     public LinkedList<Attr> getAttributes() {

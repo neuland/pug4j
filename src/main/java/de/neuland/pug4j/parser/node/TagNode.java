@@ -91,7 +91,7 @@ public class TagNode extends AttrsNode {
             writer.prettyIndent(0, true);
         }
 
-        if (isSelfClosing() || (!template.isXml() && isBodyless())) {
+        if (isSelfClosing() || (!template.isXml() && isSelfClosingTag())) {
             openTag(writer, model, template, !(template.isTerse() && !isSelfClosing()));
             if (hasBlock()) {
                 handleIgnoredBlock();

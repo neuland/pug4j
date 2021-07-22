@@ -30,32 +30,30 @@ public class OriginalPug2Test {
 //    private static String[] ignoredCases = new String[]{};
 
     private static String[] ignoredCases = new String[] {
-            "regression.784",       // javascript replace not supported
-
-            "filters.stylus",
-            "filters.less",
 
             // try to read files in ../
+            "layout.append.without-block", // fix linebreak
+            "layout.prepend.without-block", // fix linebreak
+            "layout.prepend", // fix linebreak
+            "filters.inline", // fix linebreak
+            "layout.append",  // fix linebreak
+
+            //unsupported
+            "styles", // unsupported map syntax
+            "block-code", //unsupported Javascript
+            "filters.include", //unsupported filters
+            "attrs.js", // unsupported map syntax
+            "regression.784",       // javascript replace not supported
+            "filters.stylus", //missing filter
+            "filters.less", // missing filter
             "attrs-data", // nice to have
-            "layout.append.without-block", // should be possible to fix
-            "layout.prepend.without-block", // should be possible to fix same as "layout.append.without-block"
-            "filter-in-include", // replace with testcase with customfilter
-            "filters.nested", //replace with customerfilter test
-            "escape-test", // fix linebreak
-            "styles",
-            "block-code",
-            "filters.include",
-            "filters.include.custom",
-            "attrs.js",
-            "includes", // Verbatim Filter
-            "pipeless-filters",
-            "layout.prepend",
-            "each.else",
-            "filters.inline",
-            "code.conditionals",
-            "filters.coffeescript",
-            "layout.append",
-            "blocks-in-if"
+            "filter-in-include", // missing filter
+            "filters.nested", //missing filters :uglify-js:coffee-script, replace with customerfilter to test
+            "pipeless-filters", //maybe missing markdown-it or different markdown syntax as in js markdown
+            "each.else", //js issues
+            "code.conditionals", //maybe js conditionals problem
+            "filters.coffeescript", // missing filter
+            "blocks-in-if" // js block not suppoerted
 
     };
 
@@ -86,6 +84,12 @@ public class OriginalPug2Test {
                 assertEquals("val",opt);
                 assertEquals(2,num);
                 return "BEGIN"+source+"END";
+            }
+        });
+        jade.setFilter("verbatim", new Filter() {
+            @Override
+            public String convert(String source, Map<String, Object> attributes, Map<String, Object> model) {
+                return "\n"+source+"\n";
             }
         });
         jade.setPrettyPrint(true);
