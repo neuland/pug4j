@@ -1,4 +1,14 @@
 # History
+## 2.0.0-alpha-5 / 2021-07-22
+* Fixed argument handling for filters
+* Some changes to file path handling. Replaced a NPE with an IllegalArgumentException. Some cleanup.
+* Fixed text token for interpolated filter
+* Fixed arguments on include filters
+* Fixed pretty indents 
+* Implemented whitespace sensitive tags
+* Fixed linebreak issues on named blocks
+* Deleted old testcases
+
 ## 2.0.0-alpha-4 / 2021-07-16
 * Fixed pug4j issue #3: Fix static PUG4J API to handle new templateLoaderPath. Adding Tests.
 * Fixed pug4j issue #6: Improved Error Handling to be inline with pug.js
