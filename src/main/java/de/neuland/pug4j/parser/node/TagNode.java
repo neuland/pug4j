@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class TagNode extends AttrsNode {
     private Node textNode;
     private static final String[] inlineTags = {"a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map", "samp", "small", "span", "strong", "sub", "sup"};
+    private static final String[] whitespaceSensitiveTags = {"pre","textarea"};
     private boolean buffer = false;
 
     public TagNode() {
@@ -31,6 +32,10 @@ public class TagNode extends AttrsNode {
 
     public boolean isInline() {
         return ArrayUtils.indexOf(inlineTags, this.name) > -1;
+    }
+
+    public boolean isWhitespaceSensitive() {
+        return ArrayUtils.indexOf(whitespaceSensitiveTags, this.name) > -1;
     }
 
     private boolean isInline(Node node) {
@@ -75,7 +80,7 @@ public class TagNode extends AttrsNode {
         writer.increment();
 
 
-        if ("pre".equals(this.name)) {
+        if (isWhitespaceSensitive()) {
             writer.setEscape(true);
         }
 
@@ -105,7 +110,7 @@ public class TagNode extends AttrsNode {
             if (hasBlock()) {
                 block.execute(writer, model, template);
             }
-            if (writer.isPp() && !isInline() && !"pre".equals(name) && !canInline()) {
+            if (writer.isPp() && !isInline() && !isWhitespaceSensitive() && !canInline()) {
                 writer.prettyIndent(0, true);
             }
             writer.append("</");
@@ -116,7 +121,7 @@ public class TagNode extends AttrsNode {
             }
         }
 
-        if ("pre".equals(this.name)) {
+        if (isWhitespaceSensitive()) {
             writer.setEscape(false);
         }
         writer.decrement();
