@@ -484,8 +484,8 @@ public class Parser {
             try {
                 Reader reader = templateLoader.getReader(path);
                 LiteralNode node = new LiteralNode();
-                node.setLineNumber(lexer.getLineno());
-                node.setColumn(lexer.getColno());
+                node.setLineNumber(pathToken.getStartLineNumber());
+                node.setColumn(pathToken.getStartColumn());
                 node.setFileName(filename);
                 node.setValue(IOUtils.toString(reader));
                 return node;

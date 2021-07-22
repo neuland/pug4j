@@ -58,7 +58,7 @@ public class IndentWriter {
     public void prettyIndent(int offset,boolean newline){
         if (isPp()) {
             String newlineChar = newline ? "\n" : "";
-            write(newlineChar + StringUtils.repeat(this.pp, indent + offset-1));
+            write(newlineChar + StringUtils.repeat(this.pp, indent + offset -1));
         }
     }
 

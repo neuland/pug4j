@@ -384,6 +384,11 @@ public class CompilerTest {
     }
 
     @Test
+    public void includeNonJadeSimple() {
+        run("include_non_jade_simple",true);
+    }
+
+    @Test
     public void mixinVariableAttribute() {
         run("mixin_variable_attribute");
     }

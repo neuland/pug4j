@@ -48,7 +48,7 @@ public class TagNode extends AttrsNode {
         if(node instanceof TagNode){
             inline = ((TagNode) node).isInline();
         }
-        return (node instanceof TextNode && !"\n".equals(node.getValue())) || inline;
+        return (isTextNode(node) && (node.getValue()==null || !node.getValue().contains("\n"))) || inline;
     }
 
     private boolean everyIsInline(LinkedList<Node> nodes) {
@@ -67,30 +67,7 @@ public class TagNode extends AttrsNode {
             return true;
         }
         LinkedList<Node> nodes = block.getNodes();
-
-
-        // Empty tag
-        if (nodes.size() == 0) {
-            return true;
-        }
-
-        // Text-only or inline-only tag
-        if (1 == nodes.size()) {
-            return isInline(nodes.get(0));
-        }
-
-        // Multi-line inline-only tag
-        if (everyIsInline(nodes)) {
-            for (int i = 1, len = nodes.size(); i < len; ++i) {
-                if (nodes.get(i - 1) instanceof TextNode && nodes.get(i) instanceof TextNode) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // Mixed tag
-        return false;
+        return everyIsInline(nodes);
     }
 
     @Override

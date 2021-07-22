@@ -404,25 +404,17 @@ public class Lexer {
      * Blank line. ok
      */
 
-//    blank: function() {
-//        var captures;
-//        if (captures = /^\n[ \t]*\n/.exec(this.input)) {
-//            this.consume(captures[0].length - 1);
-//            this.incrementLine(1);
-//            return true;
-//        }
-//    },
     private boolean blank(){
         Matcher matcher = scanner.getMatcherForPattern(PATTERN_BLANK);
         if (matcher.find(0)) {
             consume(matcher.end()-1);
             incrementLine(1);
-            //TODO: remove pipeless
-            if(this.pipeless) {
-                pushToken(new Text("", lineno));
-                return true;
-            }
-            this.next();
+//            //TODO: remove pipeless
+//            if(this.pipeless) {
+//                pushToken(new Text("", lineno));
+//                return true;
+//            }
+//            this.next();
             return true;
         }
         return false;
@@ -1045,7 +1037,7 @@ public class Lexer {
      */
     private boolean path(){
         Token token = scanEndOfLine(PATTERN_PATH,new Path());
-        if (token != null) {
+        if (token != null && token.getValue().trim().equals(token.getValue().trim())) {
             token.setValue(token.getValue().trim());
             pushToken(tokEnd(token));
             return true;
@@ -1593,9 +1585,9 @@ public class Lexer {
             } else if (indents > 0 && (indentStack.size() == 0 || indents != indentStack.get(0))) {
                 tok = tok(new Indent(String.valueOf(indents), lineno));
                 this.colno = 1 + indents;
+                tok.setIndents(indents);
                 pushToken(tokEnd(tok));
                 indentStack.push(indents);
-                tok.setIndents(indents);
                 // newline
             } else {
                 tok = tok(new Newline());

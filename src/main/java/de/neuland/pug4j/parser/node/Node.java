@@ -18,7 +18,7 @@ public abstract class Node implements Cloneable {
     protected String fileName;
 
     protected boolean isTextNode(Node node) {
-        return node instanceof TextNode || node instanceof FilterNode || node instanceof LiteralNode;
+        return node instanceof TextNode || node instanceof LiteralNode;
     }
 
     public abstract void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException;
