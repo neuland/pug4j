@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FilterNode extends AttrsNode {
 
-	private LinkedList<Node> filters = new LinkedList<>();
+	private LinkedList<IncludeFilterNode> filters = new LinkedList<>();
 
 	@Override
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
@@ -27,12 +27,12 @@ public class FilterNode extends AttrsNode {
 		String result = StringUtils.join(values, "");
 		Filter filter = model.getFilter(getValue());
 		if (filter != null) {
-			result = filter.convert(result, convertToFilterAttributes(template,model), model);
+			result = filter.convert(result, convertToFilterAttributes(template,model,attributes), model);
 		}
-		for (Node filterValue : filters) {
+		for (IncludeFilterNode filterValue : filters) {
 			filter = model.getFilter(filterValue.getValue());
 			if (filter != null) {
-				result = filter.convert(result, convertToFilterAttributes(template, model), model);
+				result = filter.convert(result, convertToFilterAttributes(template, model, filterValue.getAttributes()), model);
 			}
 		}
 
@@ -45,7 +45,7 @@ public class FilterNode extends AttrsNode {
 		writer.append(result);
 	}
 
-	private Map<String, Object> convertToFilterAttributes(PugTemplate template, PugModel model) {
+	private Map<String, Object> convertToFilterAttributes(PugTemplate template, PugModel model, LinkedList<Attr> attributes) {
 		Map evaluatedAttributes = new HashMap<String,Object>() ;
 		for (Attr attribute : attributes) {
 			if(attribute.getValue() instanceof ExpressionString) {
@@ -61,7 +61,7 @@ public class FilterNode extends AttrsNode {
 		return evaluatedAttributes;
 	}
 
-	public void setFilter(LinkedList<Node> filters) {
+	public void setFilter(LinkedList<IncludeFilterNode> filters) {
 		this.filters = filters;
 	}
 }

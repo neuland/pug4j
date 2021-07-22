@@ -422,7 +422,7 @@ public class Parser {
 
 
 
-        LinkedList<Node> filters = new LinkedList<Node>();
+        LinkedList<IncludeFilterNode> filters = new LinkedList<IncludeFilterNode>();
         while(peek() instanceof Filter){
             filters.add(parseIncludeFilter());
         }
@@ -611,7 +611,7 @@ public class Parser {
             } else {
                 Node expr = parseExpr();
                 if (expr != null) {
-                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield()){
+                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()){
                         block.getNodes().addAll(expr.getNodes());
                     }else {
                         block.push(expr);
@@ -1145,7 +1145,7 @@ public class Parser {
         return doctypeNode;
     }
     //done
-    private Node parseIncludeFilter(){
+    private IncludeFilterNode parseIncludeFilter(){
         Filter token = (Filter) expect(Filter.class);
         IncludeFilterNode includeFilter = new IncludeFilterNode();
         includeFilter.setValue(token.getValue());
