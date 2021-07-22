@@ -32,11 +32,7 @@ public class OriginalPug2Test {
     private static String[] ignoredCases = new String[] {
 
             // try to read files in ../
-            "layout.append.without-block", // fix linebreak
-            "layout.prepend.without-block", // fix linebreak
-            "layout.prepend", // fix linebreak
             "filters.inline", // fix linebreak
-            "layout.append",  // fix linebreak
 
             //unsupported
             "styles", // unsupported map syntax
