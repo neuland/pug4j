@@ -64,4 +64,8 @@ public class FilterNode extends AttrsNode {
 	public void setFilter(LinkedList<IncludeFilterNode> filters) {
 		this.filters = filters;
 	}
+
+	public boolean hasFilters(){
+		return this.filters.size()>0;
+	}
 }

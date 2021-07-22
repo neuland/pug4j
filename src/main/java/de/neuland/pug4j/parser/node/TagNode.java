@@ -49,6 +49,9 @@ public class TagNode extends AttrsNode {
         if (node instanceof BlockNode && ((BlockNode) node).isNamedBlock()) {
             return false;
         }
+        if (node instanceof FilterNode && node.hasBlock() && node.getBlock().getNodes().size()>0 ) {
+            return everyIsInline(node.getBlock().getNodes());
+        }
         boolean inline = false;
         if(node instanceof ExpressionNode){
             inline = ((ExpressionNode) node).isInline();

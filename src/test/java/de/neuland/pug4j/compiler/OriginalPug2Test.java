@@ -32,8 +32,6 @@ public class OriginalPug2Test {
     private static String[] ignoredCases = new String[] {
 
             // try to read files in ../
-            "filters.inline", // fix linebreak
-
             //unsupported
             "styles", // unsupported map syntax
             "block-code", //unsupported Javascript
@@ -43,7 +41,7 @@ public class OriginalPug2Test {
             "filters.stylus", //missing filter
             "filters.less", // missing filter
             "attrs-data", // nice to have
-            "filter-in-include", // missing filter
+            "filter-in-include", // missing less filter
             "filters.nested", //missing filters :uglify-js:coffee-script, replace with customerfilter to test
             "pipeless-filters", //maybe missing markdown-it or different markdown syntax as in js markdown
             "each.else", //js issues
