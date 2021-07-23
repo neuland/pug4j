@@ -2,6 +2,7 @@ package de.neuland.pug4j.parser.node;
 
 import java.util.*;
 
+import com.vladsch.flexmark.ast.Link;
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.Utils;
 import de.neuland.pug4j.exceptions.ExpressionException;
@@ -20,15 +21,39 @@ public class FilterNode extends AttrsNode {
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 		ArrayList<String> values = new ArrayList<String>();
 		LinkedList<Node> nodes = block.getNodes();
+		LinkedList<FilterNode> nestedFilterNodes = new LinkedList<>();
+
+		//Find deepest FilterNode and get its nodes
+		while(nodes.size()>0 && nodes.get(0) instanceof FilterNode){
+			FilterNode node = (FilterNode)nodes.get(0);
+			nestedFilterNodes.push(node);
+			nodes = node.getBlock().getNodes();
+		}
+
 		for (Node node : nodes) {
 			values.add(node.getValue());
 		}
+
 		ExpressionHandler expressionHandler = template.getExpressionHandler();
 		String result = StringUtils.join(values, "");
+		//For example:
+		//:cdata:custom():custom1()
+		for (FilterNode filterValue : nestedFilterNodes) {
+			Filter filter = model.getFilter(filterValue.getValue());
+			if (filter != null) {
+				result = filter.convert(result, convertToFilterAttributes(template, model, filterValue.getAttributes()), model);
+			}
+		}
+
+		//For example:
+		//:cdata
 		Filter filter = model.getFilter(getValue());
 		if (filter != null) {
 			result = filter.convert(result, convertToFilterAttributes(template,model,attributes), model);
 		}
+
+		//For example:
+		//include:filter1():filter2 file.ext
 		for (IncludeFilterNode filterValue : filters) {
 			filter = model.getFilter(filterValue.getValue());
 			if (filter != null) {
@@ -37,7 +62,6 @@ public class FilterNode extends AttrsNode {
 		}
 
 		try {
-
 			result = Utils.interpolate(result, model, false, expressionHandler);
 		} catch (ExpressionException e) {
 			throw new PugCompilerException(this, template.getTemplateLoader(), e);

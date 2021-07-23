@@ -1,2 +1,9 @@
-<script><![CDATA[!function(){console.log("test")}();]]></script>
-<script><![CDATA[(function(){!function(){console.log("test")}()}).call(this);]]></script>
+
+<script><![CDATA[BEGIN(function() {
+  console.log('test')
+})()END]]>
+</script>
+<script><![CDATA[BEGINSTART(->
+  console.log 'test'
+)()STOPEND]]>
+</script>

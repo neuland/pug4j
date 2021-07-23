@@ -30,18 +30,19 @@ import static org.junit.Assert.assertEquals;
 public class AdjustedPug2Test {
 
     private static String[] ignoredCases = new String[] {
+//            "block-code", //unsupported Javascript
+//            "filters.include", //unsupported filters
+//            "attrs.js", // unsupported map syntax
+//            "filter-in-include", // missing filter
+//            "filters.nested", //missing filters :uglify-js:coffee-script, replace with customerfilter to test
+//            "pipeless-filters", //different markdown result but it works.
+
             //unsupported: adjust to work with pug4j
             "styles", // unsupported map syntax
-            "block-code", //unsupported Javascript
-            "filters.include", //unsupported filters
-            "attrs.js", // unsupported map syntax
             "regression.784",       // javascript replace not supported
             "filters.stylus", //missing filter
             "filters.less", // missing filter
             "attrs-data", // nice to have
-            "filter-in-include", // missing filter
-            "filters.nested", //missing filters :uglify-js:coffee-script, replace with customerfilter to test
-            "pipeless-filters", //maybe missing markdown-it or different markdown syntax as in js markdown
             "each.else", //js issues
             "code.conditionals", //maybe js conditionals problem
             "filters.coffeescript", // missing filter
@@ -76,6 +77,16 @@ public class AdjustedPug2Test {
                 assertEquals("val",opt);
                 assertEquals(2,num);
                 return "BEGIN"+source+"END";
+            }
+        });
+        pug.setFilter("custom2", new Filter() {
+            @Override
+            public String convert(String source, Map<String, Object> attributes, Map<String, Object> model) {
+                Object opt = attributes.get("opt");
+                Object num = attributes.get("num");
+                assertEquals("val",opt);
+                assertEquals(2,num);
+                return "START"+source+"STOP";
             }
         });
         pug.setFilter("verbatim", new Filter() {

@@ -1,10 +1,10 @@
 script
-  :cdata:uglify-js
+  :cdata:custom(opt='val' num=2)
     (function() {
       console.log('test')
     })()
 script
-  :cdata:uglify-js:coffee-script
+  :cdata:custom(opt='val' num=2):custom2(opt='val' num=2)
     (->
       console.log 'test'
     )()
