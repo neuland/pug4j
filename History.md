@@ -1,4 +1,7 @@
 # History
+## 2.0.0-alpha-6 / 2021-07-23
+* Implemented nested filters
+
 ## 2.0.0-alpha-5 / 2021-07-22
 * Fixed argument handling for filters
 * Some changes to file path handling. Replaced a NPE with an IllegalArgumentException. Some cleanup.
