@@ -8,7 +8,6 @@ import de.neuland.pug4j.lexer.Lexer;
 import de.neuland.pug4j.lexer.token.*;
 import de.neuland.pug4j.parser.node.*;
 import de.neuland.pug4j.template.TemplateLoader;
-import de.neuland.pug4j.util.CharacterParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,19 +20,15 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
-    public static final Pattern FILE_EXTENSION_PATTERN = Pattern.compile(".*\\.\\w+$");
-    private Lexer lexer;
-    private LinkedHashMap<String, BlockNode> blocks = new LinkedHashMap<String, BlockNode>();
-    private String[] textOnlyTags = {"script", "style"};
-    private Integer _spaces = null;
+    private final Lexer lexer;
+    private LinkedHashMap<String, BlockNode> blocks = new LinkedHashMap<>();
     private final TemplateLoader templateLoader;
-    private ExpressionHandler expressionHandler;
+    private final ExpressionHandler expressionHandler;
     private Parser extending;
     private final String filename;
-    private LinkedList<Parser> contexts = new LinkedList<Parser>();
-    private CharacterParser characterParser;
+    private LinkedList<Parser> contexts = new LinkedList<>();
     private int inMixin = 0;
-    private HashMap<String, MixinNode> mixins = new HashMap<String, MixinNode>();
+    private HashMap<String, MixinNode> mixins = new HashMap<>();
     private int inBlock = 0;
     private PathHelper pathHelper = new PathHelper();
 
@@ -42,7 +37,6 @@ public class Parser {
         this.templateLoader = templateLoader;
         this.expressionHandler = expressionHandler;
         lexer = new Lexer(filename, templateLoader, expressionHandler);
-        characterParser = new CharacterParser();
         getContexts().push(this);
     }
 
@@ -51,22 +45,21 @@ public class Parser {
         this.templateLoader = templateLoader;
         this.expressionHandler = expressionHandler;
         lexer = new Lexer(src, filename, templateLoader, expressionHandler);
-        characterParser = new CharacterParser();
         getContexts().push(this);
     }
-    //done
+
     private PugParserException error(String code, String message, Token token){
         return new PugParserException(this.filename,token.getStartLineNumber(),templateLoader,message,code);
     }
-    //done
+
     private BlockNode emptyBlock(){
         return this.emptyBlock(0);
     }
-    //done
+
     private BlockNode emptyBlock(int line){
         return this.initBlock(line,new LinkedList<>());
     }
-    //done
+
     public Node parse() {
         BlockNode block = emptyBlock(0);
         while (!(peek() instanceof Eos)) {
@@ -85,7 +78,7 @@ public class Parser {
                 }
             }
         }
-        //TODO: check if still needed
+
         if (extending != null) {
             getContexts().push(extending);
             Node rootNode = extending.parse();
@@ -101,7 +94,7 @@ public class Parser {
 
         return block;
     }
-    //done
+
     private Node parseExpr() {
         Token token = peek();
         if (token instanceof Tag) {
@@ -179,7 +172,7 @@ public class Parser {
 
         throw error("INVALID_TOKEN","unexpected token \"" + peek().getType() + "\"",peek());
     }
-    //done
+
     private BlockNode initBlock(int startLineNumber, LinkedList<Node> nodes) {
         if(nodes==null){
             throw new PugParserException(this.filename,this.line(),templateLoader,"`nodes` is not an array");
@@ -191,10 +184,6 @@ public class Parser {
         return blockNode;
     }
 
-    /**
-     * block code
-     */
-    //done
     private Node parseBlockCode() {
         Token tok = this.expect(BlockCode.class);
         int line = tok.getStartLineNumber();
@@ -226,7 +215,7 @@ public class Parser {
         node.setColumn(column);
         return node;
     }
-    //done
+
     private Node parseComment() {
         Token token = expect(Comment.class);
 
@@ -251,7 +240,6 @@ public class Parser {
         }
     }
 
-    //done
     private Node parseMixin() {
         Mixin mixinToken = (Mixin) expect(Mixin.class);
 
@@ -289,7 +277,7 @@ public class Parser {
             throw error("MIXIN_WITHOUT_BODY","Mixin " + mixinToken.getValue() + " declared without body",mixinToken);
         }
     }
-    //done
+
     private Node parseCall() {
         Call callToken = (Call) expect(Call.class);
         MixinNode mixin = new MixinNode();
@@ -326,7 +314,6 @@ public class Parser {
         return parseExpr();
     }
 
-    //done
     private BlockNode parseBlock() {
         Block blockToken = (Block)expect(Block.class);
         String mode = blockToken.getMode();
@@ -357,7 +344,7 @@ public class Parser {
             this.blocks.put(name, prev);
             return prev;
         }
-        LinkedList<Node> allNodes = new LinkedList<Node>();
+        LinkedList<Node> allNodes = new LinkedList<>();
         allNodes.addAll(prev.getPrepended());
         allNodes.addAll(blockNode.getNodes());
         allNodes.addAll(prev.getAppended());
@@ -399,7 +386,6 @@ public class Parser {
 
     }
 
-    //done
     private Node parseMixinBlock() {
         Token tok = expect(MixinBlock.class);
         if (this.inMixin == 0) {
@@ -412,7 +398,7 @@ public class Parser {
         mixinBlockNode.setFileName(this.filename);
         return mixinBlockNode;
     }
-    //done
+
     private Node parseInclude() {
         Include includeToken = (Include)expect(Include.class);
 
@@ -510,13 +496,12 @@ public class Parser {
 
         return ast;
     }
-    //done
+
     private Node parseExtends() {
         ExtendsToken extendsToken = (ExtendsToken) expect(ExtendsToken.class);
         Path path = (Path) expect(Path.class);
 
         String templateName = path.getValue().trim();
-//        templateName = templateLoader.resolvePath(filename, templateName,templateLoader.getExtension());
         Parser parser = createParser(templateName);
 
         parser.setBlocks(blocks);
@@ -562,7 +547,6 @@ public class Parser {
         return templateName;
     }
 
-    //done
     private BlockNode parseYield() {
         Token token = expect(Yield.class);
         BlockNode block = new BlockNode();
@@ -572,7 +556,7 @@ public class Parser {
         block.setYield(true);
         return block;
     }
-    //TODO: check later
+
     private Node parseInterpolation() {
         Token token = advance();
         String name = token.getValue();
@@ -598,7 +582,7 @@ public class Parser {
         }
         return block();
     }
-    //done
+
     private BlockNode block() {
         Token token = expect(Indent.class);
 
@@ -623,26 +607,10 @@ public class Parser {
         return block;
     }
 
-    private List<CaseConditionNode> whenBlock() {
-        expect(Indent.class);
-        List<CaseConditionNode> caseConditionalNodes = new LinkedList<CaseConditionNode>();
-        while (!(peek() instanceof Outdent) && !(peek() instanceof Eos)) {
-            if (peek() instanceof Newline) {
-                advance();
-            } else {
-                caseConditionalNodes.add(this.parseCaseCondition());
-            }
-        }
-        if (peek() instanceof Outdent) {
-            expect(Outdent.class);
-        }
-        return caseConditionalNodes;
-    }
-    //done
     private Node parseText() {
         return parseText(false);
     }
-    //done
+
     private Node parseText(boolean block) {
         LinkedList<Node>  tags = new LinkedList<Node>();
         int lineno = peek().getStartLineNumber();
@@ -696,7 +664,7 @@ public class Parser {
         else
             return initBlock(lineno,tags);
     }
-    //done
+
     private LinkedList<Node> parseTextHtml(){
         LinkedList<Node>  nodes= new LinkedList<Node>();
         Node currentNode = null;
@@ -742,12 +710,12 @@ public class Parser {
         }
         return nodes;
     }
-    //done
+
     private Node parseDot() {
         this.advance();
         return parseTextBlock();
     }
-    //done
+
     private Node parseEach() {
         Each eachToken = (Each) expect(Each.class);
         EachNode node = new EachNode();
@@ -765,7 +733,7 @@ public class Parser {
         return node;
     }
 
-    //done
+
     private Node parseWhile() {
         While whileToken = (While) expect(While.class);
         WhileNode node = new WhileNode();
@@ -794,7 +762,7 @@ public class Parser {
         node.setFileName(filename);
         return node;
     }
-    //done
+
     private Node parseTag() {
         Token token = advance();
         String name = token.getValue();
@@ -810,7 +778,7 @@ public class Parser {
     private Node tag(AttrsNode tagNode) {
         return tag(tagNode,false);
     }
-    //done
+
     private Node tag(AttrsNode tagNode,boolean selfClosingAllowed) {
         // ast-filter look-ahead
         boolean seenAttrs = false;
@@ -827,7 +795,6 @@ public class Parser {
             } else if (incomingToken instanceof StartAttributes) {
                 if (seenAttrs) {
                     throw new PugParserException(filename, line(), templateLoader, this.filename + ", line " + this.peek().getStartLineNumber() + ":\nYou should not have jade tags with multiple attributes.");
-                    //console.warn(this.filename + ', line ' + this.peek().line + ':\nYou should not have jade tags with multiple attributes.');
                 }
                 seenAttrs = true;
                 attrs(tagNode);
@@ -894,7 +861,7 @@ public class Parser {
         return tagNode;
 
     }
-    //done
+
     private void attrs(AttrsNode attrsNode){
         expect(StartAttributes.class);
 
@@ -912,7 +879,6 @@ public class Parser {
         expect(EndAttributes.class);
     }
 
-    //done
     private BlockNode parseTextBlock() {
         Token token = accept(StartPipelessText.class);
         if(token == null)
@@ -956,7 +922,6 @@ public class Parser {
         return blockNode;
     }
 
-    //could be done
     private Node parseConditional() {
         If conditionalToken = (If) expect(If.class);
         ConditionalNode conditional = new ConditionalNode();
@@ -974,7 +939,6 @@ public class Parser {
             main.setBlock(emptyBlock());
         }
         conditions.add(main);
-
 
         while (true) {
             if(peek() instanceof Newline){
@@ -1008,7 +972,6 @@ public class Parser {
         return conditional;
     }
 
-    //done
     private BlockNode parseBlockExpansion() {
         Token token = accept(Colon.class);
         if (token!=null) {
@@ -1025,7 +988,6 @@ public class Parser {
         }
     }
 
-    //done
     private CaseNode parseCase() {
         Token token = expect(CaseToken.class);
         String val = token.getValue();
@@ -1055,10 +1017,6 @@ public class Parser {
         return node;
     }
 
-    /**
-     * when
-     */
-    //done
     private Node parseWhen() {
         Token token = this.expect(When.class);
         String val = token.getValue();
@@ -1071,13 +1029,8 @@ public class Parser {
             when.setBlock(this.parseBlockExpansion());
         }
         return when;
-
     }
 
-    /**
-     * default
-     */
-    //done
     private Node parseDefault() {
         Token token = expect(Default.class);
         Node when = new CaseNode.When();
@@ -1089,28 +1042,10 @@ public class Parser {
         return when;
     }
 
-    private CaseConditionNode parseCaseCondition() {
-        CaseConditionNode node = new CaseConditionNode();
-        Token token = null;
-        if (peek() instanceof When) {
-            token = expect(When.class);
-        } else {
-            token = expect(Default.class);
-            node.setDefault(true);
-        }
-        node.setLineNumber(token.getStartLineNumber());
-        node.setFileName(filename);
-        node.setValue(token.getValue());
-        node.setBlock(blockExpansion());
-        return node;
-    }
-
-    //done
     private Node parseCode() {
         return parseCode(false);
     }
 
-    //done
     private Node parseCode(boolean noBlock) {
         Token token = expect(Expression.class);
         Expression expressionToken = (Expression) token;
@@ -1134,7 +1069,7 @@ public class Parser {
         }
         return codeNode;
     }
-    //done
+
     private Node parseDoctype() {
         Doctype doctype = (Doctype) expect(Doctype.class);
         DoctypeNode doctypeNode = new DoctypeNode();
@@ -1144,7 +1079,7 @@ public class Parser {
         doctypeNode.setFileName(this.filename);
         return doctypeNode;
     }
-    //done
+
     private IncludeFilterNode parseIncludeFilter(){
         Filter token = (Filter) expect(Filter.class);
         IncludeFilterNode includeFilter = new IncludeFilterNode();
@@ -1158,7 +1093,7 @@ public class Parser {
 
         return includeFilter;
     }
-    //done
+
     private Node parseFilter() {
         Filter filterToken = (Filter) expect(Filter.class);
 
@@ -1208,16 +1143,10 @@ public class Parser {
         return lookahead(0);
     }
 
-    private void skip(int n) {
-        while (n > 0) {
-            lexer.advance();
-            n = n - 1;
-        }
-    }
-
     private Token advance() {
         return lexer.advance();
     }
+
     private void defer(Token token) {
         lexer.defer(token);
     }
