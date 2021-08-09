@@ -10,8 +10,8 @@ import de.neuland.pug4j.util.CharacterParser;
 import de.neuland.pug4j.util.CharacterParserException;
 import de.neuland.pug4j.util.Options;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,51 +23,59 @@ public class Lexer {
     private static final Pattern cleanRe = Pattern.compile("^['\"]|['\"]$");
     private static final Pattern doubleQuotedRe = Pattern.compile("^\"[^\"]*\"$");
     private static final Pattern quotedRe = Pattern.compile("^'[^']*'$");
-    public static final Pattern PATTERN_MIXIN_BLOCK = Pattern.compile("^block");
-    public static final Pattern PATTERN_YIELD = Pattern.compile("^yield");
-    public static final Pattern PATTERN_DOT = Pattern.compile("^\\.");
-    public static final Pattern PATTERN_DEFAULT = Pattern.compile("^default");
-    public static final Pattern PATTERN_CASE = Pattern.compile("^case +([^\\n]+)");
-    public static final Pattern PATTERN_WHEN = Pattern.compile("^when +([^:\\n]+)");
-    public static final Pattern PATTERN_PATH = Pattern.compile("^ ([^\\n]+)");
-    public static final Pattern PATTERN_TEXT_1 = Pattern.compile("^(?:\\| ?| )([^\\n]+)");
-    public static final Pattern PATTERN_TEXT_2 = Pattern.compile("^( )");
-    public static final Pattern PATTERN_TEXT_3 = Pattern.compile("^\\|( ?)");
-    public static final Pattern PATTERN_FILTER = Pattern.compile("^:([\\w\\-]+)");
-    public static final Pattern PATTERN_COLON = Pattern.compile("^: +");
-    public static final Pattern PATTERN_SLASH = Pattern.compile("^\\/");
-    public static final Pattern PATTERN_TAG = Pattern.compile("^(\\w(?:[-:\\w]*\\w)?)");
-    public static final Pattern PATTERN_INTERPOLATION = Pattern.compile("^#\\{");
-    public static final Pattern PATTERN_BLANK = Pattern.compile("^\\n[ \\t]*\\n");
-    public static final Pattern PATTERN_INCLUDE = Pattern.compile("^include(?=:| |$|\\n)");
-    public static final Pattern PATTERN_CONDITIONAL = Pattern.compile("^(if|unless|else if|else)\\b([^\\n]*)");
-    public static final Pattern PATTERN_EACH = Pattern.compile("^(?:each|for) +([a-zA-Z_$][\\w$]*)(?: *, *([a-zA-Z_$][\\w$]*))? * in *([^\\n]+)");
-    public static final Pattern PATTERN_WHILE = Pattern.compile("^while +([^\\n]+)");
-    public static final Pattern PATTERN_CODE = Pattern.compile("^(!?=|-)[ \\t]*([^\\n]+)");
-    public static final Pattern PATTERN_ATTRIBUTES_BLOCK = Pattern.compile("^&attributes\\b");
-    public static final Pattern PATTERN_WHITESPACE = Pattern.compile("[ \\n\\t]");
-    public static final Pattern PATTERN_QUOTE = Pattern.compile("['\"]");
-    public static final int INFINITY = Integer.MAX_VALUE;
-    @SuppressWarnings("unused")
-    private LinkedList<String> options;
-    Scanner scanner;
-    private LinkedList<Token> deferredTokens;
-    private int lastIndents = -1;
+    private static final Pattern PATTERN_MIXIN_BLOCK = Pattern.compile("^block");
+    private static final Pattern PATTERN_YIELD = Pattern.compile("^yield");
+    private static final Pattern PATTERN_DOT = Pattern.compile("^\\.");
+    private static final Pattern PATTERN_DEFAULT = Pattern.compile("^default");
+    private static final Pattern PATTERN_CASE = Pattern.compile("^case +([^\\n]+)");
+    private static final Pattern PATTERN_WHEN = Pattern.compile("^when +([^:\\n]+)");
+    private static final Pattern PATTERN_PATH = Pattern.compile("^ ([^\\n]+)");
+    private static final Pattern PATTERN_TEXT_1 = Pattern.compile("^(?:\\| ?| )([^\\n]+)");
+    private static final Pattern PATTERN_TEXT_2 = Pattern.compile("^( )");
+    private static final Pattern PATTERN_TEXT_3 = Pattern.compile("^\\|( ?)");
+    private static final Pattern PATTERN_FILTER = Pattern.compile("^:([\\w\\-]+)");
+    private static final Pattern PATTERN_COLON = Pattern.compile("^: +");
+    private static final Pattern PATTERN_SLASH = Pattern.compile("^/");
+    private static final Pattern PATTERN_TAG = Pattern.compile("^(\\w(?:[-:\\w]*\\w)?)");
+    private static final Pattern PATTERN_INTERPOLATION = Pattern.compile("^#\\{");
+    private static final Pattern PATTERN_BLANK = Pattern.compile("^\\n[ \\t]*\\n");
+    private static final Pattern PATTERN_INCLUDE = Pattern.compile("^include(?=:| |$|\\n)");
+    private static final Pattern PATTERN_CONDITIONAL = Pattern.compile("^(if|unless|else if|else)\\b([^\\n]*)");
+    private static final Pattern PATTERN_EACH = Pattern.compile("^(?:each|for) +([a-zA-Z_$][\\w$]*)(?: *, *([a-zA-Z_$][\\w$]*))? * in *([^\\n]+)");
+    private static final Pattern PATTERN_MALFORMED_EACH = Pattern.compile("^(?:each|for)\\b");
+    private static final Pattern PATTERN_MALFORMED_EACH2 = Pattern.compile("^- *(?:each|for) +([a-zA-Z_$][\\w$]*)(?: *, *([a-zA-Z_$][\\w$]*))? +in +([^\\n]+)");
+    private static final Pattern PATTERN_WHILE = Pattern.compile("^while +([^\\n]+)");
+    private static final Pattern PATTERN_NO_WHILE_EXPRESSION = Pattern.compile("^while\\b");
+    private static final Pattern PATTERN_CODE = Pattern.compile("^(!?=|-)[ \\t]*([^\\n]+)");
+    private static final Pattern PATTERN_ATTRIBUTES_BLOCK = Pattern.compile("^&attributes\\b");
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile("[ \\n\\t]");
+    private static final Pattern PATTERN_QUOTE = Pattern.compile("['\"]");
+    private static final Pattern PATTERN_ID = Pattern.compile("^#([\\w-]+)");
+    private static final Pattern PATTERN_INVALID_ID = Pattern.compile("^#");
+    private static final Pattern PATTERN_CLASS_NAME = Pattern.compile("^\\.([_a-z0-9\\-]*[_a-z][_a-z0-9\\-]*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_EXTENDS = Pattern.compile("^extends?(?= |$|\\n)");
+    private static final Pattern PATTERN_PREPEND = Pattern.compile("^(?:block +)?prepend +([^\\n]+)");
+    private static final Pattern PATTERN_APPEND = Pattern.compile("^(?:block +)?append +([^\\n]+)");
+    private static final Pattern PATTERN_BLOCK = Pattern.compile("^block +([^\\n]+)");
+    private static final Pattern PATTERN_MIXIN = Pattern.compile("^mixin +([-\\w]+)(?: *\\((.*)\\))? *");
+    private static final Pattern PATTERN_CALL = Pattern.compile("^\\+(\\s*)(([-\\w]+)|(#\\{))");
+    private static final Pattern PATTERN_BLOCK_CODE = Pattern.compile("^-");
+    private static final Pattern PATTERN_TABS = Pattern.compile("^\\n(\\t*) *");
+    private static final Pattern PATTERN_SPACES = Pattern.compile("^\\n( *)");
+    private static final Pattern PATTERN_COMMENT = Pattern.compile("^\\/\\/(-)?([^\\n]*)");
+    private static final int INFINITY = Integer.MAX_VALUE;
+    private final Scanner scanner;
     private int lineno;
     private int colno;
-    private LinkedList<Token> tokens;
-    private LinkedList<Integer> indentStack;
+    private final LinkedList<Token> tokens;
+    private final LinkedList<Integer> indentStack;
     private Pattern indentRe = null;
     private boolean pipeless = false;
     private boolean interpolationAllowed = true;
-    @SuppressWarnings("unused")
-    private boolean attributeMode;
     private final String filename;
     private final TemplateLoader templateLoader;
-    private String indentType;
-    private CharacterParser characterParser;
-    private ExpressionHandler expressionHandler;
-    private boolean ternary=false;
+    private final CharacterParser characterParser;
+    private final ExpressionHandler expressionHandler;
     private boolean ended=false;
     private boolean interpolated=false;
 
@@ -76,39 +84,33 @@ public class Lexer {
         this.templateLoader = templateLoader;
         this.filename = filename;
         Reader reader = templateLoader.getReader(this.filename);
-        options = new LinkedList<String>();
         scanner = new Scanner(reader);
-        deferredTokens = new LinkedList<Token>();
-        tokens = new LinkedList<Token>();
-        indentStack = new LinkedList<Integer>();
+        tokens = new LinkedList<>();
+        indentStack = new LinkedList<>();
         indentStack.add(0);
-        lastIndents = 0;
         lineno = 1;
         colno = 1;
         characterParser = new CharacterParser();
-        int x = 0;
     }
+
     public Lexer(String input,String filename, TemplateLoader templateLoader,ExpressionHandler expressionHandler,int lineno,int colno, boolean interpolated) throws IOException {
         this(input, filename,templateLoader,expressionHandler);
         this.lineno = lineno;
         this.colno = colno;
         this.interpolated = interpolated;
     }
+
     public Lexer(String input,String filename, TemplateLoader templateLoader,ExpressionHandler expressionHandler) throws IOException {
         this.expressionHandler = expressionHandler;
         this.templateLoader = templateLoader;
         this.filename = filename;
-        options = new LinkedList<String>();
         scanner = new Scanner(input);
-        deferredTokens = new LinkedList<Token>();
-        tokens = new LinkedList<Token>();
-        indentStack = new LinkedList<Integer>();
+        tokens = new LinkedList<>();
+        indentStack = new LinkedList<>();
         indentStack.add(0);
-        lastIndents = 0;
         lineno = 1;
         colno = 1;
         characterParser = new CharacterParser();
-        int x = 0;
     }
 
     private PugLexerException error(String code, String message){
@@ -116,7 +118,6 @@ public class Lexer {
     }
 
     public boolean next() {
-        Token token;
         if (blank()) {
             return true;
         }
@@ -126,7 +127,7 @@ public class Lexer {
         if (endInterpolation()) {
             return true;
         }
-        if (yield()) {
+        if (yieldToken()) {
             return true;
         }
         if (doctype()) {
@@ -171,6 +172,7 @@ public class Lexer {
         if (conditional()) {
             return true;
         }
+        //Todo: eachOf
         if (each()) {
             return true;
         }
@@ -222,9 +224,6 @@ public class Lexer {
         if (colon()) {
             return true;
         }
-//        if (textFail()) {
-//            return true;
-//        }
         return fail();
     }
     
@@ -253,12 +252,11 @@ public class Lexer {
     private CharacterParser.Match bracketExpression(){
         return bracketExpression(0);
     }
+
     private CharacterParser.Match bracketExpression(int skip){
         char start = scanner.getInput().charAt(skip);
-        if(start != '(' && start != '{' && start != '[') {
-            throw new PugLexerException("The start character should be \"(\", \"{\" or \"[\"", filename, getLineno(),this.colno, templateLoader);
-        }
-        Map<Character,Character> closingBrackets =  new HashMap<Character,Character>();
+        assertIf(start == '(' || start == '{' || start == '[',"The start character should be \"(\", \"{\" or \"[\"");
+        Map<Character,Character> closingBrackets =  new HashMap<>();
         closingBrackets.put('(',')');
         closingBrackets.put('{','}');
         closingBrackets.put('[',']');
@@ -292,6 +290,12 @@ public class Lexer {
         return range;
     }
 
+    private void assertIf(boolean assertion,String message) {
+        if(!assertion) {
+            throw new PugLexerException(message, filename, getLineno(),this.colno, templateLoader);
+        }
+    }
+
     public int getLineno() {
         return lineno;
     }
@@ -313,18 +317,20 @@ public class Lexer {
         return this.tokens.pollFirst();
     }
 
-    private String scan(String regexp) {
-        String result = null;
-        Matcher matcher = scanner.getMatcherForPattern(regexp);
-        if (matcher.find(0) && matcher.groupCount()>0) {
-            int end = matcher.end();
-            String val = matcher.group(1);
-            int diff = end - (val!=null ? val.length() : 0);
-            consume(end);
-            incrementColumn(diff);
-            return val;
-        }
-        return result;
+    private Token tokEnd(Token token){
+        token.setEndLineNumber(this.lineno);
+        token.setEndColumn(this.colno);
+        return token;
+    }
+
+    private void incrementLine(int increment) {
+        lineno+=increment;
+        if(increment>0)
+            colno = 1;
+    }
+
+    private void incrementColumn(int increment){
+        this.colno += increment;
     }
 
     private Token scan(Pattern pattern,Token token) {
@@ -342,6 +348,10 @@ public class Lexer {
             return token;
         }
         return null;
+    }
+    private boolean scan(Pattern pattern) {
+        Matcher matcher = scanner.getMatcherForPattern(pattern);
+        return matcher.find(0);
     }
 
     private Token scanEndOfLine(Pattern pattern, Token token) {
@@ -387,42 +397,15 @@ public class Lexer {
         return null;
     }
 
-    private Token stashed() {
-        if (tokens.size() > 0) {
-            return tokens.poll();
-        }
-        return null;
-    }
-
-    private Token deferred() {
-        if (deferredTokens.size() > 0) {
-            return deferredTokens.poll();
-        }
-        return null;
-    }
-    /**
-     * Blank line. ok
-     */
-
     private boolean blank(){
         Matcher matcher = scanner.getMatcherForPattern(PATTERN_BLANK);
         if (matcher.find(0)) {
             consume(matcher.end()-1);
             incrementLine(1);
-//            //TODO: remove pipeless
-//            if(this.pipeless) {
-//                pushToken(new Text("", lineno));
-//                return true;
-//            }
-//            this.next();
             return true;
         }
         return false;
     }
-
-    /**
-     * end-of-source. ok
-     */
 
     private boolean eos() {
         if (scanner.getInput().length() > 0) {
@@ -439,12 +422,8 @@ public class Lexer {
         return true;
     }
 
-    /**
-     * Comment.
-     */
-
     private boolean comment() {
-        Matcher matcher = scanner.getMatcherForPattern("^\\/\\/(-)?([^\\n]*)");
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_COMMENT);
         if (matcher.find(0) && matcher.groupCount() > 1) {
             consume(matcher.end());
             boolean buffer = !"-".equals(matcher.group(1));
@@ -521,15 +500,6 @@ public class Lexer {
         return false;
     }
 
-    private boolean yield() {
-        Token token = scanEndOfLine(PATTERN_YIELD, new Yield());
-        if (token!=null) {
-            pushToken(tokEnd(token));
-            return true;
-        }
-        return false;
-    }
-
     private boolean filter(){
         return filter(false);
     }
@@ -566,7 +536,13 @@ public class Lexer {
 
             return true;
         }
-        //TODO: add error checks
+
+        if(scan(PATTERN_MALFORMED_EACH)){
+            throw error("MALFORMED_EACH", "malformed each");
+        }
+        if(scan(PATTERN_MALFORMED_EACH2)){
+            throw error("MALFORMED_EACH", "Pug each and for should no longer be prefixed with a dash (\"-\"). They are pug keywords and not part of JavaScript.");
+        }
         return false;
     }
 
@@ -580,7 +556,9 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        //TODO: add error check
+        if (this.scan(PATTERN_NO_WHILE_EXPRESSION)) {
+            throw error("NO_WHILE_EXPRESSION", "missing expression for while");
+        }
         return false;
     }
 
@@ -629,15 +607,6 @@ public class Lexer {
         return false;
     }
 
-	/*
-	 * private Token conditionalElse() { String val = scan("^(else)"); if
-	 * (StringUtils.isNotBlank(val)) { return new Filter(val, lineno); } return
-	 * null; }
-	 */
-    /**
-     * Doctype.
-     */
-
     private boolean doctype(){
         Token token = scanEndOfLine(Pattern.compile("^doctype *([^\\n]*)"),new Doctype());
         if(token!=null){
@@ -647,42 +616,32 @@ public class Lexer {
         return false;
     }
 
-    /**
-     * Id.
-     */
-
     private boolean id() {
-        Token token = scan(Pattern.compile("^#([\\w-]+)"),new CssId());
-        if (token!=null) {
+        Token token = scan(PATTERN_ID, new CssId());
+        if (token != null) {
             incrementColumn(token.getValue().length());
             pushToken(tokEnd(token));
             return true;
         }
-        //TODO: add invalid id check
-//        if (/^#/.test(this.input)) {
-//            this.error('INVALID_ID', '"' + /.[^ \t\(\#\.\:]*/.exec(this.input.substr(1))[0] + '" is not a valid ID.');
-//        }
+        if (scan(PATTERN_INVALID_ID)){
+            throw error("INVALID_ID", "\"" + Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput()).find(0) + "\" is not a valid ID.");
+        }
         return false;
     }
 
-    /**
-     * Class.
-     */
-
     private boolean className() {
-        Token token = scan(Pattern.compile("^\\.([_a-z0-9\\-]*[_a-z][_a-z0-9\\-]*)",Pattern.CASE_INSENSITIVE),new CssClass());
+        Token token = scan(PATTERN_CLASS_NAME,new CssClass());
         if (token!=null) {
             incrementColumn(token.getValue().length());
             pushToken(tokEnd(token));
             return true;
         }
-        //TODO: Add invalid classname checks
-//        if (/^\.[_a-z0-9\-]+/i.test(this.input)) {
-//            this.error('INVALID_CLASS_NAME', 'Class names must contain at least one letter or underscore.');
-//        }
-//        if (/^\./.test(this.input)) {
-//            this.error('INVALID_CLASS_NAME', '"' + /.[^ \t\(\#\.\:]*/.exec(this.input.substr(1))[0] + '" is not a valid class name.  Class names can only contain "_", "-", a-z and 0-9, and must contain at least one of "_", or a-z');
-//        }
+        if(Pattern.compile("^\\.[_a-z0-9\\-]+",Pattern.CASE_INSENSITIVE).matcher(scanner.getInput()).matches()){
+            throw error("INVALID_CLASS_NAME","Class names must contain at least one letter or underscore.");
+        }
+        if(Pattern.compile("^\\.").matcher(scanner.getInput()).matches()){
+            throw error("INVALID_CLASS_NAME","\"" + Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput().substring(1)).find(0) + "\" is not a valid class name.  Class names can only contain \"_\", \"-\", a-z and 0-9, and must contain at least one of \"_\", or a-z");
+        }
         return false;
     }
 
@@ -698,11 +657,12 @@ public class Lexer {
     private void addText(Token token, String value){
         addText(token,value,null);
     }
+
     private void addText(Token token, String value, String prefix) {
         addText(token,value,prefix,0);
     }
-    private void addText(Token token, String value, String prefix,int escaped) {
 
+    private void addText(Token token, String value, String prefix,int escaped) {
         if (prefix != null && "".equals(value + prefix))
             return;
         int indexOfEnd = this.interpolated ? value.indexOf(']') : -1;
@@ -715,7 +675,6 @@ public class Lexer {
         if (indexOfStart == -1) indexOfStart = INFINITY;
         if (indexOfEscaped == -1) indexOfEscaped = INFINITY;
 
-
         if (indexOfEscaped != INFINITY && indexOfEscaped < indexOfEnd && indexOfEscaped < indexOfStart && indexOfEscaped < indexOfStringInterp) {
             if(prefix!=null) {
                 prefix = prefix + value.substring(0, indexOfEscaped) + "#[";
@@ -725,6 +684,7 @@ public class Lexer {
             this.addText(token, StringUtils.substring(value, indexOfEscaped + 3), prefix, escaped + 1);
             return;
         }
+
         if (indexOfStart != INFINITY && indexOfStart < indexOfEnd && indexOfStart < indexOfEscaped && indexOfStart < indexOfStringInterp) {
             Token newToken = tok(token);
             if(prefix == null) {
@@ -742,7 +702,7 @@ public class Lexer {
             try {
                 child = new Lexer(value.substring(indexOfStart + 2),this.filename, templateLoader, expressionHandler,this.lineno,this.colno,true);
             } catch (IOException e) {
-                new PugLexerException(e.getMessage(),this.filename,this.lineno,this.colno,templateLoader);
+                throw new PugLexerException(e.getMessage(),this.filename,this.lineno,this.colno,templateLoader);
             }
             LinkedList<Token> interpolated = child.getTokens();  //TODO: try catch
 
@@ -754,6 +714,7 @@ public class Lexer {
             this.addText(token, child.getInput());
             return;
         }
+
         if (indexOfEnd != INFINITY && indexOfEnd < indexOfStart && indexOfEnd < indexOfEscaped && indexOfEnd < indexOfStringInterp) {
             if(prefix == null){
                 if ((StringUtils.substring(value, 0, indexOfEnd)).length() > 0) {
@@ -768,6 +729,7 @@ public class Lexer {
             scanner.setInput(value.substring(value.indexOf(']') + 1) + scanner.getInput());
             return;
         }
+
         if (indexOfStringInterp != INFINITY) {
             if (matchOfStringInterp.group(1)!=null) {
                 if(prefix==null) {
@@ -778,8 +740,6 @@ public class Lexer {
                 this.addText(token, value.substring(indexOfStringInterp + 3), prefix, escaped + 1);
                 return;
             }
-
-
 
             String before = StringUtils.substring(value, 0, 0 + indexOfStringInterp);
             if (prefix != null || before != null) {
@@ -833,7 +793,6 @@ public class Lexer {
         tok.setValue(value);
         this.incrementColumn(value.length() + escaped);
         pushToken(this.tokEnd(tok));
-
     }
 
     private boolean text() {
@@ -861,41 +820,18 @@ public class Lexer {
         return false;
     }
 
-    private boolean textFail() {
-        String val = scan("^([^\\.\\n][^\\n]+)");
-        if (StringUtils.isNotEmpty(val)) {
-            pushToken(tokEnd(tok(new Text(val, lineno))));
+    private boolean dot() {
+        Token token = scanEndOfLine(PATTERN_DOT, new Dot());
+        if (token!=null) {
+            pushToken(tokEnd(token));
+            pipelessText();
             return true;
         }
         return false;
     }
 
-    private boolean fail() {
-        throw error("UNEXPECTED_TEXT","unexpected text \"" + StringUtils.substring(scanner.getInput(),0,5) + "\"");
-    }
-//  "extends": function() {
-//        var tok = this.scan(/^extends?(?= |$|\n)/, 'extends');
-//        if (tok) {
-//            this.tokens.push(this.tokEnd(tok));
-//            if (!this.callLexerFunction('path')) {
-//                this.error('NO_EXTENDS_PATH', 'missing path for extends');
-//            }
-//            return true;
-//        }
-//        if (this.scan(/^extends?\b/)) {
-//            this.error('MALFORMED_EXTENDS', 'malformed extends');
-//        }
-//    },
-    private boolean extendsTokenOld() {
-        String val = scan("^extends? +([^\\n]+)");
-        if (StringUtils.isNotBlank(val)) {
-            pushToken(tokEnd(tok(new ExtendsToken(val, lineno))));
-            return true;
-        }
-        return false;
-    }
     private boolean extendsToken() {
-        Token token = scan(Pattern.compile("^extends?(?= |$|\\n)"), new ExtendsToken());
+        Token token = scan(PATTERN_EXTENDS, new ExtendsToken());
         if (token != null) {
             pushToken(tokEnd(token));
             if(!path()){
@@ -903,23 +839,25 @@ public class Lexer {
             }
             return true;
         }
-        //TODO: add error check
-//        if (this.scan(/^extends?\b/)) {
-//            this.error('MALFORMED_EXTENDS', 'malformed extends');
-//        }
+
+        if (this.scan(Pattern.compile("^extends?\\b"))) {
+            throw error("MALFORMED_EXTENDS", "malformed extends");
+        }
         return false;
     }
 
     private boolean prepend() {
-        Matcher matcher = scanner.getMatcherForPattern(Pattern.compile("^(?:block +)?prepend +([^\\n]+)"));
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_PREPEND);
         if (matcher.find(0)) {
             String name = matcher.group(1).trim();
             String comment = "";
-            if(name.indexOf("//") != -1){
+
+            if(name.contains("//")){
                 String[] split = StringUtils.split(name, "//");
                 comment = "//" + StringUtils.join(Arrays.copyOfRange(split,1,split.length),"//");
                 name = StringUtils.split(name,"//")[0].trim();
             }
+
             if(StringUtils.isNotBlank(name)) {
                 Token token = tok(new Block(name));
                 int len = matcher.group(0).length() - comment.length();
@@ -938,15 +876,17 @@ public class Lexer {
     }
 
     private boolean append() {
-        Matcher matcher = scanner.getMatcherForPattern(Pattern.compile("^(?:block +)?append +([^\\n]+)"));
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_APPEND);
         if (matcher.find(0)) {
             String name = matcher.group(1).trim();
             String comment = "";
-            if(name.indexOf("//") != -1){
+
+            if(name.contains("//")){
                 String[] split = StringUtils.split(name, "//");
                 comment = "//" + StringUtils.join(Arrays.copyOfRange(split,1,split.length),"//");
                 name = StringUtils.split(name,"//")[0].trim();
             }
+
             if(StringUtils.isNotBlank(name)) {
                 Token token = tok(new Block(name));
                 int len = matcher.group(0).length() - comment.length();
@@ -965,15 +905,17 @@ public class Lexer {
     }
 
     private boolean block() {
-        Matcher matcher = scanner.getMatcherForPattern(Pattern.compile("^block +([^\\n]+)"));
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_BLOCK);
         if (matcher.find(0)) {
             String name = matcher.group(1).trim();
             String comment = "";
-            if(name.indexOf("//") != -1){
+
+            if(name.contains("//")){
                 String[] split = StringUtils.split(name, "//");
                 comment = "//" + StringUtils.join(Arrays.copyOfRange(split,1,split.length),"//");
                 name = StringUtils.split(name,"//")[0].trim();
             }
+
             if(StringUtils.isNotBlank(name)) {
                 Token token = tok(new Block(name));
                 int len = matcher.group(0).length() - comment.length();
@@ -1000,12 +942,10 @@ public class Lexer {
         return false;
     }
 
-    private boolean blockCode() {
-        Token token = scanEndOfLine(Pattern.compile("^-"),new BlockCode());
-        if(token != null){
+    private boolean yieldToken() {
+        Token token = scanEndOfLine(PATTERN_YIELD, new Yield());
+        if (token!=null) {
             pushToken(tokEnd(token));
-            this.interpolationAllowed=false;
-            pipelessText();
             return true;
         }
         return false;
@@ -1025,16 +965,13 @@ public class Lexer {
             }
             return true;
         }
-        //TODO: add error check
-//        if (this.scan(/^include\b/)) {
-//            this.error('MALFORMED_INCLUDE', 'malformed include');
-//        }
+
+        if (this.scan(Pattern.compile("^include\\b"))) {
+             throw error("MALFORMED_INCLUDE", "malformed include");
+        }
         return false;
     }
 
-    /**
-     * Path. ok.
-     */
     private boolean path(){
         Token token = scanEndOfLine(PATTERN_PATH,new Path());
         if (token != null && token.getValue().trim().equals(token.getValue().trim())) {
@@ -1044,10 +981,7 @@ public class Lexer {
         }
         return false;
     }
-    /**
-     * Case. ok.
-     * TODO: add error check
-     */
+
     private boolean caseToken() {
         Token token = scanEndOfLine(PATTERN_CASE,new CaseToken());
         if (token!=null) {
@@ -1057,20 +991,20 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
+        if (this.scan(Pattern.compile("^case\\b"))) {
+            throw error("NO_CASE_EXPRESSION", "missing expression for case");
+        }
+
         return false;
     }
 
-    /**
-     * When. ok.
-     * TODO: add error check
-     */
     private boolean when() {
         Token token = scanEndOfLine(PATTERN_WHEN,new When());
         if (token!=null) {
             String val = token.getValue();
             CharacterParser.State parse = characterParser.parse(val);
             while(parse.isNesting() || parse.isString()){
-                Matcher matcher = scanner.getMatcherForPattern(":([^:\\n]+)");
+                Matcher matcher = scanner.getMatcherForPattern(Pattern.compile(":([^:\\n]+)"));
                 if(!matcher.find(0))
                     break;
 
@@ -1088,59 +1022,26 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        //TODO: add error check
-//        if (this.scan(/^when\b/)) {
-//            this.error('NO_WHEN_EXPRESSION', 'missing expression for when');
-//        }
+        if (this.scan(Pattern.compile("^when\\b"))) {
+            throw error("NO_WHEN_EXPRESSION", "missing expression for when");
+        }
         return false;
     }
 
-    /**
-     * Default.
-     * TODO: add error check
-     */
     private boolean defaultToken() {
         Token token = scanEndOfLine(PATTERN_DEFAULT,new Default());
         if (token!=null) {
             pushToken(tokEnd(token));
             return true;
         }
-        return false;
-    }
-
-    private Token assignment() {
-        Matcher matcher = scanner.getMatcherForPattern("^(\\w+) += *([^;\\n]+)( *;? *)");
-        if (matcher.find(0) && matcher.groupCount() > 1) {
-            String name = matcher.group(1);
-            String val = matcher.group(2);
-            consume(matcher.end());
-            Assignment assign = new Assignment(val, lineno);
-            assign.setName(name);
-            return assign;
-        }
-        return null;
-    }
-
-    /**
-     * Dot.
-     */
-
-    private boolean dot() {
-        Token token = scanEndOfLine(PATTERN_DOT, new Dot());
-        if (token!=null) {
-            pushToken(tokEnd(token));
-            pipelessText();
-            return true;
+        if (this.scan(Pattern.compile("^default\\b"))) {
+            throw error("DEFAULT_WITH_EXPRESSION", "default should not have an expression");
         }
         return false;
     }
-
-    /**
-     * Mixin. ok and done.
-     */
 
     private boolean mixin() {
-        Matcher matcher = scanner.getMatcherForPattern("^mixin +([-\\w]+)(?: *\\((.*)\\))? *");
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_MIXIN);
         if (matcher.find(0) && matcher.groupCount() > 1) {
             consume(matcher.end());
             Mixin tok = (Mixin) tok(new Mixin(matcher.group(1), lineno));
@@ -1152,13 +1053,10 @@ public class Lexer {
         return false;
     }
 
-    /**
-     * Call mixin. ok and done.
-     */
     private boolean call() {
         Call tok;
         int increment;
-        Matcher matcher = scanner.getMatcherForPattern("^\\+(\\s*)(([-\\w]+)|(#\\{))");
+        Matcher matcher = scanner.getMatcherForPattern(PATTERN_CALL);
         if (matcher.find(0) && matcher.groupCount() > 3) {
             // try to consume simple or interpolated call
             if(matcher.group(3)!=null) {
@@ -1177,15 +1075,17 @@ public class Lexer {
 
             incrementColumn(increment);
 
-            matcher = scanner.getMatcherForPattern("^ *\\(");
+            matcher = scanner.getMatcherForPattern(Pattern.compile("^ *\\("));
             if (matcher.find(0)) {
                 CharacterParser.Match range = this.bracketExpression(matcher.group(0).length() - 1);
                 matcher = Pattern.compile("^\\s*[-\\w]+ *=").matcher(range.getSrc());
+
                 if (!matcher.find(0)) { // not attributes
                     incrementColumn(1);
                     this.consume(range.getEnd() + 1);
                     tok.setArguments(range.getSrc());
                 }
+
                 if (tok.getArguments()!=null) {
                     assertExpression("[" + tok.getArguments() + "]");
                     for (int i = 0; i< tok.getArguments().length();i++) {
@@ -1213,13 +1113,6 @@ public class Lexer {
         return true;
     }
 
-    private enum Loc {
-    	KEY, KEY_CHAR, VALUE, STRING
-    }
-
-    /**
-     * Attributes.
-     */
     private boolean attrs() {
         if (scanner.getInput().length()>1 && '(' == scanner.getInput().charAt(0)) {
             Token startAttributesToken = tok(new StartAttributes());
@@ -1243,10 +1136,21 @@ public class Lexer {
         return false;
     }
 
+    private boolean blockCode() {
+        Token token = scanEndOfLine(PATTERN_BLOCK_CODE,new BlockCode());
+        if(token != null){
+            pushToken(tokEnd(token));
+            this.interpolationAllowed=false;
+            pipelessText();
+            return true;
+        }
+        return false;
+    }
+
     private String attribute(String str) {
         Character quote = null;
         Pattern quoteRe = PATTERN_QUOTE;
-        String key = "";
+        StringBuilder key = new StringBuilder();
         int i;
 
         // consume all whitespace before the key
@@ -1288,7 +1192,7 @@ public class Lexer {
                 }
             }
 
-            key += str.charAt(i);
+            key.append(str.charAt(i));
 
             if (str.charAt(i) == '\n') {
                 this.incrementLine(1);
@@ -1297,10 +1201,9 @@ public class Lexer {
             }
         }
 
-        tok.setName(key);
+        tok.setName(key.toString());
 
         AttributeValueResponse valueResponse = this.attributeValue(str.substring(i));
-
 
         if (valueResponse.getValue()!=null) {
             if ("".equals(valueResponse.getValue())) {
@@ -1312,7 +1215,7 @@ public class Lexer {
                 String val = valueResponse.getValue();
                 val = val.trim();
                 val = val.replaceAll("\\n","");
-                val = StringEscapeUtils.unescapeJson(val);
+                val = StringEscapeUtils.unescapeEcmaScript(val);
                 String cleanValue = cleanRe.matcher(val).replaceAll("");
 
                 tok.setAttributeValue(cleanValue);
@@ -1430,7 +1333,7 @@ public class Lexer {
                             boolean isNotPunctuator = !characterParser.isPunctuator(str.charAt(x));
                             boolean isQuote = PATTERN_QUOTE.matcher(String.valueOf(str.charAt(x))).find(0);
                             boolean isColon = str.charAt(x) == ':';
-                            boolean isSpreadOperator = str.length()>x+2 && "...".equals(str.charAt(x) + str.charAt(x + 1) + str.charAt(x + 2));
+                            boolean isSpreadOperator = str.length()>x+2 && "...".equals(str.substring(x,x+3));
                             if ((isNotPunctuator || isQuote || isColon || isSpreadOperator) && this.assertExpression(val, true)) {
                                 done = true;
                             }
@@ -1473,9 +1376,6 @@ public class Lexer {
         }
     }
 
-    /**
-     * &attributes block
-     */
     private boolean attributesBlock() {
         Matcher matcher = scanner.getMatcherForPattern(PATTERN_ATTRIBUTES_BLOCK);
         if (matcher.find(0) && matcher.group(0) != null) {
@@ -1494,27 +1394,6 @@ public class Lexer {
         return false;
     }
 
-	/*
-	 * private Token attributes() { Attribute tok = new Attribute(null, lineno);
-	 * Matcher matcher = scanner.getMatcherForPattern("^\\("); if
-	 * (matcher.find(0)) { consume(matcher.end()); attributeMode = true; } else
-	 * { return null; }
-	 * 
-	 * StringBuilder sb = new StringBuilder(); String regexp =
-	 * "^[, ]*?([-_\\w]+)? *?= *?(\"[^\"]*?\"|'[^']*?'|[.-_\\w]+)"; matcher =
-	 * scanner.getMatcherForPattern(regexp); if (matcher.find(0)) { while
-	 * (matcher.find(0)) { String name = matcher.group(1); String value =
-	 * matcher.group(2); tok.addAttribute(name, value);
-	 * sb.append(matcher.group(0)); consume(matcher.end()); matcher =
-	 * scanner.getMatcherForPattern(regexp); } tok.setValue(sb.toString()); }
-	 * else { return null; }
-	 * 
-	 * matcher = scanner.getMatcherForPattern("^ *?\\)"); if (matcher.find(0)) {
-	 * consume(matcher.end()); attributeMode = false; } else { throw new
-	 * JadeLexerException
-	 * ("Error while parsing attribute. Missing closing bracket ", filename,
-	 * getLineno(), scanner.getInput()); } return tok; }
-	 */
     private Matcher scanIndentation(){
         Matcher matcher;
         Pattern re;
@@ -1523,21 +1402,18 @@ public class Lexer {
             matcher = scanner.getMatcherForPattern(indentRe);
         } else {
             // tabs
-            re = Pattern.compile("^\\n(\\t*) *");
-            String indentType = "tabs";
+            re = PATTERN_TABS;
             matcher = scanner.getMatcherForPattern(re);
 
             // spaces
             if (matcher.find(0) && matcher.group(1).length() == 0) {
-                re = Pattern.compile("^\\n( *)");
-                indentType = "spaces";
+                re = PATTERN_SPACES;
                 matcher = scanner.getMatcherForPattern(re);
             }
 
             // established
             if (matcher.find(0) && matcher.group(1).length() > 0)
                 this.indentRe = re;
-            this.indentType = indentType;
         }
         return matcher;
     }
@@ -1610,6 +1486,7 @@ public class Lexer {
         tokens.add(token); // Append to an Array
         return token;
     }
+
     private Token tok(Token token){
         try {
             Token newToken = token.clone();
@@ -1623,23 +1500,10 @@ public class Lexer {
         return null;
     }
 
-    private Token tokEnd(Token token){
-        token.setEndLineNumber(this.lineno);
-        token.setEndColumn(this.colno);
-        return token;
-    }
-    private void incrementLine(int increment) {
-        lineno+=increment;
-        if(increment>0)
-            colno = 1;
-    }
-
-    private void incrementColumn(int increment){
-        this.colno += increment;
-    }
     private boolean pipelessText() {
         return pipelessText(null);
     }
+
     private boolean pipelessText(Integer indents) {
         while (blank());
         Matcher matcher = scanIndentation();
@@ -1653,12 +1517,9 @@ public class Lexer {
 
             if (indents > 0 && (this.indentStack.size() == 0 || indents > this.indentStack.get(0))) {
                 pushToken(tokEnd(tok(new StartPipelessText())));
-                LinkedList tokenList = new LinkedList();
-                ArrayList<Boolean> token_indent = new ArrayList<Boolean>();
-
-                String indent = scanner.getInput().substring(1, indents + 1);
-                ArrayList<String> tokens = new ArrayList<String>();
-                boolean isMatch = false;
+                LinkedList<String> tokenList = new LinkedList();
+                ArrayList<Boolean> token_indent = new ArrayList<>();
+                boolean isMatch;
 
                 int stringPtr = 0;
                 do {
@@ -1684,7 +1545,7 @@ public class Lexer {
                         if(indents<=line.length()) {
                             substring = line.substring(indents);
                         }
-                        tokens.add(substring);
+                        tokenList.add(substring);
                     }else if(this.indentStack.size() > 0 && lineIndents > this.indentStack.get(0)){
                         // line is indented less than the first line but is still indented
                         // need to retry lexing the text block
@@ -1692,13 +1553,15 @@ public class Lexer {
                         return pipelessText(lineCaptures.group(1).length());
                     }
                 } while (scanner.getInput().length() - stringPtr > 0 && isMatch);
+
                 this.consume(stringPtr);
 
-                while (scanner.getInput().length() == 0 && tokens.get(tokens.size() - 1).equals(""))
-                    tokens.remove(tokens.size() - 1);
-                for (int i = 0; i<tokens.size(); i++) {
+                while (scanner.getInput().length() == 0 && tokenList.get(tokenList.size() - 1).equals(""))
+                    tokenList.remove(tokenList.size() - 1);
+
+                for (int i = 0; i<tokenList.size(); i++) {
                     Token token = null;
-                    String tokenString = tokens.get(i);
+                    String tokenString = tokenList.get(i);
                     incrementLine(1);
                     if(i!=0){
                         token = tok(new Newline());
@@ -1710,29 +1573,13 @@ public class Lexer {
                         pushToken(tokEnd(token));
                     }
                     this.addText(new Text(),tokenString);
-
                 }
+
                 pushToken(tokEnd(tok(new EndPipelessText())));
                 return true;
             }
         }
         return false;
-    }
-
-    private int calculateIndents(Matcher matcher) {
-        int indents;
-        int groupLength = matcher.group(1).length();
-        int stackSize = this.indentStack.size();
-
-        if(indentType.equals("tabs")) {
-            indents = Math.min(stackSize + 1, groupLength);
-
-        } else if(groupLength > 1) {
-            indents = Math.min((stackSize +1) * 2,  groupLength);
-        } else {
-            indents = -1;    // invalid indentation
-        }
-        return indents;
     }
 
     private boolean slash() {
@@ -1753,6 +1600,10 @@ public class Lexer {
         return false;
     }
 
+    private boolean fail() {
+        throw error("UNEXPECTED_TEXT","unexpected text \"" + StringUtils.substring(scanner.getInput(),0,5) + "\"");
+    }
+
     private String ensurePugExtension(String templateName) {
         if ( StringUtils.isBlank(FilenameUtils.getExtension(templateName))) {
             return templateName + "." + templateLoader.getExtension();
@@ -1765,8 +1616,7 @@ public class Lexer {
     }
 
     public LinkedList<Token> getTokens(){
-        Token t = null;
-        LinkedList<Token> list = new LinkedList<Token>();
+        LinkedList<Token> list = new LinkedList<>();
         while(!ended || tokens.size()>0){
             Token advance = advance();
             if(advance!=null)
@@ -1774,6 +1624,7 @@ public class Lexer {
         }
         return list;
     }
+
     public String getInput(){
         return scanner.getInput();
     }

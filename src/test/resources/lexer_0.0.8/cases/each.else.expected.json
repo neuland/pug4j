@@ -70,7 +70,7 @@
 {"type":"outdent","line":36,"col":1}
 {"type":"tag","line":36,"col":1,"val":"ul","selfClosing":false}
 {"type":"indent","line":37,"col":1,"val":"2"}
-{"type":"code","line":37,"col":3,"val":"each prop, key in user","escape":false,"buffer":false}
+{"type":"each","line":37,"col":3,"val":"prop"}
 {"type":"indent","line":38,"col":1,"val":"4"}
 {"type":"tag","line":38,"col":5,"val":"li","selfClosing":false}
 {"type":"text","line":38,"col":8,"val":""}
@@ -78,7 +78,7 @@
 {"type":"text","line":38,"col":14,"val":": "}
 {"type":"interpolatedcode","line":38,"col":16,"val":"val"}
 {"type":"outdent","line":39,"col":1}
-{"type":"code","line":39,"col":3,"val":"else","escape":false,"buffer":false}
+{"type":"else","line":39,"col":3}
 {"type":"indent","line":40,"col":1,"val":"4"}
 {"type":"tag","line":40,"col":5,"val":"li","selfClosing":false}
 {"type":"text","line":40,"col":8,"val":"user has no details!"}

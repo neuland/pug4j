@@ -475,7 +475,7 @@ public class Parser {
                 return node;
             }
         } catch (IOException e) {
-            throw new PugParserException(filename, lexer.getLineno(), templateLoader, "the included file [" + templateName + "] could not be opened\n" + e.getMessage());
+            throw error("PATH_EXCEPTION","the included file [" + templateName + "] could not be opened\n" + e.getMessage(),pathToken);
         }
 
         // non-jade
@@ -490,7 +490,7 @@ public class Parser {
                 node.setValue(IOUtils.toString(reader));
                 return node;
             } catch (IOException e) {
-                throw new PugParserException(filename, lexer.getLineno(), templateLoader, "the included file [" + templateName + "] could not be opened\n" + e.getMessage());
+                throw error("PATH_EXCEPTION","the included file [" + templateName + "] could not be opened\n" + e.getMessage(),pathToken);
             }
         }
 

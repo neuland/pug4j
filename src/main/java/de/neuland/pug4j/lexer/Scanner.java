@@ -24,16 +24,6 @@ public class Scanner {
         input = input.substring(length);
     }
 
-    public String findInLine(String re) {
-        Pattern pattern = Pattern.compile(re);
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find(0)) {
-            int end = matcher.end();
-            return input.substring(0, end);
-        }
-        return null;
-    }
-
     private void initFromReader(Reader reader) {
         try {
             BufferedReader in = new BufferedReader(reader);
@@ -58,25 +48,8 @@ public class Scanner {
         }
     }
 
-    
     public char charAt(int i) {
         return input.charAt(i);
-    }
-
-    public boolean beginnsWithWhitespace() {
-        return (input.charAt(0) == ' ' || input.charAt(0) == '\t');
-    }
-
-    public boolean isNotEmpty() {
-        return StringUtils.isNotEmpty(input);
-    }
-
-    private boolean isEmpty() {
-        return !isNotEmpty();
-    }
-
-    public boolean isNotLineBreak() {
-        return isEmpty() || input.charAt(0) != '\n';
     }
 
     public String getPipelessText() {
@@ -96,33 +69,17 @@ public class Scanner {
         return originalInput;
     }
 
-    public Matcher getMatcherForPattern(String regexp) {
-        Pattern pattern = Pattern.compile(regexp);
-        return pattern.matcher(input);
-    }
-
     public Matcher getMatcherForPattern(Pattern pattern) {
         return pattern.matcher(input);
-    }
-
-    public boolean isIntendantionViolated() {
-        return input != null && input.length() > 0
-                && (' ' == input.charAt(0) || '\t' == input.charAt(0));
     }
 
     public boolean isBlankLine() {
         return input != null && input.length() > 0 && '\n' == input.charAt(0);
     }
 
-    public boolean isAdditionalBlankline() {
-        return input.length() > 2 && input.charAt(0) == '\n' && input.charAt(1) == '\n';
-    }
-
     public void setInput(String input) {
         this.input = input;
     }
-
-
 
     private String removeUTF8BOM(String s) {
         if (s.startsWith(UTF8_BOM)) {
