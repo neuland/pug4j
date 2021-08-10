@@ -1,4 +1,10 @@
 # History
+## 2.0.0-beta-1 / 2021-08-10
+* replaced deprecated commons-lang3 StringEscapeUtils
+* downgraded caffeine to 2.9.2 to be compatible with java 8
+* ported additional code checks to lexer, to throw exception early
+* some code cleanup
+
 ## 2.0.0-alpha-6 / 2021-07-23
 * Implemented nested filters
 

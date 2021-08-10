@@ -1,6 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/neuland/pug4j.png?branch=master)](http://travis-ci.org/neuland/pug4j)
 
-# pug4j (formerly known as jade4j) - a jade implementation written in Java
+# pug4j (formerly known as jade4j) - a pug implementation written in Java
 pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
 
 ## Contents
@@ -93,7 +93,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>2.0.0-alpha-6</version>
+  <version>2.0.0-beta-1</version>
 </dependency>
 ```
 
@@ -306,6 +306,7 @@ You can read more about this in the [JEXL documentation](http://commons.apache.o
 - Default file extension is now .pug
 - Compiler Level has been raised to Java 8+
 - Syntax has been adapted to the most current pug version. (2.0.4)
+- Filter interface changed
 
 <a name="breaking-changes-1"></a>
 ### Breaking Changes in 1.3.1
