@@ -624,7 +624,10 @@ public class Lexer {
             return true;
         }
         if (scan(PATTERN_INVALID_ID)){
-            throw error("INVALID_ID", "\"" + Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput()).find(0) + "\" is not a valid ID.");
+            Matcher matcher = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput());
+            if(matcher.find()) {
+                throw error("INVALID_ID", "\"" + matcher.group(0) + "\" is not a valid ID.");
+            }
         }
         return false;
     }
@@ -636,11 +639,13 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if(Pattern.compile("^\\.[_a-z0-9\\-]+",Pattern.CASE_INSENSITIVE).matcher(scanner.getInput()).matches()){
+        if(Pattern.compile("^\\.[_a-z0-9\\-]+",Pattern.CASE_INSENSITIVE).matcher(scanner.getInput()).find(0)){
             throw error("INVALID_CLASS_NAME","Class names must contain at least one letter or underscore.");
         }
-        if(Pattern.compile("^\\.").matcher(scanner.getInput()).matches()){
-            throw error("INVALID_CLASS_NAME","\"" + Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput().substring(1)).find(0) + "\" is not a valid class name.  Class names can only contain \"_\", \"-\", a-z and 0-9, and must contain at least one of \"_\", or a-z");
+        if(Pattern.compile("^\\.").matcher(scanner.getInput()).find(0)){
+            Matcher matcher = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput().substring(1));
+            if(matcher.find(0))
+                throw error("INVALID_CLASS_NAME","\"" + matcher.group(0) + "\" is not a valid class name.  Class names can only contain \"_\", \"-\", a-z and 0-9, and must contain at least one of \"_\", or a-z");
         }
         return false;
     }
