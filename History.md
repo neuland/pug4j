@@ -1,4 +1,8 @@
 # History
+## 2.0.0-beta-2 / 2021-08-11
+* Fixed rendering of attribute values.
+* Removed interpolation on attributes and filters because its also not supported in pugjs anymore
+
 ## 2.0.0-beta-1 / 2021-08-10
 * replaced deprecated commons-lang3 StringEscapeUtils
 * downgraded caffeine to 2.9.2 to be compatible with java 8
