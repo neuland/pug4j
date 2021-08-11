@@ -61,11 +61,11 @@ public class FilterNode extends AttrsNode {
 			}
 		}
 
-		try {
-			result = Utils.interpolate(result, model, false, expressionHandler);
-		} catch (ExpressionException e) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), e);
-		}
+//		try {
+//			result = Utils.interpolate(result, model, false, expressionHandler);
+//		} catch (ExpressionException e) {
+//			throw new PugCompilerException(this, template.getTemplateLoader(), e);
+//		}
 		writer.append(result);
 	}
 

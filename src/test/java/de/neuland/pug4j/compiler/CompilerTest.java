@@ -47,7 +47,6 @@ public class CompilerTest {
 
     @Test
     public void nestedTags() {
-        // TODO Reihenfolge der Attribute + CSS-Class + CSS-ID
         run("nested_tags");
     }
 
@@ -337,7 +336,6 @@ public class CompilerTest {
 
     @Test
     public void largeBodyTextWithPipes() {
-        // TODO add missing newline
         run("large_body_text_with_pipes");
     }
 
@@ -369,7 +367,6 @@ public class CompilerTest {
 
     @Test
     public void filterMarkdown() {
-        // TODO add missing newline
         run("filter_markdown");
     }
 

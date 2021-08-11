@@ -42,7 +42,7 @@ public class AdjustedPug2Test {
             "regression.784",       // javascript replace not supported
             "filters.stylus", //missing filter
             "filters.less", // missing filter
-            "attrs-data", // nice to have
+//            "attrs-data", // nice to have
             "each.else", //js issues
             "code.conditionals", //maybe js conditionals problem
             "filters.coffeescript", // missing filter

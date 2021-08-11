@@ -231,6 +231,11 @@
           <version>2.9.2</version>
         </dependency>
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.7</version>
+        </dependency>
+        <dependency>
           <groupId>com.vladsch.flexmark</groupId>
           <artifactId>flexmark</artifactId>
           <version>0.60.2</version>
@@ -313,6 +318,12 @@
           <artifactId>jmh-generator-annprocess</artifactId>
           <version>1.23</version>
           <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.7</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

@@ -66,26 +66,12 @@ public class OriginalLexer_0_0_8_Test {
     }
 
 
-    //TODO: Handle Text Tokens correct
-    private boolean breakOnTextTokens(ExpectedToken expectedToken) {
-        return "text".equals(expectedToken.type);
-    }
-
-    //TODO:  FileReader do not reads last line correct => Scanner.java
-    private boolean breakOnEndOfStreamTokens(Token token) {
-        return token instanceof Eos;
-    }
-
     private String typeOf(Token token) {
         String simpleClassName = token.getClass().getSimpleName().toLowerCase();
         if (mappedTypes.containsKey(simpleClassName)) {
             return mappedTypes.get(simpleClassName);
         }
         return simpleClassName;
-    }
-
-    private ExpectedToken tokenFromJsonLine(String expected) {
-        return new Gson().newBuilder().disableHtmlEscaping().create().fromJson(expected, ExpectedToken.class);
     }
 
     private String tokenToJsonLine(ExpectedToken expected) {
@@ -173,7 +159,6 @@ public class OriginalLexer_0_0_8_Test {
         assertThat(typeOf(token)).isEqualTo(expectedToken.type);
         assertThat(token.isSelfClosing()).isEqualTo(expectedToken.selfClosing);
         assertThat(token.getValue()).isEqualTo(expectedToken.val);
-        //TODO: FileReader do not reads last line correct => Scanner.java
         //assertThat(token.getLineNumber()).isEqualTo(expectedToken.line);
     }
 

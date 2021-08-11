@@ -2,6 +2,7 @@ package de.neuland.pug4j.parser.node;
 
 import java.util.*;
 
+import com.google.gson.Gson;
 import de.neuland.pug4j.compiler.Utils;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -21,9 +22,10 @@ public abstract class AttrsNode extends Node {
 	protected boolean selfClosing = false;
 	protected Node codeNode;
 	private boolean textOnly;
+    private static Gson gson = new Gson();
 
 
-	public AttrsNode setAttribute(String key, Object value, boolean escaped) {
+    public AttrsNode setAttribute(String key, Object value, boolean escaped) {
 		if (!"class".equals(key) && this.attributeNames.indexOf(key) != -1) {
 			throw new Error("Duplicate attribute '" + key + "' is not allowed.");
 		}
@@ -49,22 +51,6 @@ public abstract class AttrsNode extends Node {
 		}
 		return value.toString();
 	}
-//	protected Map<String, Object> mergeInheritedAttributes(JadeModel model) {
-//		List<Attr> mergedAttributes = this.attributes;
-//
-//		if (inheritsAttributes) {
-//			Object o = model.get("attributes");
-//			if (o != null && o instanceof Map) {
-//				@SuppressWarnings("unchecked")
-//				Map<String, Object> inheritedAttributes = (Map<String, Object>) o;
-//
-//				for (Entry<String, Object> entry : inheritedAttributes.entrySet()) {
-//					setAttribute(mergedAttributes, (String) entry.getKey(), entry.getValue());
-//				}
-//			}
-//		}
-//		return mergedAttributes;
-//	}
 
 	@Override
 	public AttrsNode clone() throws CloneNotSupportedException {
@@ -80,6 +66,7 @@ public abstract class AttrsNode extends Node {
         }
 		return clone;
 	}
+
 	public void addAttributes(String src){
 		this.attributeBlocks.add(src);
 	}
@@ -124,32 +111,23 @@ public abstract class AttrsNode extends Node {
                 } catch (ExpressionException e) {
                     e.printStackTrace();
                 }
-                 if(o instanceof Map) {
+                if(o instanceof Map) {
                     Map<String, String> map = (Map<String, String>) o;
                     for (Map.Entry<String, String> entry : map.entrySet()) {
                         Attr attr = new Attr(String.valueOf(entry.getKey()),entry.getValue(),false);
                         newAttributes.add(attr);
                     }
                 }
-                if(o instanceof ArrayList){
-                    ArrayList<Object> list = (ArrayList<Object>) o;
-                    for (Object o1 : list) {
-
-                    }
-                }
-
             }
             LinkedHashMap<String,String> attrs = attrs(model, template,newAttributes);
-            return attrsToString(attrs, template);
+            return attrsToString(attrs);
         }else{
             LinkedHashMap<String,String> attrs = attrs(model, template, newAttributes);
-            return attrsToString(attrs, template);
+            return attrsToString(attrs);
         }
-
-
     }
 
-    private String attrsToString(LinkedHashMap<String, String> attrs, PugTemplate template) {
+    private String attrsToString(LinkedHashMap<String, String> attrs) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : attrs.entrySet()) {
             sb.append(" ");
@@ -164,9 +142,10 @@ public abstract class AttrsNode extends Node {
     }
 
     protected LinkedHashMap<String,String> attrs(PugModel model, PugTemplate template, LinkedList<Attr> attrs) {
-        ArrayList<String> classes = new ArrayList<String>();
-        ArrayList<Boolean> classEscaping = new ArrayList<Boolean>();
-        LinkedHashMap<String,String> newAttributes = new LinkedHashMap<String,String>();
+        ArrayList<String> classes = new ArrayList<>();
+        ArrayList<Boolean> classEscaping = new ArrayList<>();
+        LinkedHashMap<String,String> newAttributes = new LinkedHashMap<>();
+
         for (Attr attribute : attrs) {
             try {
                 addAttributesToMap(newAttributes,classes,classEscaping, attribute, model, template);
@@ -174,7 +153,8 @@ public abstract class AttrsNode extends Node {
                 throw new PugCompilerException(this, template.getTemplateLoader(), e);
             }
         }
-        LinkedHashMap<String,String> finalAttributes = new LinkedHashMap<String,String>();
+
+        LinkedHashMap<String,String> finalAttributes = new LinkedHashMap<>();
         if(!classes.isEmpty()){
             finalAttributes.put("class", StringUtils.join(classes," "));
         }
@@ -191,7 +171,10 @@ public abstract class AttrsNode extends Node {
         if("class".equals(name)) {
             if (attributeValue instanceof String) {
                 escaped = attribute.isEscaped();
-                value = getInterpolatedAttributeValue(name, attributeValue,escaped, model, template);
+//                value = getInterpolatedAttributeValue(attributeValue,escaped, model, template);
+                value = (String) attributeValue;
+                if(escaped)
+                    value = StringEscapeUtils.escapeHtml4(value);
             } else if (attributeValue instanceof ExpressionString) {
                 escaped = ((ExpressionString) attributeValue).isEscape();
                 Object expressionValue = evaluateExpression((ExpressionString) attributeValue, model,template.getExpressionHandler());
@@ -241,8 +224,9 @@ public abstract class AttrsNode extends Node {
                         }
                     }
                 }else if(expressionValue!=null && expressionValue instanceof Boolean){
-                    if((Boolean) expressionValue)
+                    if((Boolean) expressionValue) {
                         value = expressionValue.toString();
+                    }
                 }else if(expressionValue!=null){
                     value = expressionValue.toString();
                 }
@@ -253,14 +237,13 @@ public abstract class AttrsNode extends Node {
             }
             return;
         } else if (attributeValue instanceof ExpressionString) {
-//            isConstant
             ExpressionString expressionString = (ExpressionString) attributeValue;
             escaped = expressionString.isEscape();
             Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
             if (expressionValue == null) {
                 return;
             }
-            // TODO: refactor
+
             if (expressionValue instanceof Boolean) {
                 Boolean booleanValue = (Boolean) expressionValue;
                 if (booleanValue) {
@@ -271,6 +254,13 @@ public abstract class AttrsNode extends Node {
                 if (template.isTerse()) {
                     value = null;
                 }
+            } else if (
+                    expressionValue.getClass().isArray()
+                    || expressionValue instanceof Map
+            ) {
+                value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
+                if(escaped)
+                    value = StringEscapeUtils.escapeHtml4(value);
             }else{
                 value = expressionValue.toString();
                 if(escaped)
@@ -278,7 +268,10 @@ public abstract class AttrsNode extends Node {
             }
         }else if (attributeValue instanceof String) {
             escaped = attribute.isEscaped();
-            value = getInterpolatedAttributeValue(name, attributeValue, escaped, model, template);
+            value = (String) attributeValue;
+            if(escaped)
+                value = StringEscapeUtils.escapeHtml4(value);
+            //            value = getInterpolatedAttributeValue(attributeValue, escaped, model, template);
         } else if (attributeValue instanceof Boolean) {
             Boolean booleanValue = (Boolean) attributeValue;
             if (booleanValue) {
@@ -292,8 +285,9 @@ public abstract class AttrsNode extends Node {
         }
         newAttributes.put(name,value);
     }
+
 	private Object evaluateExpression(ExpressionString attribute, PugModel model, ExpressionHandler expressionHandler) throws ExpressionException {
-        String expression = ((ExpressionString) attribute).getValue();
+        String expression = attribute.getValue();
 	    Object result = expressionHandler.evaluateExpression(expression, model);
         if (result instanceof ExpressionString) {
             return evaluateExpression((ExpressionString) result, model, expressionHandler);
@@ -301,11 +295,8 @@ public abstract class AttrsNode extends Node {
         return result;
     }
 
-	private String getInterpolatedAttributeValue(String name, Object attribute, boolean escaped, PugModel model, PugTemplate template)
+	private String getInterpolatedAttributeValue(Object attribute, boolean escaped, PugModel model, PugTemplate template)
             throws PugCompilerException {
-//        if (!preparedAttributeValues.containsKey(name)) {
-//            preparedAttributeValues.put(name, Utils.prepareInterpolate((String) attribute, escaped));
-//        }
         List<Object> prepared = Utils.prepareInterpolate((String) attribute, escaped);
         try {
             return Utils.interpolate(prepared, model,template.getExpressionHandler());
