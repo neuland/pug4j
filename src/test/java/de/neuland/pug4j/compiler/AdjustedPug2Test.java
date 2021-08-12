@@ -38,7 +38,7 @@ public class AdjustedPug2Test {
 //            "pipeless-filters", //different markdown result but it works.
 
             //unsupported: adjust to work with pug4j
-            "styles", // unsupported map syntax
+//            "styles", // unsupported map syntax
             "regression.784",       // javascript replace not supported
             "filters.stylus", //missing filter
             "filters.less", // missing filter

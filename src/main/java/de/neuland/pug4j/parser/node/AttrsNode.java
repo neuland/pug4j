@@ -236,16 +236,58 @@ public abstract class AttrsNode extends Node {
                 classEscaping.add(escaped);
             }
             return;
-        } else if (attributeValue instanceof ExpressionString) {
-            ExpressionString expressionString = (ExpressionString) attributeValue;
-            escaped = expressionString.isEscape();
-            Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
-            if (expressionValue == null) {
-                return;
+        } else {
+            if("style".equals(name)){
+                if (attributeValue instanceof ExpressionString) { //isConstant
+                    ExpressionString expressionString = (ExpressionString) attributeValue;
+                    escaped = expressionString.isEscape();
+                    Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
+                    if (expressionValue == null) {
+                        return;
+                    }
+                    attributeValue = style(expressionValue);
+                } else {
+                    attributeValue = style(attributeValue);
+                }
             }
+            if (attributeValue instanceof ExpressionString) {
+                ExpressionString expressionString = (ExpressionString) attributeValue;
+                escaped = expressionString.isEscape();
+                Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
+                if (expressionValue == null) {
+                    return;
+                }
 
-            if (expressionValue instanceof Boolean) {
-                Boolean booleanValue = (Boolean) expressionValue;
+                if (expressionValue instanceof Boolean) {
+                    Boolean booleanValue = (Boolean) expressionValue;
+                    if (booleanValue) {
+                        value = name;
+                    } else {
+                        return;
+                    }
+                    if (template.isTerse()) {
+                        value = null;
+                    }
+                } else if (
+                        expressionValue.getClass().isArray()
+                                || expressionValue instanceof Map
+                ) {
+                    value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
+                    if(escaped)
+                        value = StringEscapeUtils.escapeHtml4(value);
+                }else{
+                    value = expressionValue.toString();
+                    if(escaped)
+                        value = StringEscapeUtils.escapeHtml4(value);
+                }
+            }else if (attributeValue instanceof String) {
+//                escaped = attribute.isEscaped();
+                value = (String) attributeValue;
+                if(escaped)
+                    value = StringEscapeUtils.escapeHtml4(value);
+                //            value = getInterpolatedAttributeValue(attributeValue, escaped, model, template);
+            } else if (attributeValue instanceof Boolean) {
+                Boolean booleanValue = (Boolean) attributeValue;
                 if (booleanValue) {
                     value = name;
                 } else {
@@ -254,39 +296,28 @@ public abstract class AttrsNode extends Node {
                 if (template.isTerse()) {
                     value = null;
                 }
-            } else if (
-                    expressionValue.getClass().isArray()
-                    || expressionValue instanceof Map
-            ) {
-                value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
-                if(escaped)
-                    value = StringEscapeUtils.escapeHtml4(value);
-            }else{
-                value = expressionValue.toString();
-                if(escaped)
-                    value = StringEscapeUtils.escapeHtml4(value);
-            }
-        }else if (attributeValue instanceof String) {
-            escaped = attribute.isEscaped();
-            value = (String) attributeValue;
-            if(escaped)
-                value = StringEscapeUtils.escapeHtml4(value);
-            //            value = getInterpolatedAttributeValue(attributeValue, escaped, model, template);
-        } else if (attributeValue instanceof Boolean) {
-            Boolean booleanValue = (Boolean) attributeValue;
-            if (booleanValue) {
-                value = name;
-            } else {
-                return;
-            }
-            if (template.isTerse()) {
-                value = null;
             }
         }
         newAttributes.put(name,value);
     }
 
-	private Object evaluateExpression(ExpressionString attribute, PugModel model, ExpressionHandler expressionHandler) throws ExpressionException {
+    private String style(Object value) {
+        if(value instanceof Boolean && !(Boolean) value){
+            return "";
+        }
+        if(value instanceof LinkedHashMap){
+            String out = "";
+            Set<Map.Entry<String, String>> entries = ((LinkedHashMap<String, String>) value).entrySet();
+            for (Map.Entry<String, String> style : entries) {
+                out = out + style.getKey() + ":" + style.getValue()+";";
+            }
+            return out;
+        }else{
+            return String.valueOf(value);
+        }
+    }
+
+    private Object evaluateExpression(ExpressionString attribute, PugModel model, ExpressionHandler expressionHandler) throws ExpressionException {
         String expression = attribute.getValue();
 	    Object result = expressionHandler.evaluateExpression(expression, model);
         if (result instanceof ExpressionString) {
