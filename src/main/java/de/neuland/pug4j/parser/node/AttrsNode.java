@@ -156,7 +156,20 @@ public abstract class AttrsNode extends Node {
 
         LinkedHashMap<String,String> finalAttributes = new LinkedHashMap<>();
         if(!classes.isEmpty()){
-            finalAttributes.put("class", StringUtils.join(classes," "));
+            String out = "";
+            for (int i = 0; i < classes.size(); i++) {
+                String classname;
+                if(classEscaping.get(i))
+                    classname = StringEscapeUtils.escapeHtml4(classes.get(i));
+                else
+                    classname = classes.get(i);
+
+                if(i==0)
+                    out = classname;
+                else
+                    out = out + " " + classname;
+            }
+            finalAttributes.put("class", out);
         }
         finalAttributes.putAll(newAttributes);
         return finalAttributes;
@@ -170,7 +183,6 @@ public abstract class AttrsNode extends Node {
         Object attributeValue = attribute.getValue();
         if("class".equals(name)) {
             if (attributeValue instanceof String) {
-//                value = getInterpolatedAttributeValue(attributeValue,escaped, model, template);
                 value = (String) attributeValue;
             } else if (attributeValue instanceof ExpressionString) {
                 Object expressionValue = evaluateExpression((ExpressionString) attributeValue, model,template.getExpressionHandler());
@@ -228,9 +240,6 @@ public abstract class AttrsNode extends Node {
                 }
             }
             if(!StringUtils.isBlank(value)) {
-                if(escaped)
-                    value = StringEscapeUtils.escapeHtml4(value);
-
                 classes.add(value);
                 classEscaping.add(escaped);
             }
@@ -275,7 +284,6 @@ public abstract class AttrsNode extends Node {
                 }
             }else if (attributeValue instanceof String) {
                 value = (String) attributeValue;
-                //            value = getInterpolatedAttributeValue(attributeValue, escaped, model, template);
             } else if (attributeValue instanceof Boolean) {
                 Boolean booleanValue = (Boolean) attributeValue;
                 if (booleanValue) {
@@ -316,16 +324,6 @@ public abstract class AttrsNode extends Node {
             return evaluateExpression((ExpressionString) result, model, expressionHandler);
         }
         return result;
-    }
-
-	private String getInterpolatedAttributeValue(Object attribute, boolean escaped, PugModel model, PugTemplate template)
-            throws PugCompilerException {
-        List<Object> prepared = Utils.prepareInterpolate((String) attribute, escaped);
-        try {
-            return Utils.interpolate(prepared, model,template.getExpressionHandler());
-        } catch (ExpressionException e) {
-            throw new PugCompilerException(this, template.getTemplateLoader(), e);
-        }
     }
 
     protected boolean isSelfClosingTag() {
