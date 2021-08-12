@@ -4,8 +4,8 @@
 {"type":"indent","line":3,"col":1,"val":"2"}
 {"type":"tag","line":3,"col":3,"val":"input","selfClosing":false}
 {"type":"startattributes","line":3,"col":8}
-{"type":"attribute","line":3,"col":9,"name":"type","val":"text"}
-{"type":"attribute","line":3,"col":22,"name":"name","val":"user[name]"}
+{"type":"attribute","line":3,"col":9,"name":"type","val":"text","escape":true}
+{"type":"attribute","line":3,"col":22,"name":"name","val":"user[name]","escape":true}
 {"type":"endattributes","line":3,"col":39}
 {"type":"outdent","line":5,"col":1}
 {"type":"tag","line":5,"col":1,"val":"label","selfClosing":false}
@@ -13,8 +13,8 @@
 {"type":"indent","line":6,"col":1,"val":"2"}
 {"type":"tag","line":6,"col":3,"val":"input","selfClosing":false}
 {"type":"startattributes","line":6,"col":8}
-{"type":"attribute","line":6,"col":9,"name":"type","val":"text"}
-{"type":"attribute","line":6,"col":22,"name":"name","val":"user[pass]"}
+{"type":"attribute","line":6,"col":9,"name":"type","val":"text","escape":true}
+{"type":"attribute","line":6,"col":22,"name":"name","val":"user[pass]","escape":true}
 {"type":"endattributes","line":6,"col":39}
 {"type":"outdent","line":6,"col":40}
 {"type":"eos","line":6,"col":40}

@@ -71,8 +71,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attr-es2015.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "`background-image: url(https://www.gravatar.com/avatar/${avatar})`",
-        "escape": true
+        "value": "`background-image: url(https://www.gravatar.com/avatar/${avatar})`"
       },
       "mustEscape": true
     },
@@ -174,8 +173,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs-data.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "user",
-        "escape": true
+        "value": "user"
       },
       "mustEscape": true
     },
@@ -236,8 +234,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs-data.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "[1,2,3]",
-        "escape": true
+        "value": "[1,2,3]"
       },
       "mustEscape": true
     },
@@ -357,8 +354,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs-data.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{message: \"Let's rock!\"}",
-        "escape": true
+        "value": "{message: \"Let's rock!\"}"
       },
       "mustEscape": true
     },
@@ -419,8 +415,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs-data.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{message: \"a quote: &quot; this & that\"}",
-        "escape": true
+        "value": "{message: \"a quote: &quot; this & that\"}"
       },
       "mustEscape": true
     },
@@ -546,8 +541,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "'/user/' + id",
-        "escape": true
+        "value": "'/user/' + id"
       },
       "mustEscape": true
     },
@@ -622,8 +616,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "'/user/' + id",
-        "escape": true
+        "value": "'/user/' + id"
       },
       "mustEscape": true
     },
@@ -712,8 +705,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "answer()",
-        "escape": true
+        "value": "answer()"
       },
       "mustEscape": true
     },
@@ -774,8 +766,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['class1', 'class2']",
-        "escape": true
+        "value": "['class1', 'class2']"
       },
       "mustEscape": true
     },
@@ -848,8 +839,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['class1', 'class2']",
-        "escape": true
+        "value": "['class1', 'class2']"
       },
       "mustEscape": true
     },
@@ -910,8 +900,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "'/user/' + id",
-        "escape": true
+        "value": "'/user/' + id"
       },
       "mustEscape": true
     },
@@ -986,8 +975,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "'/user/' + id",
-        "escape": true
+        "value": "'/user/' + id"
       },
       "mustEscape": true
     },
@@ -1076,8 +1064,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "answer()",
-        "escape": true
+        "value": "answer()"
       },
       "mustEscape": true
     },
@@ -1138,8 +1125,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['class1', 'class2']",
-        "escape": true
+        "value": "['class1', 'class2']"
       },
       "mustEscape": true
     },
@@ -1212,8 +1198,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['class1', 'class2']",
-        "escape": true
+        "value": "['class1', 'class2']"
       },
       "mustEscape": true
     },
@@ -1274,8 +1259,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "id",
-        "escape": true
+        "value": "id"
       },
       "mustEscape": true
     },
@@ -1372,8 +1356,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "null",
-        "escape": true
+        "value": "null"
       },
       "mustEscape": true
     },
@@ -1389,8 +1372,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.js.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "bar",
-        "escape": true
+        "value": "bar"
       },
       "mustEscape": true
     },
@@ -1724,8 +1706,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "1",
-        "escape": true
+        "value": "1"
       },
       "mustEscape": true
     },
@@ -1800,8 +1781,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "(1) ? 1 : 0",
-        "escape": true
+        "value": "(1) ? 1 : 0"
       },
       "mustEscape": true
     },
@@ -2429,8 +2409,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "1",
-        "escape": true
+        "value": "1"
       },
       "mustEscape": true
     },
@@ -2505,8 +2484,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "(1) ? 1 : 0",
-        "escape": true
+        "value": "(1) ? 1 : 0"
       },
       "mustEscape": true
     },
@@ -6648,8 +6626,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[classes-empty.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "null",
-        "escape": true
+        "value": "null"
       },
       "mustEscape": true
     },
@@ -6710,8 +6687,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[classes-empty.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "undefined",
-        "escape": true
+        "value": "undefined"
       },
       "mustEscape": true
     },
@@ -6778,8 +6754,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[classes.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['foo', 'bar', 'baz']",
-        "escape": true
+        "value": "['foo', 'bar', 'baz']"
       },
       "mustEscape": true
     },
@@ -6958,8 +6933,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[classes.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{foo: true, bar: false, baz: true}",
-        "escape": true
+        "value": "{foo: true, bar: false, baz: true}"
       },
       "mustEscape": true
     },
@@ -8431,8 +8405,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[code.iteration.pug]=
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "'item-' + i",
-        "escape": true
+        "value": "'item-' + i"
       },
       "mustEscape": true
     },
@@ -9280,8 +9253,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[code.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "null",
-        "escape": true
+        "value": "null"
       },
       "mustEscape": true
     },
@@ -9342,8 +9314,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[code.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "undefined",
-        "escape": true
+        "value": "undefined"
       },
       "mustEscape": true
     },
@@ -9463,8 +9434,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[code.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "0",
-        "escape": true
+        "value": "0"
       },
       "mustEscape": true
     },
@@ -9525,8 +9495,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[code.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "false",
-        "escape": true
+        "value": "false"
       },
       "mustEscape": true
     },
@@ -12930,8 +12899,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters-empty.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "user.age",
-        "escape": true
+        "value": "user.age"
       },
       "mustEscape": true
     },
@@ -13172,8 +13140,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters.coffeescript
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "true",
-        "escape": true
+        "value": "true"
       },
       "mustEscape": true
     },
@@ -13370,8 +13337,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters.custom.pug]=
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "2",
-        "escape": true
+        "value": "2"
       },
       "mustEscape": true
     },
@@ -13660,8 +13626,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters.include.cust
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "2",
-        "escape": true
+        "value": "2"
       },
       "mustEscape": true
     },
@@ -13902,8 +13867,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters.include.pug]
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "true",
-        "escape": true
+        "value": "true"
       },
       "mustEscape": true
     },
@@ -14023,8 +13987,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[filters.include.pug]
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "false",
-        "escape": true
+        "value": "false"
       },
       "mustEscape": true
     },
@@ -15785,8 +15748,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[html5.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "true",
-        "escape": true
+        "value": "true"
       },
       "mustEscape": true
     },
@@ -15861,8 +15823,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[html5.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "false",
-        "escape": true
+        "value": "false"
       },
       "mustEscape": true
     },
@@ -20904,8 +20865,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[interpolated-mixin.p
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "url",
-        "escape": true
+        "value": "url"
       },
       "mustEscape": true
     },
@@ -23175,8 +23135,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "attributes.id",
-        "escape": true
+        "value": "attributes.id"
       },
       "mustEscape": true
     },
@@ -23263,8 +23222,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "attributes.class",
-        "escape": true
+        "value": "attributes.class"
       },
       "mustEscape": true
     },
@@ -23409,8 +23367,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "attributes.href",
-        "escape": true
+        "value": "attributes.href"
       },
       "mustEscape": true
     },
@@ -24297,8 +24254,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "['class1', 'class2']",
-        "escape": true
+        "value": "['class1', 'class2']"
       },
       "mustEscape": true
     },
@@ -24542,8 +24498,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "val",
-        "escape": true
+        "value": "val"
       },
       "mustEscape": true
     },
@@ -24559,8 +24514,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "val",
-        "escape": false
+        "value": "val"
       },
       "mustEscape": false
     },
@@ -24576,8 +24530,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.attrs.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "classes",
-        "escape": true
+        "value": "classes"
       },
       "mustEscape": true
     },
@@ -25800,8 +25753,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.blocks.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "method",
-        "escape": true
+        "value": "method"
       },
       "mustEscape": true
     },
@@ -25817,8 +25769,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.blocks.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "action",
-        "escape": true
+        "value": "action"
       },
       "mustEscape": true
     },
@@ -25932,8 +25883,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[mixin.blocks.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "csrf_token_from_somewhere",
-        "escape": true
+        "value": "csrf_token_from_somewhere"
       },
       "mustEscape": true
     },
@@ -31479,8 +31429,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[styles.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{color: 'red', background: 'green'}",
-        "escape": true
+        "value": "{color: 'red', background: 'green'}"
       },
       "mustEscape": true
     },
@@ -31730,8 +31679,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[styles.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{color: 'red', background: 'green'}",
-        "escape": true
+        "value": "{color: 'red', background: 'green'}"
       },
       "mustEscape": true
     },
@@ -31816,8 +31764,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[styles.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{color: 'red', background: bg}",
-        "escape": true
+        "value": "{color: 'red', background: bg}"
       },
       "mustEscape": true
     },
@@ -31913,8 +31860,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[styles.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "{color: 'red', background: bg}",
-        "escape": true
+        "value": "{color: 'red', background: bg}"
       },
       "mustEscape": true
     },
@@ -32555,8 +32501,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[tag.interpolation.pu
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "icon",
-        "escape": true
+        "value": "icon"
       },
       "mustEscape": true
     },
@@ -32721,8 +32666,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[tag.interpolation.pu
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "icon",
-        "escape": true
+        "value": "icon"
       },
       "mustEscape": true
     },
@@ -35407,8 +35351,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[vars.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "list",
-        "escape": true
+        "value": "list"
       },
       "mustEscape": true
     },
@@ -35424,8 +35367,7 @@ de.neuland.pug4j.lexer.PugLexerTest.shouldCompileJadeToHtml[vars.pug]=[
       "selfClosing": false,
       "type": "Attribute",
       "attributeValue": {
-        "value": "foo",
-        "escape": true
+        "value": "foo"
       },
       "mustEscape": true
     },

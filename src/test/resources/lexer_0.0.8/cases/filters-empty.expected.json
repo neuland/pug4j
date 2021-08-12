@@ -6,7 +6,7 @@
 {"type":"indent","line":5,"col":1,"val":"4"}
 {"type":"tag","line":5,"col":5,"val":"fb:user","selfClosing":false}
 {"type":"startattributes","line":5,"col":12}
-{"type":"attribute","line":5,"col":13,"name":"age","val":{"value":"user.age","escape":true}}
+{"type":"attribute","line":5,"col":13,"name":"age","val":{"value":"user.age"},"escape":true}
 {"type":"endattributes","line":5,"col":25}
 {"type":"indent","line":6,"col":1,"val":"6"}
 {"type":"filter","line":6,"col":7,"val":"cdata"}

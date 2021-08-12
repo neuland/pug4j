@@ -2,11 +2,11 @@
 {"type":"newline","line":2,"col":1}
 {"type":"tag","line":2,"col":1,"val":"a","selfClosing":false}
 {"type":"startattributes","line":2,"col":2}
-{"type":"attribute","line":2,"col":3,"name":"href","val":"/user/#{id}"}
+{"type":"attribute","line":2,"col":3,"name":"href","val":"/user/#{id}","escape":true}
 {"type":"endattributes","line":2,"col":21}
 {"type":"newline","line":3,"col":1}
 {"type":"tag","line":3,"col":1,"val":"foo","selfClosing":false}
 {"type":"startattributes","line":3,"col":4}
-{"type":"attribute","line":3,"col":5,"name":"bar","val":"stuff #{here} yup"}
+{"type":"attribute","line":3,"col":5,"name":"bar","val":"stuff #{here} yup","escape":true}
 {"type":"endattributes","line":3,"col":29}
 {"type":"eos","line":3,"col":30}

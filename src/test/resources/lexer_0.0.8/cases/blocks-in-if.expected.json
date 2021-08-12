@@ -24,7 +24,7 @@
 {"type":"indent","line":15,"col":1,"val":"12"}
 {"type":"tag","line":15,"col":13,"val":"meta","selfClosing":false}
 {"type":"startattributes","line":15,"col":17}
-{"type":"attribute","line":15,"col":19,"name":"charset","val":"utf8"}
+{"type":"attribute","line":15,"col":19,"name":"charset","val":"utf8","escape":true}
 {"type":"endattributes","line":15,"col":34}
 {"type":"newline","line":16,"col":1}
 {"type":"tag","line":16,"col":13,"val":"title","selfClosing":false}

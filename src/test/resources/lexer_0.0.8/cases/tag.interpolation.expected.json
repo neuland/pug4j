@@ -8,13 +8,13 @@
 {"type":"newline","line":6,"col":1}
 {"type":"interpolation","line":6,"col":1,"val":"tag"}
 {"type":"startattributes","line":6,"col":7}
-{"type":"attribute","line":6,"col":8,"name":"foo","val":"bar"}
+{"type":"attribute","line":6,"col":8,"name":"foo","val":"bar","escape":true}
 {"type":"endattributes","line":6,"col":17}
 {"type":"text","line":6,"col":19,"val":"value"}
 {"type":"newline","line":7,"col":1}
 {"type":"interpolation","line":7,"col":1,"val":"foo ? 'a' : 'li'"}
 {"type":"startattributes","line":7,"col":20}
-{"type":"attribute","line":7,"col":21,"name":"something","val":true}
+{"type":"attribute","line":7,"col":21,"name":"something","val":true,"escape":true}
 {"type":"endattributes","line":7,"col":30}
 {"type":"text","line":7,"col":32,"val":"here"}
 {"type":"newline","line":9,"col":1}
@@ -30,7 +30,7 @@
 {"type":"tag","line":13,"col":9,"val":"img","selfClosing":false}
 {"type":"class","line":13,"col":12,"val":"icon"}
 {"type":"startattributes","line":13,"col":17}
-{"type":"attribute","line":13,"col":18,"name":"src","val":{"value":"icon","escape":true}}
+{"type":"attribute","line":13,"col":18,"name":"src","val":{"value":"icon"},"escape":true}
 {"type":"endattributes","line":13,"col":26}
 {"type":"newline","line":14,"col":1}
 {"type":"mixin-block","line":14,"col":9}
@@ -44,7 +44,7 @@
 {"type":"tag","line":17,"col":9,"val":"img","selfClosing":false}
 {"type":"class","line":17,"col":12,"val":"icon"}
 {"type":"startattributes","line":17,"col":17}
-{"type":"attribute","line":17,"col":18,"name":"src","val":{"value":"icon","escape":true}}
+{"type":"attribute","line":17,"col":18,"name":"src","val":{"value":"icon"},"escape":true}
 {"type":"endattributes","line":17,"col":26}
 {"type":"newline","line":18,"col":1}
 {"type":"mixin-block","line":18,"col":9}
@@ -59,7 +59,7 @@
 {"type":"newline","line":22,"col":1}
 {"type":"call","line":22,"col":3,"val":"item"}
 {"type":"startattributes","line":22,"col":8}
-{"type":"attribute","line":22,"col":9,"name":"href","val":"/contact"}
+{"type":"attribute","line":22,"col":9,"name":"href","val":"/contact","escape":true}
 {"type":"endattributes","line":22,"col":24}
 {"type":"text","line":22,"col":26,"val":"Contact"}
 {"type":"outdent","line":23,"col":1}

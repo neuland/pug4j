@@ -1,11 +1,11 @@
 {"type":"tag","line":1,"col":1,"val":"script","selfClosing":false}
 {"type":"startattributes","line":1,"col":7}
-{"type":"attribute","line":1,"col":8,"name":"type","val":"text/x-template"}
+{"type":"attribute","line":1,"col":8,"name":"type","val":"text/x-template","escape":true}
 {"type":"endattributes","line":1,"col":30}
 {"type":"indent","line":2,"col":1,"val":"2"}
 {"type":"tag","line":2,"col":3,"val":"div","selfClosing":false}
 {"type":"startattributes","line":2,"col":6}
-{"type":"attribute","line":2,"col":7,"name":"id","val":"user-<%= user.id %>"}
+{"type":"attribute","line":2,"col":7,"name":"id","val":"user-<%= user.id %>","escape":false}
 {"type":"endattributes","line":2,"col":32}
 {"type":"indent","line":3,"col":1,"val":"4"}
 {"type":"tag","line":3,"col":5,"val":"h1","selfClosing":false}

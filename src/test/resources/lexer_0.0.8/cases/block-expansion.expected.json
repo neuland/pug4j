@@ -4,7 +4,7 @@
 {"type":":","line":2,"col":5}
 {"type":"tag","line":2,"col":7,"val":"a","selfClosing":false}
 {"type":"startattributes","line":2,"col":8}
-{"type":"attribute","line":2,"col":9,"name":"href","val":"#"}
+{"type":"attribute","line":2,"col":9,"name":"href","val":"#","escape":true}
 {"type":"endattributes","line":2,"col":17}
 {"type":"text","line":2,"col":19,"val":"foo"}
 {"type":"newline","line":3,"col":1}
@@ -12,7 +12,7 @@
 {"type":":","line":3,"col":5}
 {"type":"tag","line":3,"col":7,"val":"a","selfClosing":false}
 {"type":"startattributes","line":3,"col":8}
-{"type":"attribute","line":3,"col":9,"name":"href","val":"#"}
+{"type":"attribute","line":3,"col":9,"name":"href","val":"#","escape":true}
 {"type":"endattributes","line":3,"col":17}
 {"type":"text","line":3,"col":19,"val":"bar"}
 {"type":"outdent","line":5,"col":1}

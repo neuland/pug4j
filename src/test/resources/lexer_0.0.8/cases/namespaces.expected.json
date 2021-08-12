@@ -3,6 +3,6 @@
 {"type":"newline","line":2,"col":1}
 {"type":"tag","line":2,"col":1,"val":"foo","selfClosing":false}
 {"type":"startattributes","line":2,"col":4}
-{"type":"attribute","line":2,"col":5,"name":"fb:foo","val":"bar"}
+{"type":"attribute","line":2,"col":5,"name":"fb:foo","val":"bar","escape":true}
 {"type":"endattributes","line":2,"col":17}
 {"type":"eos","line":2,"col":18}

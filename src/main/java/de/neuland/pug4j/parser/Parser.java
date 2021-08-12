@@ -570,19 +570,6 @@ public class Parser {
         return this.tag(tagNode,true);
     }
 
-    private Node blockExpansion() {
-        if (peek() instanceof Colon) {
-            Token token = expect(Colon.class);
-            Colon colon = (Colon) token;
-            BlockNode block = new BlockNode();
-            block.setLineNumber(colon.getStartLineNumber());
-            block.setFileName(filename);
-            block.getNodes().add(parseExpr());
-            return block;
-        }
-        return block();
-    }
-
     private BlockNode block() {
         Token token = expect(Indent.class);
 

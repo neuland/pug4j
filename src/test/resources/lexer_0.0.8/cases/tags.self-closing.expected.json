@@ -5,7 +5,7 @@
 {"type":"newline","line":4,"col":1}
 {"type":"tag","line":4,"col":3,"val":"foo","selfClosing":false}
 {"type":"startattributes","line":4,"col":6}
-{"type":"attribute","line":4,"col":7,"name":"bar","val":"baz"}
+{"type":"attribute","line":4,"col":7,"name":"bar","val":"baz","escape":true}
 {"type":"endattributes","line":4,"col":16}
 {"type":"newline","line":5,"col":1}
 {"type":"tag","line":5,"col":3,"val":"foo","selfClosing":false}
@@ -13,7 +13,7 @@
 {"type":"newline","line":6,"col":1}
 {"type":"tag","line":6,"col":3,"val":"foo","selfClosing":false}
 {"type":"startattributes","line":6,"col":6}
-{"type":"attribute","line":6,"col":7,"name":"bar","val":"baz"}
+{"type":"attribute","line":6,"col":7,"name":"bar","val":"baz","escape":true}
 {"type":"endattributes","line":6,"col":16}
 {"type":"slash","line":6,"col":17}
 {"type":"newline","line":7,"col":1}
@@ -22,7 +22,7 @@
 {"type":"newline","line":8,"col":1}
 {"type":"tag","line":8,"col":3,"val":"foo","selfClosing":false}
 {"type":"startattributes","line":8,"col":6}
-{"type":"attribute","line":8,"col":7,"name":"bar","val":"baz"}
+{"type":"attribute","line":8,"col":7,"name":"bar","val":"baz","escape":true}
 {"type":"endattributes","line":8,"col":16}
 {"type":"text","line":8,"col":18,"val":"/"}
 {"type":"newline","line":9,"col":1}

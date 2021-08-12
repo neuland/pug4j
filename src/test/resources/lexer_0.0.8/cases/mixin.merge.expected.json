@@ -19,7 +19,7 @@
 {"type":"class","line":5,"col":4,"val":"bar"}
 {"type":"&attributes","line":5,"col":8,"val":"attributes"}
 {"type":"startattributes","line":5,"col":31}
-{"type":"attribute","line":5,"col":32,"name":"class","val":"baz"}
+{"type":"attribute","line":5,"col":32,"name":"class","val":"baz","escape":true}
 {"type":"endattributes","line":5,"col":43}
 {"type":"text","line":5,"col":45,"val":"Four"}
 {"type":"outdent","line":7,"col":1}
@@ -41,13 +41,13 @@
 {"type":"newline","line":12,"col":1}
 {"type":"call","line":12,"col":3,"val":"foo"}
 {"type":"startattributes","line":12,"col":7}
-{"type":"attribute","line":12,"col":8,"name":"class","val":"hello"}
+{"type":"attribute","line":12,"col":8,"name":"class","val":"hello","escape":true}
 {"type":"endattributes","line":12,"col":21}
 {"type":"newline","line":13,"col":1}
 {"type":"call","line":13,"col":3,"val":"foo"}
 {"type":"class","line":13,"col":7,"val":"hello"}
 {"type":"startattributes","line":13,"col":13}
-{"type":"attribute","line":13,"col":14,"name":"class","val":"world"}
+{"type":"attribute","line":13,"col":14,"name":"class","val":"world","escape":true}
 {"type":"endattributes","line":13,"col":27}
 {"type":"newline","line":14,"col":1}
 {"type":"call","line":14,"col":3,"val":"foo"}

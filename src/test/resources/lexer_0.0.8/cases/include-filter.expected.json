@@ -11,7 +11,7 @@
 {"type":"include","line":5,"col":7}
 {"type":"filter","line":5,"col":14,"val":"coffee"}
 {"type":"startattributes","line":5,"col":21}
-{"type":"attribute","line":5,"col":22,"name":"minify","val":{"value":"true","escape":true}}
+{"type":"attribute","line":5,"col":22,"name":"minify","val":{"value":"true"},"escape":true}
 {"type":"endattributes","line":5,"col":33}
 {"type":"path","line":5,"col":35,"val":"include-filter-coffee.coffee"}
 {"type":"outdent","line":6,"col":1}
@@ -20,7 +20,7 @@
 {"type":"include","line":7,"col":7}
 {"type":"filter","line":7,"col":14,"val":"coffee"}
 {"type":"startattributes","line":7,"col":21}
-{"type":"attribute","line":7,"col":22,"name":"minify","val":{"value":"false","escape":true}}
+{"type":"attribute","line":7,"col":22,"name":"minify","val":{"value":"false"},"escape":true}
 {"type":"endattributes","line":7,"col":34}
 {"type":"path","line":7,"col":36,"val":"include-filter-coffee.coffee"}
 {"type":"outdent","line":8,"col":1}

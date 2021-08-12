@@ -5,12 +5,12 @@
 {"type":"indent","line":3,"col":1,"val":"4"}
 {"type":"tag","line":3,"col":5,"val":"script","selfClosing":false}
 {"type":"startattributes","line":3,"col":11}
-{"type":"attribute","line":3,"col":12,"name":"src","val":"/caustic.js"}
+{"type":"attribute","line":3,"col":12,"name":"src","val":"/caustic.js","escape":true}
 {"type":"endattributes","line":3,"col":29}
 {"type":"newline","line":4,"col":1}
 {"type":"tag","line":4,"col":5,"val":"script","selfClosing":false}
 {"type":"startattributes","line":4,"col":11}
-{"type":"attribute","line":4,"col":12,"name":"src","val":"/app.js"}
+{"type":"attribute","line":4,"col":12,"name":"src","val":"/app.js","escape":true}
 {"type":"endattributes","line":4,"col":25}
 {"type":"outdent","line":5,"col":1}
 {"type":"outdent","line":5,"col":1}

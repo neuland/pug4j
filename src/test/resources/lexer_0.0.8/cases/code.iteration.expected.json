@@ -18,7 +18,7 @@
 {"type":"indent","line":13,"col":1,"val":"4"}
 {"type":"tag","line":13,"col":5,"val":"li","selfClosing":false}
 {"type":"startattributes","line":13,"col":7}
-{"type":"attribute","line":13,"col":8,"name":"class","val":"item-#{i}"}
+{"type":"attribute","line":13,"col":8,"name":"class","val":"item-#{i}","escape":true}
 {"type":"endattributes","line":13,"col":25}
 {"type":"code","line":13,"col":26,"val":"item","escape":true,"buffer":true}
 {"type":"outdent","line":15,"col":1}

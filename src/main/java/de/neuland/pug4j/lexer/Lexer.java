@@ -1227,7 +1227,6 @@ public class Lexer {
                 tok.setMustEscape(valueResponse.isMustEscape());
             } else {
                 ExpressionString expressionString = new ExpressionString(valueResponse.getValue());
-                expressionString.setEscape(valueResponse.isMustEscape());
                 assertExpression(valueResponse.getValue());
                 tok.setAttributeValue(expressionString);
                 tok.setMustEscape(valueResponse.isMustEscape());

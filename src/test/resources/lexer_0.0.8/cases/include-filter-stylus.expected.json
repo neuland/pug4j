@@ -1,6 +1,6 @@
 {"type":"tag","line":1,"col":1,"val":"style","selfClosing":false}
 {"type":"startattributes","line":1,"col":6}
-{"type":"attribute","line":1,"col":7,"name":"type","val":"text/css"}
+{"type":"attribute","line":1,"col":7,"name":"type","val":"text/css","escape":true}
 {"type":"endattributes","line":1,"col":22}
 {"type":"indent","line":2,"col":1,"val":"2"}
 {"type":"include","line":2,"col":3}

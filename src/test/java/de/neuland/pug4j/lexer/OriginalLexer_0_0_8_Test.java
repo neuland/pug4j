@@ -105,7 +105,7 @@ public class OriginalLexer_0_0_8_Test {
             if(token instanceof Attribute) {
                 expectedToken.val = ((Attribute) token).getAttributeValue();
                 expectedToken.name = token.getName();
-//                expectedToken.escaped = ((Attribute) token).isEscaped();
+                expectedToken.escape = ((Attribute) token).mustEscape();
             }else{
                 expectedToken.val=token.getValue();
             }

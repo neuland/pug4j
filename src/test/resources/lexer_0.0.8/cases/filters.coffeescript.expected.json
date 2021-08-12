@@ -1,6 +1,6 @@
 {"type":"tag","line":1,"col":1,"val":"script","selfClosing":false}
 {"type":"startattributes","line":1,"col":7}
-{"type":"attribute","line":1,"col":8,"name":"type","val":"text/javascript"}
+{"type":"attribute","line":1,"col":8,"name":"type","val":"text/javascript","escape":true}
 {"type":"endattributes","line":1,"col":30}
 {"type":"indent","line":2,"col":1,"val":"2"}
 {"type":"filter","line":2,"col":3,"val":"coffeescript"}
@@ -10,7 +10,7 @@
 {"type":"newline","line":4,"col":1}
 {"type":"filter","line":4,"col":3,"val":"coffeescript"}
 {"type":"startattributes","line":4,"col":16}
-{"type":"attribute","line":4,"col":17,"name":"minify","val":{"value":"true","escape":true}}
+{"type":"attribute","line":4,"col":17,"name":"minify","val":{"value":"true"},"escape":true}
 {"type":"endattributes","line":4,"col":28}
 {"type":"start-pipeless-text","line":4,"col":29}
 {"type":"text","line":5,"col":5,"val":"math ="}

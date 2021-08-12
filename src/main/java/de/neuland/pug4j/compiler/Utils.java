@@ -55,11 +55,11 @@ public class Utils {
 				}
 				result.add(escapedExpression);
 			} else {
-				ExpressionString expression = new ExpressionString(code);
+				InterpolatedString interpolatedString = new InterpolatedString(code);
 				if (flag.equals("#")) {
-					expression.setEscape(true);
+					interpolatedString.setEscape(true);
 				}
-				result.add(expression);
+				result.add(interpolatedString);
 			}
 			start = closingBracketIndex;
 		}
@@ -79,8 +79,8 @@ public class Utils {
 		for (Object entry : prepared) {
 			if (entry instanceof String) {
 				result.append(entry);
-			} else if (entry instanceof ExpressionString) {
-				ExpressionString expression = (ExpressionString) entry;
+			} else if (entry instanceof InterpolatedString) {
+				InterpolatedString expression = (InterpolatedString) entry;
 				String stringValue = "";
 				String value = expressionHandler.evaluateStringExpression(expression.getValue(), model);
 				if (value != null) {

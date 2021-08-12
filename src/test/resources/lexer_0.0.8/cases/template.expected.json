@@ -1,6 +1,6 @@
 {"type":"tag","line":1,"col":1,"val":"script","selfClosing":false}
 {"type":"startattributes","line":1,"col":7}
-{"type":"attribute","line":1,"col":8,"name":"type","val":"text/x-template"}
+{"type":"attribute","line":1,"col":8,"name":"type","val":"text/x-template","escape":true}
 {"type":"endattributes","line":1,"col":30}
 {"type":"indent","line":2,"col":1,"val":"2"}
 {"type":"tag","line":2,"col":3,"val":"article","selfClosing":false}
@@ -14,7 +14,7 @@
 {"type":"outdent","line":6,"col":1}
 {"type":"tag","line":6,"col":1,"val":"script","selfClosing":false}
 {"type":"startattributes","line":6,"col":7}
-{"type":"attribute","line":6,"col":8,"name":"type","val":"text/x-template"}
+{"type":"attribute","line":6,"col":8,"name":"type","val":"text/x-template","escape":true}
 {"type":"endattributes","line":6,"col":30}
 {"type":"dot","line":6,"col":31}
 {"type":"start-pipeless-text","line":6,"col":32}

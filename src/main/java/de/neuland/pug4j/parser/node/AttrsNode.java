@@ -170,13 +170,9 @@ public abstract class AttrsNode extends Node {
         Object attributeValue = attribute.getValue();
         if("class".equals(name)) {
             if (attributeValue instanceof String) {
-                escaped = attribute.isEscaped();
 //                value = getInterpolatedAttributeValue(attributeValue,escaped, model, template);
                 value = (String) attributeValue;
-                if(escaped)
-                    value = StringEscapeUtils.escapeHtml4(value);
             } else if (attributeValue instanceof ExpressionString) {
-                escaped = ((ExpressionString) attributeValue).isEscape();
                 Object expressionValue = evaluateExpression((ExpressionString) attributeValue, model,template.getExpressionHandler());
 
                 //List to String
@@ -232,6 +228,9 @@ public abstract class AttrsNode extends Node {
                 }
             }
             if(!StringUtils.isBlank(value)) {
+                if(escaped)
+                    value = StringEscapeUtils.escapeHtml4(value);
+
                 classes.add(value);
                 classEscaping.add(escaped);
             }
@@ -240,7 +239,6 @@ public abstract class AttrsNode extends Node {
             if("style".equals(name)){
                 if (attributeValue instanceof ExpressionString) { //isConstant
                     ExpressionString expressionString = (ExpressionString) attributeValue;
-                    escaped = expressionString.isEscape();
                     Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
                     if (expressionValue == null) {
                         return;
@@ -252,7 +250,6 @@ public abstract class AttrsNode extends Node {
             }
             if (attributeValue instanceof ExpressionString) {
                 ExpressionString expressionString = (ExpressionString) attributeValue;
-                escaped = expressionString.isEscape();
                 Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
                 if (expressionValue == null) {
                     return;
@@ -273,18 +270,11 @@ public abstract class AttrsNode extends Node {
                                 || expressionValue instanceof Map
                 ) {
                     value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
-                    if(escaped)
-                        value = StringEscapeUtils.escapeHtml4(value);
                 }else{
                     value = expressionValue.toString();
-                    if(escaped)
-                        value = StringEscapeUtils.escapeHtml4(value);
                 }
             }else if (attributeValue instanceof String) {
-//                escaped = attribute.isEscaped();
                 value = (String) attributeValue;
-                if(escaped)
-                    value = StringEscapeUtils.escapeHtml4(value);
                 //            value = getInterpolatedAttributeValue(attributeValue, escaped, model, template);
             } else if (attributeValue instanceof Boolean) {
                 Boolean booleanValue = (Boolean) attributeValue;
@@ -298,6 +288,8 @@ public abstract class AttrsNode extends Node {
                 }
             }
         }
+        if(escaped)
+            value = StringEscapeUtils.escapeHtml4(value);
         newAttributes.put(name,value);
     }
 
