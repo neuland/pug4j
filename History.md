@@ -1,4 +1,8 @@
 # History
+## 2.0.0-beta-3 / 2021-08-13
+* Implemented style attribute parsing
+* Fixed class escaping. Now multiple class attributes can have different escaping 
+
 ## 2.0.0-beta-2 / 2021-08-11
 * Fixed rendering of attribute values.
 * Removed interpolation on attributes and filters because its also not supported in pugjs anymore
