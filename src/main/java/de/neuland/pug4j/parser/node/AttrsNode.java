@@ -3,7 +3,6 @@ package de.neuland.pug4j.parser.node;
 import java.util.*;
 
 import com.google.gson.Gson;
-import de.neuland.pug4j.compiler.Utils;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
