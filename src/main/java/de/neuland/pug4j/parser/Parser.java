@@ -31,6 +31,7 @@ public class Parser {
     private HashMap<String, MixinNode> mixins = new HashMap<>();
     private int inBlock = 0;
     private PathHelper pathHelper = new PathHelper();
+    private Node extendingNode;
 
     public Parser(String filename, TemplateLoader templateLoader, ExpressionHandler expressionHandler) throws IOException {
         this.filename = filename;
@@ -70,7 +71,7 @@ public class Parser {
             } else {
                 Node expr = parseExpr();
                 if (expr != null) {
-                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield()){
+                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()){
                         block.getNodes().addAll(expr.getNodes());
                     }else {
                         block.push(expr);
@@ -80,9 +81,10 @@ public class Parser {
         }
 
         if (extending != null) {
-            getContexts().push(extending);
-            Node rootNode = extending.parse();
-            getContexts().pop();
+            Node rootNode = extendingNode;
+            //            getContexts().push(extending);
+//            Node rootNode = extending.parse();
+//            getContexts().pop();
 
             // hoist mixins
             Set<String> keySet = this.mixins.keySet();
@@ -319,7 +321,6 @@ public class Parser {
         String mode = blockToken.getMode();
         String name = blockToken.getValue().trim();
 
-        this.inBlock++;
         BlockNode blockNode;
         if (peek() instanceof Indent) {
             blockNode = block();
@@ -331,55 +332,32 @@ public class Parser {
         blockNode.setLineNumber(blockToken.getStartLineNumber());
         blockNode.setColumn(blockToken.getStartColumn());
         blockNode.setFileName(this.filename);
-        this.inBlock--;
 
-        BlockNode prev;
-        if (this.blocks.get(name) == null)
-            prev = new BlockNode();
-        else
-            prev = this.blocks.get(name);
-
-
-        if ("replace".equals(prev.getMode())) {
-            this.blocks.put(name, prev);
-            return prev;
-        }
-        LinkedList<Node> allNodes = new LinkedList<>();
-        allNodes.addAll(prev.getPrepended());
-        allNodes.addAll(blockNode.getNodes());
-        allNodes.addAll(prev.getAppended());
-        //ok
-
-
-        if ("append".equals(mode)) {
-            LinkedList<Node> appendedNodes = new LinkedList<Node>();
-            if (prev.getParser() == this) {
-                appendedNodes.addAll(prev.getAppended());
+        if (this.blocks.get(name) != null) {
+            BlockNode prev = this.blocks.get(name);
+            if ("replace".equals(mode)) {
+                prev.setNodes(blockNode.getNodes());
+                this.blocks.put(name, prev);
+                return prev;
+            } else if ("append".equals(mode)) {
+                LinkedList<Node> appendedNodes = new LinkedList<Node>();
+                appendedNodes.addAll(prev.getNodes());
                 appendedNodes.addAll(blockNode.getNodes());
-            } else {
-                appendedNodes.addAll(blockNode.getNodes());
-                appendedNodes.addAll(prev.getAppended());
-            }
-            prev.setAppended(appendedNodes);
-        } else if ("prepend".equals(mode)) {
-            LinkedList<Node> prependedNodes = new LinkedList<Node>();
-            if (prev.getParser() == this) {
+                prev.setNodes(appendedNodes);
+                this.blocks.put(name, prev);
+                return prev;
+            } else if ("prepend".equals(mode)) {
+                LinkedList<Node> prependedNodes = new LinkedList<Node>();
                 prependedNodes.addAll(blockNode.getNodes());
-                prependedNodes.addAll(prev.getPrepended());
-            } else {
-                prependedNodes.addAll(prev.getPrepended());
-                prependedNodes.addAll(blockNode.getNodes());
+                prependedNodes.addAll(prev.getNodes());
+                prev.setNodes(prependedNodes);
+                this.blocks.put(name, prev);
+                return prev;
             }
-            prev.setPrepended(prependedNodes);
-
         }
 
-        blockNode.setNodes(allNodes);
-        blockNode.setAppended(prev.getAppended());
-        blockNode.setPrepended(prev.getPrepended());
         blockNode.setMode(mode);
         blockNode.setParser(this);
-        blockNode.setSubBlock(this.inBlock > 0);
 
         blocks.put(name, blockNode);
         return blockNode;
@@ -481,7 +459,7 @@ public class Parser {
         }
 
         Parser parser = createParser(templateName);
-        parser.setBlocks(new LinkedHashMap<String, BlockNode>(blocks));
+        parser.setBlocks(blocks);
         parser.setMixins(mixins);
         contexts.push(parser);
         Node ast = parser.parse();
@@ -504,22 +482,13 @@ public class Parser {
         String templateName = path.getValue().trim();
         Parser parser = createParser(templateName);
 
-        parser.setBlocks(blocks);
         parser.setContexts(contexts);
         extending = parser;
+        getContexts().push(extending);
+        extendingNode = extending.parse();
+        this.blocks = parser.getBlocks();
+        getContexts().pop();
 
-//        ExtendsNode node = new ExtendsNode();
-//
-//        FileReference file = new FileReference();
-//        file.setPath(path.getValue().trim());
-//        file.setLine(path.getStartLineNumber());
-//        file.setColumn(path.getStartColumn());
-//        file.setFilename(this.filename);
-//
-//        node.setFile(file);
-//        node.setLineNumber(extendsToken.getStartLineNumber());
-//        node.setColumn(extendsToken.getStartColumn());
-//        node.setFileName(this.filename);
         LiteralNode node = new LiteralNode();
         node.setValue("");
         return node;
@@ -1159,7 +1128,7 @@ public class Parser {
             throw error("INVALID_TOKEN","expected \"" + expectedTokenClass.toString() + "\", but got "+peek().getType()+"\"",peek());
         }
     }
-    public Map<String, BlockNode> getBlocks() {
+    public LinkedHashMap<String, BlockNode> getBlocks() {
         return blocks;
     }
 

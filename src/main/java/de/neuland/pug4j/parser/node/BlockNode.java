@@ -6,17 +6,11 @@ import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.template.PugTemplate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 public class BlockNode extends Node {
 
 	private boolean yield = false;
 	private String mode;
-	private Collection<? extends Node> prepended = new ArrayList<Node>();
-	private Collection<? extends Node> appended = new ArrayList<Node>();;
 	private Parser parser;
-	private boolean subBlock;
 	private boolean namedBlock;
 
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
@@ -73,36 +67,12 @@ public class BlockNode extends Node {
 		this.mode = mode;
 	}
 
-	public Collection<? extends Node> getPrepended() {
-		return prepended;
-	}
-
-	public void setPrepended(Collection<? extends Node> prepended) {
-		this.prepended = prepended;
-	}
-
-	public Collection<? extends Node> getAppended() {
-		return appended;
-	}
-
-	public void setAppended(Collection<? extends Node> appended) {
-		this.appended = appended;
-	}
-
 	public void setParser(Parser parser) {
 		this.parser = parser;
 	}
 
 	public Parser getParser() {
 		return parser;
-	}
-
-	public void setSubBlock(boolean subBlock) {
-		this.subBlock = subBlock;
-	}
-
-	public boolean isSubBlock() {
-		return subBlock;
 	}
 
 	public boolean isNamedBlock() {
