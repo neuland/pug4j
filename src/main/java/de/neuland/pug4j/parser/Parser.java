@@ -317,7 +317,7 @@ public class Parser {
     }
 
     private BlockNode parseBlock() {
-        Block blockToken = (Block)expect(Block.class);
+        Block blockToken = (Block) expect(Block.class);
         String mode = blockToken.getMode();
         String name = blockToken.getValue().trim();
 
@@ -332,32 +332,24 @@ public class Parser {
         blockNode.setLineNumber(blockToken.getStartLineNumber());
         blockNode.setColumn(blockToken.getStartColumn());
         blockNode.setFileName(this.filename);
-
-        if (this.blocks.get(name) != null) {
-            BlockNode prev = this.blocks.get(name);
-            if ("replace".equals(mode)) {
-                prev.setNodes(blockNode.getNodes());
-                this.blocks.put(name, prev);
-                return prev;
-            } else if ("append".equals(mode)) {
-                LinkedList<Node> appendedNodes = new LinkedList<Node>();
-                appendedNodes.addAll(prev.getNodes());
-                appendedNodes.addAll(blockNode.getNodes());
-                prev.setNodes(appendedNodes);
-                this.blocks.put(name, prev);
-                return prev;
-            } else if ("prepend".equals(mode)) {
-                LinkedList<Node> prependedNodes = new LinkedList<Node>();
-                prependedNodes.addAll(blockNode.getNodes());
-                prependedNodes.addAll(prev.getNodes());
-                prev.setNodes(prependedNodes);
-                this.blocks.put(name, prev);
-                return prev;
-            }
-        }
-
         blockNode.setMode(mode);
         blockNode.setParser(this);
+
+        BlockNode prev = this.blocks.get(name);
+        if (prev != null) {
+            LinkedList<Node> nodes = new LinkedList<Node>();
+            if ("replace".equals(mode)) {
+                nodes = blockNode.getNodes();
+            } else if ("append".equals(mode)) {
+                nodes.addAll(prev.getNodes());
+                nodes.addAll(blockNode.getNodes());
+            } else if ("prepend".equals(mode)) {
+                nodes.addAll(blockNode.getNodes());
+                nodes.addAll(prev.getNodes());
+            }
+            prev.setNodes(nodes);
+            blockNode = prev;
+        }
 
         blocks.put(name, blockNode);
         return blockNode;
