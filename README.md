@@ -307,6 +307,7 @@ You can read more about this in the [JEXL documentation](http://commons.apache.o
 - Compiler Level has been raised to Java 8+
 - Syntax has been adapted to the most current pug version. (2.0.4)
 - Filter interface changed
+- Interpolations not supported in attributes anymore. It now behaves the same way as in pug.js.
 
 <a name="breaking-changes-1"></a>
 ### Breaking Changes in 1.3.1

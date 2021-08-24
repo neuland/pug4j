@@ -33,7 +33,15 @@ public class ExpressionNode extends Node {
 	@Override
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 		try {
-			Object result = template.getExpressionHandler().evaluateExpression(getValue(), model);
+			String value = getValue();
+			if (hasBlock()) {
+				model.put("pug4j__innerblock",block);
+				model.put("pug4j__template",template);
+				model.put("pug4j__model",model);
+				model.put("pug4j__writer",writer);
+				value = value+"{pug4j__innerblock.execute(pug4j__writer,pug4j__model,pug4j__template)}";
+			}
+			Object result = template.getExpressionHandler().evaluateExpression(value, model);
 			if (result == null || !buffer) {
 				return;
 			}
@@ -42,14 +50,6 @@ public class ExpressionNode extends Node {
 				string = StringEscapeUtils.escapeHtml4(string);
 			}
 			writer.append(string);
-
-            if (hasBlock()) {
-                writer.increment();
-                block.execute(writer, model, template);
-                writer.decrement();
-                writer.newline();
-            }
-
 		} catch (ExpressionException e) {
 			throw new PugCompilerException(this, template.getTemplateLoader(), e);
 		}
