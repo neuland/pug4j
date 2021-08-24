@@ -8,11 +8,20 @@ import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
 
+import java.util.UUID;
+
 public class ExpressionNode extends Node {
 
 	private boolean escape;
 	private boolean buffer;
 	private boolean inline;
+	private String bufferedExpressionString = "";
+	private String nodeId;
+
+	public ExpressionNode() {
+		super();
+		nodeId = createNodeId();
+	}
 
 	public void setEscape(boolean escape) {
 		this.escape = escape;
@@ -29,27 +38,44 @@ public class ExpressionNode extends Node {
 	public void setInline(boolean inline) {
 		this.inline = inline;
 	}
+	private String createNodeId(){
+		return UUID.randomUUID().toString().replace("-","");
+	}
+	public String getBufferedExpressionString(){
+		return bufferedExpressionString;
+	}
+
+	public void setBufferedExpressionString(String bufferedExpressionString) {
+		this.bufferedExpressionString = bufferedExpressionString;
+	}
 
 	@Override
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 		try {
 			String value = getValue();
 			if (hasBlock()) {
-				model.put("pug4j__innerblock",block);
-				model.put("pug4j__template",template);
+				String pug4j_buffer = bufferedExpressionString;
+				if(pug4j_buffer.length()==0)
+					value = getValue();
+				else
+					value = pug4j_buffer+" "+getValue();
+
+				model.put("pug4j__innerblock_"+nodeId,block);
+				model.put("pug4j__template_"+nodeId,template);
 				model.put("pug4j__model",model);
 				model.put("pug4j__writer",writer);
-				value = value+"{pug4j__innerblock.execute(pug4j__writer,pug4j__model,pug4j__template)}";
+				bufferedExpressionString = value+"{pug4j__innerblock_"+nodeId+".execute(pug4j__writer,pug4j__model,pug4j__template_"+nodeId+")}";
+			}else {
+				Object result = template.getExpressionHandler().evaluateExpression(value, model);
+				if (result == null || !buffer) {
+					return;
+				}
+				String string = result.toString();
+				if (escape) {
+					string = StringEscapeUtils.escapeHtml4(string);
+				}
+				writer.append(string);
 			}
-			Object result = template.getExpressionHandler().evaluateExpression(value, model);
-			if (result == null || !buffer) {
-				return;
-			}
-			String string = result.toString();
-			if (escape) {
-				string = StringEscapeUtils.escapeHtml4(string);
-			}
-			writer.append(string);
 		} catch (ExpressionException e) {
 			throw new PugCompilerException(this, template.getTemplateLoader(), e);
 		}

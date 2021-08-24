@@ -1,6 +1,7 @@
 package de.neuland.pug4j.parser.node;
 
 import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
@@ -18,14 +19,35 @@ public class BlockNode extends Node {
 		// Pretty print multi-line text
 		if (writer.isPp() && getNodes().size() > 1 && !writer.isEscape() && isTextNode(getNodes().get(0)) && isTextNode(getNodes().get(1)))
 			writer.prettyIndent(1, true);
-
+		String bufferedExpressionString = "";
 		for (int i = 0; i < getNodes().size(); ++i) {
 			// Pretty print text
-			if (writer.isPp() && i > 0 && !writer.isEscape() && isTextNode(getNodes().get(i)) && isTextNode(getNodes().get(i - 1)) && (getNodes().get(i - 1).getValue() != null && getNodes().get(i - 1).getValue().contains("\n")))
+			Node node = getNodes().get(i);
+			if (writer.isPp() && i > 0 && !writer.isEscape() && isTextNode(node) && isTextNode(getNodes().get(i - 1)) && (getNodes().get(i - 1).getValue() != null && getNodes().get(i - 1).getValue().contains("\n")))
 				writer.prettyIndent(1, false);
+			if(node instanceof ExpressionNode && node.hasBlock()){
+				((ExpressionNode) node).setBufferedExpressionString(bufferedExpressionString);
+			}
+			node.execute(writer, model, template);
+			if(node instanceof ExpressionNode && node.hasBlock()){
+				bufferedExpressionString = ((ExpressionNode) node).getBufferedExpressionString();
+			}
 
-			getNodes().get(i).execute(writer, model, template);
+			Node nextNode = null;
+			if(i+1 < getNodes().size())
+				nextNode = getNodes().get(i + 1);
+
+			//If multiple expressions in a row evaluate buffered code
+			if(node instanceof ExpressionNode && node.hasBlock() && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && nextNode.hasBlock()))){
+				try {
+					Object result = template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
+				} catch (ExpressionException e) {
+					throw new PugCompilerException(this, template.getTemplateLoader(), e);
+				}
+				bufferedExpressionString = "";
+			}
 		}
+
 
 	}
 
