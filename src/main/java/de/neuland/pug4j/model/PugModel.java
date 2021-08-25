@@ -16,8 +16,8 @@ import de.neuland.pug4j.parser.node.MixinNode;
 
 public class PugModel implements Map<String, Object> {
 
-	private static final String LOCALS = "locals";
-	public static final String NON_LOCAL_VARS = "nonLocalVars";
+	public static final String LOCALS = "locals";
+	public static final String NON_LOCAL_VARS = "pug4j__nonLocalVars";
 
 	private Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
 	private Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();

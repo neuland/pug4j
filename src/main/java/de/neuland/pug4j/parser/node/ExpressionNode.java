@@ -51,7 +51,7 @@ public class ExpressionNode extends Node {
 
 	@Override
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
-		try {
+
 			String value = getValue();
 			if (hasBlock()) {
 				String pug4j_buffer = bufferedExpressionString;
@@ -66,7 +66,12 @@ public class ExpressionNode extends Node {
 				model.put("pug4j__writer",writer);
 				bufferedExpressionString = value+"{pug4j__innerblock_"+nodeId+".execute(pug4j__writer,pug4j__model,pug4j__template_"+nodeId+")}";
 			}else {
-				Object result = template.getExpressionHandler().evaluateExpression(value, model);
+				Object result = null;
+				try {
+					result = template.getExpressionHandler().evaluateExpression(value, model);
+				} catch (ExpressionException e) {
+					throw new PugCompilerException(this, template.getTemplateLoader(), e);
+				}
 				if (result == null || !buffer) {
 					return;
 				}
@@ -76,9 +81,7 @@ public class ExpressionNode extends Node {
 				}
 				writer.append(string);
 			}
-		} catch (ExpressionException e) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), e);
-		}
+
 	}
 
 	@Override

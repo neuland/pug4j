@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.exceptions.PugLexerException;
+import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.filter.CssFilter;
 import de.neuland.pug4j.filter.JsFilter;
@@ -206,7 +208,7 @@ public class CompilerTest {
     }
 
     @Test
-    @Ignore("not supported since Jade 1.0 anymore")
+//    @Ignore("not supported since Jade 1.0 anymore")
     public void conditionalComment() {
         run("conditional_comment");
     }
@@ -354,12 +356,6 @@ public class CompilerTest {
         tryToRender("expression_method_invocation_exception");
     }
 
-    @Test
-    @Ignore("Not working in Jade JS")
-    public void expressionLenientVariableEvaluation() throws IOException {
-        run("expression_lenient");
-    }
-
     private void tryToRender(String file) throws IOException {
         Pug4J.render(TestFileHelper.getCompilerResourcePath(file + ".jade"), new HashMap<String, Object>());
     }
@@ -439,21 +435,26 @@ public class CompilerTest {
 
     private void run(String testName, boolean pretty, PugModel model) {
         Parser parser = null;
-        JexlExpressionHandler expressionHandler = new JexlExpressionHandler();
+        ExpressionHandler expressionHandler = new PugConfiguration().getExpressionHandler();
+        FileTemplateLoader loader = null;
         try {
-            FileTemplateLoader loader = new FileTemplateLoader(
+            loader = new FileTemplateLoader(
                     TestFileHelper.getCompilerResourcePath(""), "jade");
             parser = new Parser(testName, loader, expressionHandler);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
         Node root = parser.parse();
         Compiler compiler = new Compiler(root);
         PugTemplate pugTemplate = new PugTemplate();
+        pugTemplate.setTemplateLoader(loader);
         pugTemplate.setExpressionHandler(expressionHandler);
         compiler.setTemplate(pugTemplate);
         compiler.setPrettyPrint(pretty);
         compiler.setExpressionHandler(expressionHandler);
+
         String expected = readFile(testName + expectedFileNameExtension);
         model.addFilter("markdown", new MarkdownFilter());
         model.addFilter("plain", new PlainFilter());

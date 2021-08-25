@@ -1,13 +1,14 @@
 package de.neuland.pug4j.expression;
 
+import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
-import org.graalvm.polyglot.proxy.ProxyArray;
-import org.graalvm.polyglot.proxy.ProxyObject;
+import de.neuland.pug4j.parser.node.BlockNode;
+import de.neuland.pug4j.template.PugTemplate;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,6 +116,17 @@ public class GraalJsExpressionHandlerTest {
         product.put("images", images);
         pugModel.put("product", product);
         Object o = graalJsExpressionHandler.evaluateExpression("(product.images[0])", pugModel);
+
+        Object what = pugModel.get("x");
+    }
+    @Test
+    public void testBlockNodeAccess() throws ExpressionException  {
+        IndentWriter writer = new IndentWriter(new StringWriter());
+        pugModel.put("pug4j__block", new BlockNode());
+        pugModel.put("pug4j__writer", writer);
+        pugModel.put("pug4j__template", new PugTemplate());
+        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
+        Object o = graalJsExpressionHandler.evaluateExpression("pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)", pugModel);
 
         Object what = pugModel.get("x");
     }

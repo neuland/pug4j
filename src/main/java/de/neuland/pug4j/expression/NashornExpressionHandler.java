@@ -8,6 +8,8 @@ import javax.script.*;
 import java.util.*;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
+import static de.neuland.pug4j.model.PugModel.NON_LOCAL_VARS;
+
 
 /**
  * Work In Progress - Using ScriptEngineManager
@@ -43,7 +45,7 @@ public class NashornExpressionHandler extends AbstractExpressionHandler {
 
             for (Map.Entry<String, Object> stringObjectEntry : bindings.entrySet()) {
                 String key = stringObjectEntry.getKey();
-                if(!"locals".equals(key)&&!"nonLocalVars".equals(key)) {
+                if(!PugModel.LOCALS.equals(key)&&!PugModel.NON_LOCAL_VARS.equals(key)) {
                     model.put(key, convertToPugModelValue(stringObjectEntry.getValue()));
                 }
             }

@@ -3,7 +3,6 @@ package de.neuland.pug4j.expression;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
 import org.graalvm.polyglot.*;
-import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static de.neuland.pug4j.model.PugModel.NON_LOCAL_VARS;
 import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
@@ -20,7 +20,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     {
         HostAccess all = newBuilder().allowPublicAccess(true).allowAllImplementations(true).allowArrayAccess(true).allowListAccess(true).build();
         jsContext = Context.newBuilder("js").allowHostAccess(all).allowAllAccess(true).allowExperimentalOptions(true)
-                    .allowHostClassLookup(s -> true).allowPolyglotAccess(PolyglotAccess.ALL).build();
+                    .allowHostClassLookup(s -> true).allowPolyglotAccess(PolyglotAccess.ALL).option("engine.WarnInterpreterOnly","false").build();
     }
 
     @Override
@@ -35,12 +35,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             Value jsContextBindings = jsContext.getBindings("js");
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
-                if(!"locals".equals(key)&&!"nonLocalVars".equals(key)) {
-                    Object value = objectEntry.getValue();
-                    if(value instanceof Map)
-                        value = ProxyObject.fromMap((Map)value);
-                    if(value instanceof List)
-                        value = ProxyArray.fromList((List)value);
+                if(!PugModel.LOCALS.equals(key)&&!PugModel.NON_LOCAL_VARS.equals(key)) {
+                    Object value = getValue(objectEntry);
                     jsContextBindings.putMember(key, value);
                 }
             }
@@ -56,16 +52,30 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
 
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
+
             for (String memberKey : memberKeys) {
                 Value member = jsContextBindings.getMember(memberKey);
                 model.put(memberKey, convertToPugModelValue(member));
             }
+
             return convertToPugModelValue(eval);
         }
         catch (Exception ex){
             throw new ExpressionException(expression, ex);
         }
     }
+
+    private Object getValue(Map.Entry<String, Object> objectEntry) {
+        Object value = objectEntry.getValue();
+        if(!objectEntry.getKey().startsWith("pug4j__")){
+            if(value instanceof Map)
+                value = ProxyObject.fromMap((Map)value);
+            if(value instanceof List)
+                value = ProxyArray.fromList((List)value);
+        }
+        return value;
+    }
+
     private Object convertToPugModelValue(Value eval) {
         if(eval.isNull()) {
             return null;
