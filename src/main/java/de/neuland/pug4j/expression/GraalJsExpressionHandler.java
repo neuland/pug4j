@@ -35,7 +35,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             Value jsContextBindings = jsContext.getBindings("js");
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
-                if(!PugModel.LOCALS.equals(key)&&!PugModel.NON_LOCAL_VARS.equals(key)) {
+                if(!PugModel.NON_LOCAL_VARS.equals(key)) {
                     Object value = getValue(objectEntry);
                     jsContextBindings.putMember(key, value);
                 }
@@ -56,6 +56,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             for (String memberKey : memberKeys) {
                 Value member = jsContextBindings.getMember(memberKey);
                 model.put(memberKey, convertToPugModelValue(member));
+                jsContextBindings.putMember(memberKey, null);
             }
 
             return convertToPugModelValue(eval);
