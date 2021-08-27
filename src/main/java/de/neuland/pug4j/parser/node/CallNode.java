@@ -54,11 +54,11 @@ public class CallNode extends AttrsNode {
 
 		if (this.isCall()) {
 			model.pushScope();
-			model.put("block", block);
+			model.putLocal("block", block);
 			writeVariables(model, mixin, template);
 			writeAttributes(model, mixin, template);
 			mixin.getBlock().execute(writer, model, template);
-			model.put("block",null);
+//			model.putLocal("block",null);
 			model.popScope();
 
 		}else{
@@ -111,7 +111,7 @@ public class CallNode extends AttrsNode {
 				}
 			}
 			if (key != null) {
-				model.put(key, value);
+				model.putLocal(key, value);
 			}
 		}
 		if(mixin.getRest()!=null) {
@@ -130,7 +130,7 @@ public class CallNode extends AttrsNode {
 				}
 				restArguments.add(value);
 			}
-			model.put(mixin.getRest(), restArguments);
+			model.putLocal(mixin.getRest(), restArguments);
 		}
 	}
 

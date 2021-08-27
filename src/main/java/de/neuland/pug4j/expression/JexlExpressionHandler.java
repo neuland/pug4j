@@ -31,7 +31,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 
 	public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
 		try {
-			saveNonLocalVarAssignmentInModel(expression, model);
+			saveLocalVariableName(expression, model);
 			expression = removeVar(expression);
 			if (isplusplus.matcher(expression).find()) {
 				expression = convertPlusPlusExpression(expression);

@@ -24,7 +24,7 @@ public class PugModelTest {
 	public void scope() throws Exception {
 		assertEquals("world", model.get("hello"));
 		model.pushScope();
-		model.put("hello", "new world");
+		model.putLocal("hello", "new world");
 		assertEquals("new world", model.get("hello"));
 		model.popScope();
 		assertEquals("world", model.get("hello"));

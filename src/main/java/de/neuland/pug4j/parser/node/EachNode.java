@@ -55,8 +55,8 @@ public class EachNode extends Node {
 		}
 
 		while (iterator.hasNext()) {
-			model.put(getValue(), iterator.next());
-			model.put(getKey(), index);
+			model.putLocal(getValue(), iterator.next());
+			model.putLocal(getKey(), index);
 			getBlock().execute(writer, model, template);
 			index++;
 		}
@@ -69,8 +69,8 @@ public class EachNode extends Node {
 			return;
 		}
 		for (Object key : keys) {
-			model.put(getValue(), result.get(key));
-			model.put(getKey(), key);
+			model.putLocal(getValue(), result.get(key));
+			model.putLocal(getKey(), key);
 			getBlock().execute(writer, model, template);
 		}
 	}

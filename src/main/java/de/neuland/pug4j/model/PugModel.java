@@ -17,49 +17,29 @@ import de.neuland.pug4j.parser.node.MixinNode;
 public class PugModel implements Map<String, Object> {
 
 	public static final String LOCALS = "locals";
-	public static final String NON_LOCAL_VARS = "pug4j__nonLocalVars";
+	public static final String LOCAL_VARS = "pug4j__localVars";
 
 	private Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
 	private Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
 	private Map<String, Filter> filter = new HashMap<String, Filter>();
 
 	public PugModel(Map<String, Object> defaults) {
-		Map<String, Object> rootScope = new HashMap<String, Object>();
-		scopes.add(rootScope);
+		pushScope();
 
 		if (defaults != null) {
 			putAll(defaults);
 		}
 
-		put(LOCALS, this);
+		putLocal(LOCALS, defaults);
 	}
 
 	public void pushScope() {
 		HashMap<String, Object> scope = new HashMap<String, Object>();
+		scope.put(LOCAL_VARS, new HashSet<String>());
 		scopes.add(scope);
 	}
 
 	public void popScope() {
-		// first copy non local vars in first matching scope
-		Map<String, Object> lastScope = scopes.getLast();
-		if (lastScope.containsKey(NON_LOCAL_VARS)) {
-			Set<String> nonLocalVars = (Set<String>) lastScope.get(NON_LOCAL_VARS);
-			Iterator<Map<String, Object>> scopesIterator = scopes.descendingIterator();
-			scopesIterator.next();
-			int countFoundNonLocalVars = 0;
-			for (Iterator<Map<String, Object>> i = scopesIterator; i.hasNext();) {
-				Map<String, Object> scope = i.next();
-				for(String nonLocalVar : nonLocalVars) {
-					if (scope.containsKey(nonLocalVar) && lastScope.containsKey(nonLocalVar)) {
-						scope.put(nonLocalVar, lastScope.get(nonLocalVar));
-						countFoundNonLocalVars++;
-					}
-				}
-				if (nonLocalVars.size() == countFoundNonLocalVars) {
-					break;
-				}
-			}
-		}
 		scopes.removeLast();
 	}
 
@@ -119,7 +99,15 @@ public class PugModel implements Map<String, Object> {
 		}
 		return null;
 	}
-
+	private Map<String,Object> getScopeWithKey(Object key) {
+		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
+			Map<String, Object> scope = i.next();
+			if (scope.containsKey(key)) {
+				return scope;
+			}
+		}
+		return null;
+	}
 	@Override
 	public boolean isEmpty() {
 		return keySet().isEmpty();
@@ -136,10 +124,35 @@ public class PugModel implements Map<String, Object> {
 	}
 
 	@Override
-	// adds the object to the current scope
+	// adds the object to the correct scope
 	public Object put(String key, Object value) {
+		Set<String> localVars= getLocalVars();
+		if(localVars.contains(key)) {
+			return putLocal(key, value);
+		}else{
+			return putGlobal(key, value);
+		}
+	}
+
+	private Set<String> getLocalVars() {
+		return (Set<String>) scopes.getLast().get(LOCAL_VARS);
+	}
+
+	// adds the object to the current scope
+	public Object putLocal(String key, Object value) {
 		Object currentValue = get(key);
-		scopes.getLast().put(key, value);
+		Map<String, Object>	scope = scopes.getLast();
+		scope.put(key, value);
+		return currentValue;
+	}
+
+	// adds the object to the scope where the variable was last defined
+	public Object putGlobal(String key, Object value) {
+		Object currentValue = get(key);
+		Map<String, Object> scope = getScopeWithKey(key);
+		if (scope == null)
+			scope = scopes.getLast();
+		scope.put(key, value);
 		return currentValue;
 	}
 
@@ -185,5 +198,9 @@ public class PugModel implements Map<String, Object> {
 
 	public void addFilter(String name, Filter filter) {
 		this.filter.put(name, filter);
+	}
+
+	public void putLocalVariableName(String name) {
+		getLocalVars().add(name);
 	}
 }
