@@ -166,7 +166,7 @@ public class CallNode extends AttrsNode {
 			LinkedHashMap<String,String> attrs = attrs(model, template, newAttributes);
 			model.put("attributes", attrs);
   		}else{
-			model.put("attributes", null);
+			model.put("attributes", new LinkedHashMap<>());
 		}
 
 	}
