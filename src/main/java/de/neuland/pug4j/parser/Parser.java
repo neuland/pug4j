@@ -881,6 +881,7 @@ public class Parser {
 
         IfConditionNode main = new IfConditionNode(conditionalToken.getValue(), conditionalToken.getStartLineNumber());
         main.setInverse(conditionalToken.isInverseCondition());
+        main.setFileName(filename);
         if(peek() instanceof Indent){
             main.setBlock(block());
         }else{
@@ -894,6 +895,7 @@ public class Parser {
             }else if (peek() instanceof ElseIf) {
                 ElseIf token = (ElseIf) expect(ElseIf.class);
                 IfConditionNode elseIf = new IfConditionNode(token.getValue(), token.getStartLineNumber());
+                elseIf.setFileName(filename);
                 if(peek() instanceof Indent){
                     elseIf.setBlock(block());
                 }else{
@@ -903,6 +905,7 @@ public class Parser {
             }else if(peek() instanceof Else){
                 Else token = (Else) expect(Else.class);
                 IfConditionNode elseNode = new IfConditionNode(null, token.getStartLineNumber());
+                elseNode.setFileName(filename);
                 elseNode.setDefault(true);
                 if(peek() instanceof Indent){
                     elseNode.setBlock(block());
