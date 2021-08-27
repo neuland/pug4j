@@ -102,7 +102,6 @@ public abstract class AttrsNode extends Node {
 	protected String visitAttributes(PugModel model, PugTemplate template) {
         LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
         if(attributeBlocks.size()>0){
-            //Todo: AttributesBlock needs to be evaluated
             for (String attributeBlock : attributeBlocks) {
                 Object o = null;
                 try {
@@ -118,15 +117,15 @@ public abstract class AttrsNode extends Node {
                     }
                 }
             }
-            LinkedHashMap<String,String> attrs = attrs(model, template,newAttributes);
+            Map<String,String> attrs = attrs(model, template,newAttributes);
             return attrsToString(attrs);
         }else{
-            LinkedHashMap<String,String> attrs = attrs(model, template, newAttributes);
+            Map<String,String> attrs = attrs(model, template, newAttributes);
             return attrsToString(attrs);
         }
     }
 
-    private String attrsToString(LinkedHashMap<String, String> attrs) {
+    private String attrsToString(Map<String, String> attrs) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : attrs.entrySet()) {
             sb.append(" ");
@@ -140,10 +139,10 @@ public abstract class AttrsNode extends Node {
         return sb.toString();
     }
 
-    protected LinkedHashMap<String,String> attrs(PugModel model, PugTemplate template, LinkedList<Attr> attrs) {
+    protected Map<String,String> attrs(PugModel model, PugTemplate template, LinkedList<Attr> attrs) {
         ArrayList<String> classes = new ArrayList<>();
         ArrayList<Boolean> classEscaping = new ArrayList<>();
-        LinkedHashMap<String,String> newAttributes = new LinkedHashMap<>();
+        Map<String,String> newAttributes = new LinkedHashMap<>();
 
         for (Attr attribute : attrs) {
             try {
@@ -153,7 +152,7 @@ public abstract class AttrsNode extends Node {
             }
         }
 
-        LinkedHashMap<String,String> finalAttributes = new LinkedHashMap<>();
+        Map<String,String> finalAttributes = new LinkedHashMap<>();
         if(!classes.isEmpty()){
             String out = "";
             for (int i = 0; i < classes.size(); i++) {
@@ -174,7 +173,7 @@ public abstract class AttrsNode extends Node {
         return finalAttributes;
     }
 
-    private void addAttributesToMap(HashMap<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, PugTemplate template) throws ExpressionException {
+    private void addAttributesToMap(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, PugTemplate template) throws ExpressionException {
         String name = attribute.getName();
         boolean escaped = attribute.isEscaped();
 
@@ -275,7 +274,7 @@ public abstract class AttrsNode extends Node {
                     }
                 } else if (
                         expressionValue.getClass().isArray()
-                                || expressionValue instanceof Map
+                                || expressionValue instanceof Map || expressionValue instanceof List
                 ) {
                     value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
                 }else{
@@ -304,9 +303,9 @@ public abstract class AttrsNode extends Node {
         if(value instanceof Boolean && !(Boolean) value){
             return "";
         }
-        if(value instanceof LinkedHashMap){
+        if(value instanceof Map){
             String out = "";
-            Set<Map.Entry<String, String>> entries = ((LinkedHashMap<String, String>) value).entrySet();
+            Set<Map.Entry<String, String>> entries = ((Map<String, String>) value).entrySet();
             for (Map.Entry<String, String> style : entries) {
                 out = out + style.getKey() + ":" + style.getValue()+";";
             }

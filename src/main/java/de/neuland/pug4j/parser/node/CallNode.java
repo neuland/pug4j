@@ -163,7 +163,7 @@ public class CallNode extends AttrsNode {
   		}
 
 		if (newAttributes.size()>0) {
-			LinkedHashMap<String,String> attrs = attrs(model, template, newAttributes);
+			Map<String,String> attrs = attrs(model, template, newAttributes);
 			model.put("attributes", attrs);
   		}else{
 			model.put("attributes", new LinkedHashMap<>());

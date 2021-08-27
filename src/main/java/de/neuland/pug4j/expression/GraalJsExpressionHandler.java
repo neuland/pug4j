@@ -6,7 +6,8 @@ import org.graalvm.polyglot.*;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,13 +90,16 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             return null;
         }
         if(eval.hasArrayElements()) {
-            return eval.as(List.class);
+            return new ArrayList<Object>(eval.as(List.class));
         }
         if(eval.fitsInInt()){
             return eval.asInt();
         }
+        if(eval.canExecute()){
+            return eval;
+        }
         if(eval.hasMembers()){
-            return new HashMap<String, Object>(eval.as(Map.class));
+            return new LinkedHashMap<String, Object>(eval.as(Map.class));
         }
         if(eval.fitsInDouble() && !eval.fitsInInt()){
             return eval.asDouble();
