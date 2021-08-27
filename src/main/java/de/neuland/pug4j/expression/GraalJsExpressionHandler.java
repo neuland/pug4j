@@ -92,6 +92,15 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if(eval.hasArrayElements()) {
             return new ArrayList<Object>(eval.as(List.class));
         }
+        if(eval.isNumber()  && eval.fitsInInt() && String.valueOf(eval.asInt()).equals(eval.toString())){
+            return eval.asInt();
+        }
+        if(eval.isNumber()  && eval.fitsInLong() && String.valueOf(eval.asLong()).equals(eval.toString())){
+            return eval.asLong();
+        }
+        if(eval.fitsInDouble()){
+            return eval.asDouble();
+        }
         if(eval.fitsInInt()){
             return eval.asInt();
         }

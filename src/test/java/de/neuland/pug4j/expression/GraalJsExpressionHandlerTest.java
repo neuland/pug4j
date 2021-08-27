@@ -80,16 +80,31 @@ public class GraalJsExpressionHandlerTest {
     @Test
     public void testInt() throws ExpressionException  {
         graalJsExpressionHandler.evaluateExpression("var count = 5", pugModel);
-        int count = (int) pugModel.get("count");
-        assertEquals(5,count);
+        Object count = pugModel.get("count");
+        assertEquals("5",count.toString());
 
+    }
+    @Test
+    public void testDoubleModel() throws ExpressionException  {
+        pugModel.put("one",Double.valueOf(1.0));
+        graalJsExpressionHandler.evaluateExpression("var count = one", pugModel);
+        Object count = pugModel.get("count");
+        assertEquals("1",count.toString());
     }
     @Test
     public void testDouble() throws ExpressionException  {
         graalJsExpressionHandler.evaluateExpression("var price = 5.50", pugModel);
-        double price = (double) pugModel.get("price");
-        assertEquals(5.5,price,0.0001);
+        Object price = (Object) pugModel.get("price");
+        //assertEquals(5.5,price,0.0001);
+        assertEquals("5.5",price.toString());
     }
+    @Test
+    public void testDouble2() throws ExpressionException  {
+        graalJsExpressionHandler.evaluateExpression("var price = 5.00", pugModel);
+        Object price = (Object) pugModel.get("price");
+        assertEquals("5",price.toString());
+    }
+
     @Test
     public void testString() throws ExpressionException  {
         graalJsExpressionHandler.evaluateExpression("var moin = 'Hallo Welt!'", pugModel);
