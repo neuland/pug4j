@@ -43,10 +43,10 @@ block content
       Comments for your HTML readers.
       Use as much text as you want.
     - var test="value"
-    - var attributes = {"class":">moin"}
+    - var attributes = {class:">moin"}
     - var classes = ['foo', 'bar', 'baz']
     - var currentUrl = '/about'
-    div#bla.foo(class="<hallo#{test}" class!="<welt#{test}" class=classes class=['bing'] class={"active": currentUrl == '/about'} class={"active2": currentUrl == '/'} my-name="<Hase#{test}" my-unescaped-name!="<Hase2#{test}" my-value="Hallo "+test :vue-var="test")&attributes(attributes)
+    div#bla.foo(class="<hallo#{test}" class!="<welt#{test}" class=classes class=['bing'] class={active: currentUrl == '/about'} class={active2: currentUrl == '/'} my-name="<Hase#{test}" my-unescaped-name!="<Hase2#{test}" my-value="Hallo "+test :vue-var="test")&attributes(attributes)
         p
             |Mehrzeiliger Text
             | Zeile zwei #{test}
@@ -61,7 +61,7 @@ block content
     input(type='checkbox' checked)
     input(type='checkbox' checked=true)
     input(type='checkbox' checked=false)
-    a(style={"color": 'red', "background": 'green'} data-test={"key":"value"} data-test2=["value1","value2",3,4])
+    a(style={color: 'red', background: 'green'} data-test={key:"value"} data-test2=["value1","value2",3,4])
     - var friends = 10
     case friends
         when 0
@@ -75,7 +75,7 @@ block content
     p Interpolation works with #{'#{interpolation}'} too!
     p No escaping for #{'}'}!
     //- will not output within markup
-    - var user = {"description": 'foo bar baz'}
+    - var user = {description: 'foo bar baz'}
     - var authorised = false
     #user
         if user.description
