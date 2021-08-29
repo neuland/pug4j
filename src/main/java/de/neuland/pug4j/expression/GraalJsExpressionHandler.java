@@ -86,7 +86,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             if(value instanceof List)
                 value = ProxyArray.fromList((List)value);
         }
-        return jsContext.asValue(value);
+        return value;
     }
 
     private Object convertToPugModelValue(Value eval) {
@@ -108,8 +108,11 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if(eval.fitsInInt()){
             return eval.asInt();
         }
-        if(eval.canExecute()){
+        if(eval.canExecute() && eval.isHostObject()){
             return eval.asHostObject();
+        }
+        if(eval.isMetaObject()){
+            return eval;
         }
         if(eval.hasMembers()){
             return new LinkedHashMap<String, Object>(eval.as(Map.class));
@@ -125,7 +128,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         }
 
 
-        return eval.asHostObject();
+        return eval;
     }
 
     @Override
