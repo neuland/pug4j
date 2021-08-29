@@ -1,5 +1,7 @@
 package de.neuland.pug4j.parser.node;
 
+import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import de.neuland.pug4j.compiler.IndentWriter;
@@ -8,6 +10,8 @@ import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class ExpressionNode extends Node {
@@ -17,7 +21,7 @@ public class ExpressionNode extends Node {
 	private boolean inline;
 	private String bufferedExpressionString = "";
 	private String nodeId;
-
+	private static Gson gson = new Gson();
 	public ExpressionNode() {
 		super();
 		nodeId = createNodeId();
@@ -75,11 +79,20 @@ public class ExpressionNode extends Node {
 				if (result == null || !buffer) {
 					return;
 				}
-				String string = result.toString();
-				if (escape) {
-					string = StringEscapeUtils.escapeHtml4(string);
+				String expressionValue;
+				if(result.getClass().isArray()){
+					Object[] resultArray = (Object[])result;
+					expressionValue = StringUtils.joinWith(",",resultArray);
+				}else if(result instanceof List){
+					List resultArray = (List)result;
+					expressionValue = StringUtils.joinWith(",",resultArray.toArray());
+				}else{
+					expressionValue = result.toString();
 				}
-				writer.append(string);
+				if (escape) {
+					expressionValue = StringEscapeUtils.escapeHtml4(expressionValue);
+				}
+				writer.append(expressionValue);
 			}
 
 	}
