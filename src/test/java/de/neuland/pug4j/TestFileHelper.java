@@ -16,6 +16,7 @@ public class TestFileHelper {
     public static final String TESTFILE_20150515_ORIGINAL_FOLDER = "/originalTests20150515/";
     public static final String TESTFILE_PUG2_ORIGINAL_FOLDER = "/pug@2.0.4/";
     public static final String TESTFILE_PUG4J_FOLDER = "/tests/";
+    public static final String TESTFILE_PUG4J_GRAALVM_FOLDER = "/testsGraalVM/";
     public static final String TESTFILE_PUG2_ADJUSTED_FOLDER = "/pug@2.0.4_adjusted/";
     public static final String TESTFILE_ISSUES_FOLDER = "/issues/";
     public static final String TESTFILE_COMPILER_ERROR_FOLDER = "/compiler/errors/";
@@ -116,6 +117,14 @@ public class TestFileHelper {
 	public static String getPug4JTestsResourcePath(String fileName) {
 		try {
 			return getResourcePath(TESTFILE_PUG4J_FOLDER + fileName);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static String getPug4JGraalVMTestsResourcePath(String fileName) {
+		try {
+			return getResourcePath(TESTFILE_PUG4J_GRAALVM_FOLDER + fileName);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

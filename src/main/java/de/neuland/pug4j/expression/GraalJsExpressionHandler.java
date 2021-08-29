@@ -36,9 +36,9 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
         try{
             saveLocalVariableName(expression, model);
-//            jsContext = Context.newBuilder("js").allowHostAccess(all).allowAllAccess(true).allowExperimentalOptions(true)
-//                    .allowHostClassLookup(s -> true).allowPolyglotAccess(PolyglotAccess.ALL).option("engine.WarnInterpreterOnly","false").build();
-//            Value jsContextBindings = jsContext.getBindings("js");
+            //jsContext = Context.newBuilder("js").allowHostAccess(all).allowAllAccess(true).allowExperimentalOptions(true)
+            //        .allowHostClassLookup(s -> true).allowPolyglotAccess(PolyglotAccess.ALL).option("engine.WarnInterpreterOnly","false").build();
+            //Value jsContextBindings = jsContext.getBindings("js");
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
                 if(!PugModel.LOCAL_VARS.equals(key)) {
@@ -61,8 +61,12 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
             for (String memberKey : memberKeys) {
                 Value member = jsContextBindings.getMember(memberKey);
-                model.put(memberKey, convertToPugModelValue(member));
-                jsContextBindings.putMember(memberKey, null);
+                if(!memberKey.startsWith("pug4j__")) {
+                    model.put(memberKey, convertToPugModelValue(member));
+                }else{
+                    model.put(memberKey, member.asHostObject());
+                }
+               //jsContextBindings.putMember(memberKey, null);
             }
             return convertToPugModelValue(eval);
         }
@@ -82,7 +86,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             if(value instanceof List)
                 value = ProxyArray.fromList((List)value);
         }
-        return value;
+        return jsContext.asValue(value);
     }
 
     private Object convertToPugModelValue(Value eval) {
@@ -105,7 +109,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             return eval.asInt();
         }
         if(eval.canExecute()){
-            return eval;
+            return eval.asHostObject();
         }
         if(eval.hasMembers()){
             return new LinkedHashMap<String, Object>(eval.as(Map.class));
@@ -121,7 +125,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         }
 
 
-        return eval;
+        return eval.asHostObject();
     }
 
     @Override

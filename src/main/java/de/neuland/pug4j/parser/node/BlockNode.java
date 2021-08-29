@@ -40,7 +40,9 @@ public class BlockNode extends Node {
 			//If multiple expressions in a row evaluate buffered code
 			if(node instanceof ExpressionNode && node.hasBlock() && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && nextNode.hasBlock()))){
 				try {
+					//model.pushScope();
 					Object result = template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
+					//model.popScope();
 				} catch (ExpressionException e) {
 					throw new PugCompilerException(this, template.getTemplateLoader(), e);
 				}

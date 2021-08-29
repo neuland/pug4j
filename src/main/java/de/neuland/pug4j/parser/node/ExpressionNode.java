@@ -64,7 +64,7 @@ public class ExpressionNode extends Node {
 				model.put("pug4j__template_"+nodeId,template);
 				model.put("pug4j__model",model);
 				model.put("pug4j__writer",writer);
-				bufferedExpressionString = value+"{pug4j__innerblock_"+nodeId+".execute(pug4j__writer,pug4j__model,pug4j__template_"+nodeId+")}";
+				bufferedExpressionString = value+"{pug4j__model.pushScope();pug4j__innerblock_"+nodeId+".execute(pug4j__writer,pug4j__model,pug4j__template_"+nodeId+");pug4j__model.popScope();}";
 			}else {
 				Object result = null;
 				try {
