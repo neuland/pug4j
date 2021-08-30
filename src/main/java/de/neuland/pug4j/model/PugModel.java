@@ -30,7 +30,7 @@ public class PugModel implements Map<String, Object> {
 			putAll(defaults);
 		}
 
-		putLocal(LOCALS, defaults);
+		putLocal(LOCALS, this);
 	}
 
 	public void pushScope() {

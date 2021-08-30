@@ -1,4 +1,13 @@
 # History
+## 2.0.0 / 2021-08-30
+* pug4j should now support all features of pugjs 2.0.4
+* Made GraalJsExpressionHandler work
+* * fixed scoping
+* * fixed object conversion
+* support bufferd code blocks
+* fixed a bug when using append,prepend,replace blocks with multiple extends
+* fixed text presentation of arrays and lists
+
 ## 2.0.0-beta-3 / 2021-08-13
 * Implemented style attribute parsing
 * Fixed class escaping. Now multiple class attributes can have different escaping 
