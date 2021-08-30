@@ -1,5 +1,6 @@
 package de.neuland.pug4j;
 
+import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.filter.MarkdownFilter;
@@ -39,6 +40,7 @@ public class Pug4JIntegrationTest {
     @Test
     public void shouldCompilePugToHtml() throws Exception {
         PugConfiguration pug = new PugConfiguration();
+        pug.setExpressionHandler(new JexlExpressionHandler());
         String fileTemplateLoaderPath = TestFileHelper.getPug4JTestsResourcePath("");
         FileTemplateLoader fileTemplateLoader = new FileTemplateLoader(fileTemplateLoaderPath, "pug");
         String basePath = "cases";

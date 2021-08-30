@@ -453,7 +453,6 @@ public class CompilerTest {
         pugTemplate.setExpressionHandler(expressionHandler);
         compiler.setTemplate(pugTemplate);
         compiler.setPrettyPrint(pretty);
-        compiler.setExpressionHandler(expressionHandler);
 
         String expected = readFile(testName + expectedFileNameExtension);
         model.addFilter("markdown", new MarkdownFilter());

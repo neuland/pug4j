@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
+
 public class ExpressionNode extends Node {
 
 	private boolean escape;
@@ -64,11 +66,11 @@ public class ExpressionNode extends Node {
 				else
 					value = pug4j_buffer+" "+getValue();
 
-				model.put("pug4j__innerblock_"+nodeId,block);
-				model.put("pug4j__template_"+nodeId,template);
-				model.put("pug4j__model",model);
-				model.put("pug4j__writer",writer);
-				bufferedExpressionString = value+"{pug4j__model.pushScope();pug4j__innerblock_"+nodeId+".execute(pug4j__writer,pug4j__model,pug4j__template_"+nodeId+");pug4j__model.popScope();}";
+				model.put(PUG4J_MODEL_PREFIX+"innerblock_"+nodeId,block);
+				model.put(PUG4J_MODEL_PREFIX+"template_"+nodeId,template);
+				model.put(PUG4J_MODEL_PREFIX+"model",model);
+				model.put(PUG4J_MODEL_PREFIX+"writer",writer);
+				bufferedExpressionString = value+"{"+PUG4J_MODEL_PREFIX+"model.pushScope();"+PUG4J_MODEL_PREFIX+"innerblock_"+nodeId+".execute("+PUG4J_MODEL_PREFIX+"writer,"+PUG4J_MODEL_PREFIX+"model,pug4j__template_"+nodeId+");"+PUG4J_MODEL_PREFIX+"model.popScope();}";
 			}else {
 				Object result = null;
 				try {

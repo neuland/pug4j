@@ -122,13 +122,5 @@ public class NashornExpressionHandler extends AbstractExpressionHandler {
         jexlExpressionHandler.assertExpression(expression);
     }
 
-    @Override
-    public void setCache(boolean cache) {
 
-    }
-
-    @Override
-    public void clearCache() {
-
-    }
 }

@@ -15,6 +15,14 @@ public abstract class AbstractExpressionHandler implements ExpressionHandler {
             String var = matcher.group(2);
             model.putLocalVariableName(var);
         }
+    }
+    @Override
+    public void setCache(boolean cache) {
+
+    }
+
+    @Override
+    public void clearCache() {
 
     }
 }

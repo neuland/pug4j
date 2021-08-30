@@ -25,7 +25,6 @@ public class PugTemplate {
 		Compiler compiler = new Compiler(rootNode);
 		compiler.setPrettyPrint(prettyPrint);
 		compiler.setTemplate(this);
-		compiler.setExpressionHandler(expressionHandler);
 		compiler.compile(model, writer);
 	}
 

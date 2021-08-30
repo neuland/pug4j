@@ -82,9 +82,6 @@ public class Parser {
 
         if (extending != null) {
             Node rootNode = extendingNode;
-            //            getContexts().push(extending);
-//            Node rootNode = extending.parse();
-//            getContexts().pop();
 
             // hoist mixins
             Set<String> keySet = this.mixins.keySet();
@@ -372,39 +369,13 @@ public class Parser {
     private Node parseInclude() {
         Include includeToken = (Include)expect(Include.class);
 
-//        IncludeNode node = new IncludeNode();
-//        FileReference file = new FileReference();
-//        file.setFilename(this.filename);
-
-
-
         LinkedList<IncludeFilterNode> filters = new LinkedList<IncludeFilterNode>();
         while(peek() instanceof Filter){
             filters.add(parseIncludeFilter());
         }
 
         Path pathToken = (Path) expect(Path.class);
-//        String filePath = pathToken.getValue().trim();
-//        file.setPath(filePath);
-//        file.setLine(pathToken.getStartLineNumber());
-//        file.setColumn(pathToken.getStartColumn());
-//        node.setFile(file);
-//
-//
-//        String extension = FilenameUtils.getExtension(filePath);
-//        if(templateLoader.getExtension().equals(extension) && filters.size()==0){
-//            node.setBlock(peek() instanceof Indent?this.block():this.emptyBlock(includeToken.getStartLineNumber()));
-//            //warning jade is deprecated
-//        }else{
-//            node.setRaw(true);
-//            node.setFilters(filters);
-//            if(peek() instanceof Indent){
-//                throw error("RAW_INCLUDE_BLOCK","Raw inclusion cannot contain a block",peek());
-//            }
-//        }
-//        return node;
 
-        //TODO: check where logik will be
         String templateName = pathToken.getValue().trim();
         String path = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
 

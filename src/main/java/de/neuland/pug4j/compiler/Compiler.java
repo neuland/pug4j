@@ -14,7 +14,6 @@ public class Compiler {
 	private final Node rootNode;
 	private boolean prettyPrint;
 	private PugTemplate template = new PugTemplate();
-	private ExpressionHandler expressionHandler;
 
 	public Compiler(Node rootNode) {
 		this.rootNode = rootNode;
@@ -39,9 +38,4 @@ public class Compiler {
 	public void setTemplate(PugTemplate pugTemplate) {
 		this.template = pugTemplate;
 	}
-
-	public void setExpressionHandler(ExpressionHandler expressionHandler) {
-		this.expressionHandler = expressionHandler;
-	}
-
 }

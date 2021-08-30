@@ -3,6 +3,7 @@ package de.neuland.pug4j.parser.node;
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.template.PugTemplate;
@@ -40,9 +41,7 @@ public class BlockNode extends Node {
 			//If multiple expressions in a row evaluate buffered code
 			if(node instanceof ExpressionNode && node.hasBlock() && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && nextNode.hasBlock()))){
 				try {
-					//model.pushScope();
-					Object result = template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
-					//model.popScope();
+					template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
 				} catch (ExpressionException e) {
 					throw new PugCompilerException(this, template.getTemplateLoader(), e);
 				}
