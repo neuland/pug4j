@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 import static org.graalvm.polyglot.HostAccess.newBuilder;
@@ -18,6 +19,7 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
     private final Context jsContext;
+    private Map<String,Value> cache = new ConcurrentHashMap();
 
     public GraalJsExpressionHandler() {
         jsContext = createContext();
@@ -55,10 +57,14 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             }else{
                  js = Source.create("js", expression);
             }
-
-            eval = jsContext.eval(js);
-
-
+            Value value = cache.get(expression);
+            if(value!=null)
+                eval = value.execute();
+            else{
+                eval = jsContext.parse(js);
+                cache.put(expression,eval);
+                eval = eval.execute();
+            }
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
             for (String memberKey : memberKeys) {
                 Value member = jsContextBindings.getMember(memberKey);
