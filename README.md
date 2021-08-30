@@ -1,8 +1,11 @@
 [![Build Status](https://secure.travis-ci.org/neuland/pug4j.png?branch=master)](http://travis-ci.org/neuland/pug4j)
 
-# pug4j (formerly known as jade4j) - a pug implementation written in Java
+# pug4j - a pug implementation written in Java
 pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
 
+pug4j was formerly known as jade4j. Because of the naming change of the javascript version and the alignment to the featureset of pug.js (https://pugjs.org/) we decided to switch the name.
+
+With the addition of a new [GraalJsExpressionHandler](#graalvm) youre code can be more compatible to the js version than before. 
 ## Contents
 
 - [Example](#example)
@@ -93,7 +96,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>2.0.0-beta-3</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
@@ -151,7 +154,6 @@ model.put("company", "neuland");
 
 config.renderTemplate(template, model);
 ```
-
 <a name="api-caching"></a>
 ### Caching
 
@@ -272,7 +274,7 @@ The original pug implementation uses JavaScript for expression handling in `if`,
     if book.price < 5.50 && !book.soldOut
       p.sale special offer: #{book.title}
 
-    each author in ["artur", "stefan", "michael"]
+    each author in ["artur", "stefan", "michael","christoph"]
       h2= author
 
 As of version 0.3.0, jade4j uses [JEXL](http://commons.apache.org/jexl/) instead of [OGNL](http://en.wikipedia.org/wiki/OGNL) for parsing and executing these expressions.
@@ -280,6 +282,16 @@ As of version 2.0.0, pug4j uses JEXL3
 We decided to switch to JEXL because its syntax and behavior is more similar to ECMAScript/JavaScript and so closer to the original pug.js implementation. JEXL runs also much faster than OGNL. In our benchmark, it showed a **performance increase by factor 3 to 4**.
 
 We are using a slightly modified JEXL version which to have better control of the exception handling. JEXL now runs in a semi-strict mode, where non existing values and properties silently evaluate to `null`/`false` where as invalid method calls lead to a `PugCompilerException`.
+
+<a name="graalvm"></a>
+### GraalVM Expressionhandler (NEW! in 2.0.0)
+If you want to try out a more javascript friendly expression handling, you can try out the GraalJS Expression Handler. It supports native javascript expressions but may be slower. You can configure it like this:
+
+```java
+PugConfiguration config = new PugConfiguration();
+
+config.setExpressionHandler(new GraalJsExpressionHandler())
+```
 
 <a name="reserved-words"></a>
 ## Reserved Words
@@ -307,7 +319,7 @@ You can read more about this in the [JEXL documentation](http://commons.apache.o
 - Compiler Level has been raised to Java 8+
 - Syntax has been adapted to the most current pug version. (2.0.4)
 - Filter interface changed
-- Interpolations not supported in attributes anymore. It now behaves the same way as in pug.js.
+- Interpolations not supported in attributes and filters anymore. It now behaves the same way as in pug.js.
 
 <a name="breaking-changes-1"></a>
 ### Breaking Changes in 1.3.1
@@ -344,7 +356,7 @@ Special thanks to [TJ Holowaychuk](https://github.com/visionmedia) the creator o
 
 The MIT License
 
-Copyright (C) 2011-2020 [neuland Büro für Informatik](http://www.neuland-bfi.de/), Bremen, Germany
+Copyright (C) 2011-2021 [neuland Büro für Informatik](http://www.neuland-bfi.de/), Bremen, Germany
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
