@@ -6,31 +6,41 @@ import org.graalvm.polyglot.*;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
-    private final Context jsContext;
-    private Map<String,Value> cache = new ConcurrentHashMap();
+    final HostAccess all = newBuilder().allowPublicAccess(true).allowAllImplementations(true).allowArrayAccess(true).allowListAccess(true).build();
+    final Engine engine = Engine.newBuilder().option("engine.WarnInterpreterOnly", "false").allowExperimentalOptions(true).build();
+    final ThreadLocal<Map<String,Value>> cacheThreadLocal = ThreadLocal.withInitial(new Supplier<Map<String,Value>>() {
 
-    public GraalJsExpressionHandler() {
-        jsContext = createContext();
-    }
+        @Override
+        public Map<String,Value> get() {
+            return new ConcurrentHashMap<String,Value>();
+        }
+    });
+    final ThreadLocal<Context> contextThreadLocal = ThreadLocal.withInitial(new Supplier<Context>() {
 
-    private Context createContext() {
-        HostAccess all = newBuilder().allowPublicAccess(true).allowAllImplementations(true).allowArrayAccess(true).allowListAccess(true).build();
-        return Context.newBuilder("js").allowHostAccess(all).allowAllAccess(true).allowExperimentalOptions(true)
-                .allowHostClassLookup(s -> true).allowPolyglotAccess(PolyglotAccess.ALL).option("engine.WarnInterpreterOnly","false").build();
-    }
-
+        @Override
+        public Context get() {
+            Context context = Context.newBuilder("js")
+                    .engine(engine)
+                    .allowHostAccess(all)
+                    .allowAllAccess(true)
+                    .allowHostClassLookup(s -> true)
+                    .allowPolyglotAccess(PolyglotAccess.ALL)
+                    .build();
+            context.initialize("js");
+            return context;
+        }
+    });
 
     @Override
     public Boolean evaluateBooleanExpression(String expression, PugModel model) throws ExpressionException {
@@ -39,9 +49,12 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
     @Override
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
+        Context context = contextThreadLocal.get();
+        Map<String,Value> cache = cacheThreadLocal.get();
+        context.enter();
         try{
             saveLocalVariableName(expression, model);
-            Value jsContextBindings = jsContext.getBindings("js");
+            Value jsContextBindings = context.getBindings("js");
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
                 if(!PugModel.LOCAL_VARS.equals(key)) {
@@ -61,15 +74,15 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             if(value!=null)
                 eval = value.execute();
             else{
-                eval = jsContext.parse(js);
+                eval = context.parse(js);
                 cache.put(expression,eval);
                 eval = eval.execute();
             }
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
             for (String memberKey : memberKeys) {
-                Value member = jsContextBindings.getMember(memberKey);
                 if (model.knowsKey(memberKey)){
                     if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
+                        Value member = jsContextBindings.getMember(memberKey);
                         model.put(memberKey, javaValue(member));
                         jsContextBindings.putMember(memberKey, null);
                     }
@@ -82,6 +95,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                 return null;
             }
             throw new ExpressionException(expression, ex);
+        }finally {
+            context.leave();
         }
     }
 

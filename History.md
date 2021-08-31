@@ -1,4 +1,8 @@
 # History
+## 2.0.1 / 2021-08-31
+* improved speed of GraalJsExpressionHandler a lot
+* made GraalJSExpressionHandler Thread-Safe
+
 ## 2.0.0 / 2021-08-30
 * pug4j should now support all features of pugjs 2.0.4
 * Made GraalJsExpressionHandler work
