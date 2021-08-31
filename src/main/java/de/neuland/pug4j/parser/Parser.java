@@ -498,7 +498,7 @@ public class Parser {
         tagNode.setColumn(token.getStartColumn());
         tagNode.setFileName(filename);
         tagNode.setName(name);
-        tagNode.setBuffer(true);
+        tagNode.setInterpolated(true);
         return this.tag(tagNode,true);
     }
 

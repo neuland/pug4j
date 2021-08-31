@@ -101,7 +101,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             return null;
         }
         if(eval.hasArrayElements()) {
-            return new ArrayList<Object>(eval.as(List.class));
+            return eval.as(List.class);
         }
         if(eval.isNumber()  && eval.fitsInInt() && String.valueOf(eval.asInt()).equals(eval.toString())){
             return eval.asInt();
@@ -115,14 +115,14 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if(eval.fitsInInt()){
             return eval.asInt();
         }
-        if(eval.canExecute() && eval.isHostObject()){
+        if(eval.isHostObject()){
             return eval.asHostObject();
         }
         if(eval.isMetaObject()){
             return eval;
         }
         if(eval.hasMembers()){
-            return new LinkedHashMap<String, Object>(eval.as(Map.class));
+            return eval.as(Map.class);
         }
         if(eval.fitsInDouble() && !eval.fitsInInt()){
             return eval.asDouble();

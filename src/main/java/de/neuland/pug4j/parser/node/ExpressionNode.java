@@ -10,6 +10,7 @@ import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,7 +24,6 @@ public class ExpressionNode extends Node {
 	private boolean inline;
 	private String bufferedExpressionString = "";
 	private String nodeId;
-	private static Gson gson = new Gson();
 	public ExpressionNode() {
 		super();
 		nodeId = createNodeId();
@@ -88,6 +88,8 @@ public class ExpressionNode extends Node {
 				}else if(result instanceof List){
 					List resultArray = (List)result;
 					expressionValue = StringUtils.joinWith(",",resultArray.toArray());
+				}else if(result instanceof Map){
+					expressionValue = new LinkedHashMap<String,Object>((Map)result).toString();
 				}else{
 					expressionValue = result.toString();
 				}

@@ -12,7 +12,7 @@ public class TagNode extends AttrsNode {
     private Node textNode;
     private static final String[] inlineTags = {"a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map", "samp", "small", "span", "strong", "sub", "sup"};
     private static final String[] whitespaceSensitiveTags = {"pre","textarea"};
-    private boolean buffer = false;
+    private boolean interpolated = false;
 
     public TagNode() {
         this.block = new BlockNode();
@@ -92,7 +92,7 @@ public class TagNode extends AttrsNode {
 
         if (!writer.isCompiledTag()) {
             if (!writer.isCompiledDoctype() && "html".equals(name)) {
-//              template.setDoctype(null);
+// TODO:             template.setDoctype(null);
             }
             writer.setCompiledTag(true);
         }
@@ -104,9 +104,15 @@ public class TagNode extends AttrsNode {
 
         if (isSelfClosing() || (!template.isXml() && isSelfClosingTag())) {
             openTag(writer, model, template, !(template.isTerse() && !isSelfClosing()));
-            if (hasBlock()) {
-                handleIgnoredBlock();
-            }
+            // TODO: if it is non-empty throw an error
+//            if (tag.code ||
+//                    tag.block &&
+//                            !(tag.block.type === 'Block' && tag.block.nodes.length === 0) &&
+//                            tag.block.nodes.some(function (tag) {
+//                return tag.type !== 'Text' || !/^\s*$/.test(tag.val)
+//            })) {
+//                this.error(name + ' is a self closing element: <'+name+'/> but contains nested content.', 'SELF_CLOSING_CONTENT', tag);
+//            }
         } else {
             openTag(writer, model, template, false);
 
@@ -122,9 +128,6 @@ public class TagNode extends AttrsNode {
             writer.append("</");
             writer.append(bufferName(template, model));
             writer.append(">");
-            if (hasBlock()) {
-                handleIgnoredBlock();
-            }
         }
 
         if (isWhitespaceSensitive()) {
@@ -150,7 +153,7 @@ public class TagNode extends AttrsNode {
 
 
     private String bufferName(PugTemplate template, PugModel model) {
-        if (isBuffer()) {
+        if (isInterpolated()) {
             try {
                 return template.getExpressionHandler().evaluateStringExpression(name, model);
             } catch (ExpressionException e) {
@@ -162,11 +165,11 @@ public class TagNode extends AttrsNode {
         }
     }
 
-    public boolean isBuffer() {
-        return buffer;
+    public boolean isInterpolated() {
+        return interpolated;
     }
 
-    public void setBuffer(boolean buffer) {
-        this.buffer = buffer;
+    public void setInterpolated(boolean interpolated) {
+        this.interpolated = interpolated;
     }
 }
