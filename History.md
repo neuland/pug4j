@@ -1,4 +1,8 @@
 # History
+## 2.0.2 / 2021-09-01
+* added more data types to GraalJsExpressionHandler (Date,Time etc.)
+* fixed a regression bug, which was introduced in 2.0.1, when calling multiple mixins
+
 ## 2.0.1 / 2021-08-31
 * improved speed of GraalJsExpressionHandler a lot
 * made GraalJSExpressionHandler Thread-Safe
