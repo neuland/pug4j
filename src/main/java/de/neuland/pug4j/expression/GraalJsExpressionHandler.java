@@ -6,6 +6,8 @@ import org.graalvm.polyglot.*;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -102,7 +104,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
     private Object jsValue(Map.Entry<String, Object> objectEntry) {
         Object value = objectEntry.getValue();
-        if(!objectEntry.getKey().startsWith(PUG4J_MODEL_PREFIX)){
+        if(!objectEntry.getKey().startsWith(PUG4J_MODEL_PREFIX) && !(objectEntry.getValue() instanceof PugModel)){
             if(value instanceof Map)
                 value = ProxyObject.fromMap((Map)value);
             if(value instanceof List)
@@ -115,20 +117,46 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if(eval.isNull()) {
             return null;
         }
-        if(eval.hasArrayElements()) {
-            return eval.as(List.class);
+        if(eval.isBoolean()){
+            return eval.asBoolean();
         }
-        if(eval.isNumber()  && eval.fitsInInt() && String.valueOf(eval.asInt()).equals(eval.toString())){
-            return eval.asInt();
+        if(eval.isString()){
+            return eval.asString();
         }
-        if(eval.isNumber()  && eval.fitsInLong() && String.valueOf(eval.asLong()).equals(eval.toString())){
-            return eval.asLong();
+        if(eval.isNumber()) {
+            if (eval.fitsInByte()) {
+                return eval.asByte();
+            }
+            if (eval.fitsInShort()) {
+                return eval.asShort();
+            }
+            if (eval.fitsInInt()) {
+                return eval.asInt();
+            }
+            if (eval.fitsInLong()) {
+                return eval.asLong();
+            }
+            if (eval.fitsInFloat()) {
+                return eval.asFloat();
+            }
+            if (eval.fitsInDouble()) {
+                return eval.asDouble();
+            }
         }
-        if(eval.fitsInDouble()){
-            return eval.asDouble();
+        if(eval.isInstant()){
+            return eval.asInstant();
         }
-        if(eval.fitsInInt()){
-            return eval.asInt();
+        if(eval.isDate()){
+            return eval.asDate();
+        }
+        if(eval.isDuration()){
+            return eval.asDuration();
+        }
+        if(eval.isTime()){
+            return eval.asTime();
+        }
+        if(eval.isTimeZone()){
+            return eval.asTimeZone();
         }
         if(eval.isHostObject()){
             return eval.asHostObject();
@@ -136,20 +164,13 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if(eval.isMetaObject()){
             return eval;
         }
+        if(eval.hasArrayElements()) {
+            return eval.as(List.class);
+        }
         if(eval.hasMembers()){
-            return eval.as(Map.class);
+            return new LinkedHashMap<>(eval.as(Map.class)); //If not copied to a LinkedHashMap it will result in a PolyglotMap in the Model which will drastically decrease performance in some special cases.
         }
-        if(eval.fitsInDouble() && !eval.fitsInInt()){
-            return eval.asDouble();
-        }
-        if(eval.isString()){
-            return eval.asString();
-        }
-        if(eval.isBoolean()){
-            return eval.asBoolean();
-        }
-
-        return eval;
+        return null;
     }
 
     @Override

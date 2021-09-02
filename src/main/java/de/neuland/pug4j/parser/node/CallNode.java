@@ -58,7 +58,7 @@ public class CallNode extends AttrsNode {
 			writeVariables(model, mixin, template);
 			writeAttributes(model, mixin, template);
 			mixin.getBlock().execute(writer, model, template);
-//			model.putLocal("block",null);
+			model.putLocal("block",null);
 			model.popScope();
 
 		}else{
@@ -135,8 +135,6 @@ public class CallNode extends AttrsNode {
 	}
 
 	private void writeAttributes(PugModel model, MixinNode mixin, PugTemplate template) {
-//		model.put("attributes", mergeInheritedAttributes(model));
-//		model.put("attributes", getArguments());
 		LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
 		if (attributeBlocks.size()>0) {
 			//Todo: AttributesBlock needs to be evaluated
@@ -164,9 +162,9 @@ public class CallNode extends AttrsNode {
 
 		if (newAttributes.size()>0) {
 			Map<String,String> attrs = attrs(model, template, newAttributes);
-			model.put("attributes", attrs);
+			model.putLocal("attributes", attrs);
   		}else{
-			model.put("attributes", new LinkedHashMap<>());
+			model.putLocal("attributes", new LinkedHashMap<>());
 		}
 
 	}
