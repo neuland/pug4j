@@ -1,5 +1,5 @@
 # History
-## 2.0.3 / 2021-09-01
+## 2.0.3 / 2021-09-07
 * fixed target type mapping of nested objects in GraalJsExpressionHandler
 * improved speed of GraalJsExpressionHandler
 
