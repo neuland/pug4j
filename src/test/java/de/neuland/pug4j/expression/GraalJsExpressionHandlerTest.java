@@ -42,7 +42,7 @@ public class GraalJsExpressionHandlerTest {
         graalJsExpressionHandler.evaluateExpression("var list = [1,2,3]", pugModel);
         List list = (List) pugModel.get("list");
         List hostList = (List) pugModel.get("hostList");
-        byte expected = 1;
+        Integer expected = 1;
         assertEquals(expected,list.get(0));
         assertEquals(expected,hostList.get(0));
     }
@@ -63,8 +63,8 @@ public class GraalJsExpressionHandlerTest {
         assertTrue(map.get("foo") instanceof String);
         assertTrue(map.get("typenull") == null);
         assertTrue(map.get("typeboolean") instanceof Boolean);
-        assertTrue(map.get("typebyte") instanceof Byte);
-        assertTrue(map.get("typeshort") instanceof Short);
+        assertTrue(map.get("typebyte") instanceof Integer);
+        assertTrue(map.get("typeshort") instanceof Integer);
         assertTrue(map.get("typeint") instanceof Integer);
         assertTrue(map.get("typelong") instanceof Long);
         assertTrue(map.get("typefloat") instanceof Float);
@@ -83,8 +83,8 @@ public class GraalJsExpressionHandlerTest {
         assertTrue(map.get("foo") instanceof String);
         assertTrue(map.get("typenull") == null);
         assertTrue(map.get("typeboolean") instanceof Boolean);
-        assertTrue(map.get("typebyte") instanceof Byte);
-        assertTrue(map.get("typeshort") instanceof Short);
+        assertTrue(map.get("typebyte") instanceof Integer);
+        assertTrue(map.get("typeshort") instanceof Integer);
         assertTrue(map.get("typeint") instanceof Integer);
         assertTrue(map.get("typelong") instanceof Long);
         assertTrue(map.get("typefloat") instanceof Float);
@@ -107,7 +107,7 @@ public class GraalJsExpressionHandlerTest {
                 "}", pugModel);
         Map map = (Map) pugModel.get("map");
         assertEquals("textbutton",((Map)map.get("button")).get("text"));
-        byte expected = 3;
+        Integer expected = 3;
         assertEquals(expected,((List)map.get("list")).get(2));
 
     }

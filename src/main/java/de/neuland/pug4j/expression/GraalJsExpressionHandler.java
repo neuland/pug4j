@@ -7,7 +7,6 @@ import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,8 +19,6 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
     final HostAccess all = newBuilder().allowPublicAccess(true).allowArrayAccess(true).allowListAccess(true).allowMapAccess(true)
-            .targetTypeMapping(Byte.class, Object.class, null, (v) -> v)
-            .targetTypeMapping(Short.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Integer.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Long.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Float.class, Object.class, null, (v) -> v)
@@ -29,10 +26,10 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             .targetTypeMapping(Boolean.class, Object.class, null, (v) -> v)
             .targetTypeMapping(String.class, Object.class, null, (v) -> v)
             .targetTypeMapping(List.class, Object.class, null, (v) -> v)
-            .targetTypeMapping(Value.class, Object.class, Value::isInstant, (v) -> v.asInstant())
-            .targetTypeMapping(Value.class, Object.class, Value::isTime, (v) -> v.asTime())
-            .targetTypeMapping(Value.class, Object.class, Value::isTimeZone, (v) -> v.asTimeZone())
-            .targetTypeMapping(Value.class, Object.class, Value::isHostObject, (v) -> v.asHostObject())
+            .targetTypeMapping(Value.class, Object.class, Value::isInstant, Value::asInstant)
+            .targetTypeMapping(Value.class, Object.class, Value::isTime, Value::asTime)
+            .targetTypeMapping(Value.class, Object.class, Value::isTimeZone, Value::asTimeZone)
+            .targetTypeMapping(Value.class, Object.class, Value::isHostObject, Value::asHostObject)
             .targetTypeMapping(Value.class, Object.class, Value::isMetaObject, (v) -> v)
             .targetTypeMapping(Value.class, Object.class, Value::hasMembers, (v) -> new LinkedHashMap(v.as(Map.class)))
             .build();
