@@ -76,19 +76,11 @@ Running the above code through `String html = Pug4J.render("./index.pug", model)
 
 ## Syntax
 
-We have put up an [interactive jade documentation](http://naltatis.github.com/jade-syntax-docs/).
-
-See also the original [visionmedia/jade documentation](https://github.com/visionmedia/jade#a6).
+See also the original [https://github.com/pugjs/pug#syntax](https://github.com/pugjs/pug#syntax).
 
 ## Usage
 
 ### via Maven
-
-As of release 0.4.1, we have changed maven hosting to sonatype. Using Github Maven Repository is no longer
-required.
-
-Please be aware that we had to change the group id from 'de.neuland' to 'de.neuland-bfi' in order to
-meet sonatype conventions for group naming.
 
 Just add following dependency definitions to your `pom.xml`.
 
@@ -96,7 +88,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>2.0.2</version>
+  <version>2.0.3</version>
 </dependency>
 ```
 
@@ -199,23 +191,20 @@ config.setMode(Pug4J.Mode.XML);    // <input checked="true"></input>
 <a name="api-filters"></a>
 ### Filters
 
-Filters allow embedding content like `markdown` or `coffeescript` into your pug template:
+Filters allow embedding content like `markdown` into your pug template:
 
-    script
-      :coffeescript
-        sayHello -> alert "hello world"
+    :markdown
+      # headline
+      hello **world**
 
 will generate
 
-    <script>
-      sayHello(function() {
-        return alert("hello world");
-      });
-    </script>
+    <h1>headline</h1>
+    <p>hello <strong>world</strong></p>
 
 pug4j comes with a `plain` and `cdata` filter. `plain` takes your input to pass it directly through, `cdata` wraps your content in `<![CDATA[...]]>`. You can add your custom filters to your configuration.
 
-    config.setFilter("coffeescript", new CoffeeScriptFilter());
+    config.setFilter("markdown", new MarkdownFilter());
 
 To implement your own filter, you have to implement the `Filter` Interface. If your filter doesn't use any data from the model you can inherit from the abstract `CachingFilter` and also get caching for free. See the [neuland/jade4j-coffeescript-filter](https://github.com/neuland/jade4j-coffeescript-filter) project as an example.
 
@@ -277,24 +266,14 @@ The original pug implementation uses JavaScript for expression handling in `if`,
     each author in ["artur", "stefan", "michael","christoph"]
       h2= author
 
-As of version 0.3.0, jade4j uses [JEXL](http://commons.apache.org/jexl/) instead of [OGNL](http://en.wikipedia.org/wiki/OGNL) for parsing and executing these expressions.
-As of version 2.0.0, pug4j uses JEXL3
-We decided to switch to JEXL because its syntax and behavior is more similar to ECMAScript/JavaScript and so closer to the original pug.js implementation. JEXL runs also much faster than OGNL. In our benchmark, it showed a **performance increase by factor 3 to 4**.
+### Jexl Expressionhandler (default)
+Pug4j uses [JEXL](https://commons.apache.org/proper/commons-jexl/) for parsing and executing these expressions.
+JEXL syntax and behavior is very similar to ECMAScript/JavaScript and so closer to the original pug.js implementation. JEXL runs also much faster than GraalVM.
+If your template don't relies too much on Javascript-Logic and gets almost everything from the model, this is a good choice.
 
 We are using a slightly modified JEXL version which to have better control of the exception handling. JEXL now runs in a semi-strict mode, where non existing values and properties silently evaluate to `null`/`false` where as invalid method calls lead to a `PugCompilerException`.
-
-<a name="graalvm"></a>
-### GraalVM Expressionhandler (NEW! in 2.0.0)
-If you want to try out a more javascript friendly expression handling, you can try out the GraalJS Expression Handler. It supports native javascript expressions but may be slower. You can configure it like this:
-
-```java
-PugConfiguration config = new PugConfiguration();
-
-config.setExpressionHandler(new GraalJsExpressionHandler())
-```
-
 <a name="reserved-words"></a>
-## Reserved Words
+#### Reserved Words
 
 JEXL comes with the three builtin functions `new`, `size` and `empty`. For properties with this name the `.` notation does not work, but you can access them with `[]`.
 
@@ -304,7 +283,18 @@ book.size // does not work
 book["size"] // works
 ```
 
-You can read more about this in the [JEXL documentation](http://commons.apache.org/proper/commons-jexl/reference/syntax.html#Language_Elements).
+You can read more about this in the [JEXL documentation](https://commons.apache.org/proper/commons-jexl/reference/syntax.html#Language_Elements).
+
+<a name="graalvm"></a>
+### GraalVM Expressionhandler (NEW! since 2.0.0)
+If you want to use pure javascript expression handling, you can try out the new GraalJS Expression Handler. It supports native javascript expressions but is slower than the Jexl Expression Handler. You can configure it like this:
+
+```java
+PugConfiguration config = new PugConfiguration();
+
+config.setExpressionHandler(new GraalJsExpressionHandler())
+```
+
 
 <a name="framework-integrations"></a>
 ## Framework Integrations
