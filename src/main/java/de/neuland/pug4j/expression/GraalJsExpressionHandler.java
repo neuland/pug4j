@@ -6,8 +6,8 @@ import org.graalvm.polyglot.*;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,23 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
-    final HostAccess all = newBuilder().allowPublicAccess(true).allowAllImplementations(true).allowArrayAccess(true).allowListAccess(true).build();
+    final HostAccess all = newBuilder().allowPublicAccess(true).allowArrayAccess(true).allowListAccess(true).allowMapAccess(true)
+            .targetTypeMapping(Byte.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Short.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Integer.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Long.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Float.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Double.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Boolean.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(String.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(List.class, Object.class, null, (v) -> v)
+            .targetTypeMapping(Value.class, Object.class, Value::isInstant, (v) -> v.asInstant())
+            .targetTypeMapping(Value.class, Object.class, Value::isTime, (v) -> v.asTime())
+            .targetTypeMapping(Value.class, Object.class, Value::isTimeZone, (v) -> v.asTimeZone())
+            .targetTypeMapping(Value.class, Object.class, Value::isHostObject, (v) -> v.asHostObject())
+            .targetTypeMapping(Value.class, Object.class, Value::isMetaObject, (v) -> v)
+            .targetTypeMapping(Value.class, Object.class, Value::hasMembers, (v) -> new LinkedHashMap(v.as(Map.class)))
+            .build();
     final Engine engine = Engine.newBuilder().option("engine.WarnInterpreterOnly", "false").allowExperimentalOptions(true).build();
     final ThreadLocal<Map<String,Value>> cacheThreadLocal = ThreadLocal.withInitial(new Supplier<Map<String,Value>>() {
 
@@ -65,21 +81,19 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                 }
             }
 
-            Value eval;
             Source js;
-            if(expression.startsWith("{")){
-                 js = Source.create("js", "(" + expression + ")");
-            }else{
-                 js = Source.create("js", expression);
-            }
-            Value value = cache.get(expression);
-            if(value!=null)
-                eval = value.execute();
-            else{
+            Value eval = cache.get(expression);
+            if(eval==null){
+                if(expression.startsWith("{")){
+                    js = Source.create("js", "(" + expression + ")");
+                }else{
+                    js = Source.create("js", expression);
+                }
                 eval = context.parse(js);
+
                 cache.put(expression,eval);
-                eval = eval.execute();
             }
+            eval = eval.execute();
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
             for (String memberKey : memberKeys) {
                 if (model.knowsKey(memberKey)){
@@ -114,63 +128,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     }
 
     private Object javaValue(Value eval) {
-        if(eval.isNull()) {
-            return null;
-        }
-        if(eval.isBoolean()){
-            return eval.asBoolean();
-        }
-        if(eval.isString()){
-            return eval.asString();
-        }
-        if(eval.isNumber()) {
-            if (eval.fitsInByte()) {
-                return eval.asByte();
-            }
-            if (eval.fitsInShort()) {
-                return eval.asShort();
-            }
-            if (eval.fitsInInt()) {
-                return eval.asInt();
-            }
-            if (eval.fitsInLong()) {
-                return eval.asLong();
-            }
-            if (eval.fitsInFloat()) {
-                return eval.asFloat();
-            }
-            if (eval.fitsInDouble()) {
-                return eval.asDouble();
-            }
-        }
-        if(eval.isInstant()){
-            return eval.asInstant();
-        }
-        if(eval.isDate()){
-            return eval.asDate();
-        }
-        if(eval.isDuration()){
-            return eval.asDuration();
-        }
-        if(eval.isTime()){
-            return eval.asTime();
-        }
-        if(eval.isTimeZone()){
-            return eval.asTimeZone();
-        }
-        if(eval.isHostObject()){
-            return eval.asHostObject();
-        }
-        if(eval.isMetaObject()){
-            return eval;
-        }
-        if(eval.hasArrayElements()) {
-            return eval.as(List.class);
-        }
-        if(eval.hasMembers()){
-            return new LinkedHashMap<>(eval.as(Map.class)); //If not copied to a LinkedHashMap it will result in a PolyglotMap in the Model which will drastically decrease performance in some special cases.
-        }
-        return null;
+        return eval.as(Object.class);
     }
 
     @Override
