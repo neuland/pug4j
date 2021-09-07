@@ -72,7 +72,7 @@ public class GraalJsExpressionHandlerTest {
         assertTrue(map.get("typelist") instanceof List);
         assertTrue(map.get("typedate") instanceof Instant);
         assertTrue(map.get("typehost") instanceof BlockNode);
-        assertTrue(map.get("typemap") instanceof LinkedHashMap);
+        assertTrue(map.get("typemap") instanceof Map);
 
     }
     @Test
@@ -92,7 +92,7 @@ public class GraalJsExpressionHandlerTest {
         assertTrue(map.get("typelist") instanceof List);
         assertTrue(map.get("typedate") instanceof Instant);
         assertTrue(map.get("typehost") instanceof BlockNode);
-        assertTrue(map.get("typemap") instanceof LinkedHashMap);
+        assertTrue(map.get("typemap") instanceof Map);
 
     }
     @Test
