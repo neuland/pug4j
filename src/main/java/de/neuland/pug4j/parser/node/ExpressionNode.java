@@ -59,18 +59,47 @@ public class ExpressionNode extends Node {
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 
 			String value = getValue();
-			if (hasBlock()) {
+			if (hasBlock() || value.trim().startsWith("}")) {
 				String pug4j_buffer = bufferedExpressionString;
-				if(pug4j_buffer.length()==0)
+				if(pug4j_buffer.length()==0) {
 					value = getValue();
-				else
-					value = pug4j_buffer+" "+getValue();
+				} else {
+					if(getValue().trim().startsWith("}") && pug4j_buffer.trim().endsWith("}")){
+						value = pug4j_buffer + " " + getValue().trim().substring(1);
+					}else {
+						value = pug4j_buffer + " " + getValue();
+					}
+				}
+				if(hasBlock()) {
+					model.put(PUG4J_MODEL_PREFIX + "innerblock_" + nodeId, block);
+					model.put(PUG4J_MODEL_PREFIX + "template_" + nodeId, template);
+					model.put(PUG4J_MODEL_PREFIX + "model", model);
+					model.put(PUG4J_MODEL_PREFIX + "writer", writer);
+					StringBuilder stringBuilder = new StringBuilder()
+							.append(value);
+					if (!value.trim().endsWith("{")) {
+						stringBuilder = stringBuilder.append("{");
+					}
 
-				model.put(PUG4J_MODEL_PREFIX+"innerblock_"+nodeId,block);
-				model.put(PUG4J_MODEL_PREFIX+"template_"+nodeId,template);
-				model.put(PUG4J_MODEL_PREFIX+"model",model);
-				model.put(PUG4J_MODEL_PREFIX+"writer",writer);
-				bufferedExpressionString = value+"{"+PUG4J_MODEL_PREFIX+"model.pushScope();"+PUG4J_MODEL_PREFIX+"innerblock_"+nodeId+".execute("+PUG4J_MODEL_PREFIX+"writer,"+PUG4J_MODEL_PREFIX+"model,pug4j__template_"+nodeId+");"+PUG4J_MODEL_PREFIX+"model.popScope();}";
+					bufferedExpressionString = stringBuilder
+							.append(PUG4J_MODEL_PREFIX)
+							.append("model.pushScope();")
+							.append(PUG4J_MODEL_PREFIX)
+							.append("innerblock_")
+							.append(nodeId)
+							.append(".execute(")
+							.append(PUG4J_MODEL_PREFIX)
+							.append("writer,")
+							.append(PUG4J_MODEL_PREFIX)
+							.append("model,pug4j__template_")
+							.append(nodeId).append(");")
+							.append(PUG4J_MODEL_PREFIX)
+							.append("model.popScope();")
+							.append("}")
+							.toString();
+				}else{
+					bufferedExpressionString = value;
+				}
 			}else {
 				Object result = null;
 				try {

@@ -26,11 +26,11 @@ public class BlockNode extends Node {
 			Node node = getNodes().get(i);
 			if (writer.isPp() && i > 0 && !writer.isEscape() && isTextNode(node) && isTextNode(getNodes().get(i - 1)) && (getNodes().get(i - 1).getValue() != null && getNodes().get(i - 1).getValue().contains("\n")))
 				writer.prettyIndent(1, false);
-			if(node instanceof ExpressionNode && node.hasBlock()){
+			if(node instanceof ExpressionNode && (node.hasBlock()||node.getValue().trim().startsWith("}"))){
 				((ExpressionNode) node).setBufferedExpressionString(bufferedExpressionString);
 			}
 			node.execute(writer, model, template);
-			if(node instanceof ExpressionNode && node.hasBlock()){
+			if(node instanceof ExpressionNode && (node.hasBlock()||node.getValue().trim().startsWith("}"))){
 				bufferedExpressionString = ((ExpressionNode) node).getBufferedExpressionString();
 			}
 
@@ -39,7 +39,7 @@ public class BlockNode extends Node {
 				nextNode = getNodes().get(i + 1);
 
 			//If multiple expressions in a row evaluate buffered code
-			if(node instanceof ExpressionNode && node.hasBlock() && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && nextNode.hasBlock()))){
+			if(bufferedExpressionString.length()>0 && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && (nextNode.hasBlock()||nextNode.getValue().trim().startsWith("}"))))){
 				try {
 					template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
 				} catch (ExpressionException e) {

@@ -4,6 +4,7 @@ import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.BlockNode;
+import de.neuland.pug4j.parser.node.ExpressionNode;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.parser.node.TextNode;
 import de.neuland.pug4j.template.PugTemplate;
@@ -203,6 +204,27 @@ public class GraalJsExpressionHandlerTest {
         pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
         Object o = graalJsExpressionHandler.evaluateExpression("pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)", pugModel);
         assertEquals("Hallo Welt",writer.toString());
+    }
+    @Test
+    public void testContextInContextAccess() throws ExpressionException  {
+        IndentWriter writer = new IndentWriter(new StringWriter());
+        BlockNode blockNode = new BlockNode();
+        LinkedList<Node> nodes = new LinkedList();
+        ExpressionNode textNode = new ExpressionNode();
+        textNode.setBuffer(true);
+        textNode.setValue("item");
+        nodes.add(textNode);
+        blockNode.setNodes(nodes);
+        pugModel.put("pug4j__block", blockNode);
+        pugModel.put("pug4j__writer", writer);
+        PugTemplate pugTemplate = new PugTemplate();
+        pugTemplate.setExpressionHandler(graalJsExpressionHandler);
+        pugModel.put("pug4j__template", pugTemplate);
+        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
+        pugModel.put("pug4j__context", graalJsExpressionHandler.getContext());
+        //Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];items.forEach(function(item){pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)})", pugModel);
+        Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];for(i=0;i<3;i++){var item = items[i];pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)}", pugModel);
+        assertEquals("123",writer.toString());
     }
 
 

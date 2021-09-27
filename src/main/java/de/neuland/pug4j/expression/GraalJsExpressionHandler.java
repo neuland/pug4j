@@ -15,7 +15,7 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
-    final HostAccess all = newBuilder().allowPublicAccess(true).allowArrayAccess(true).allowListAccess(true).allowMapAccess(true)
+    final HostAccess all = newBuilder().allowAllImplementations(true).allowPublicAccess(true).allowArrayAccess(true).allowListAccess(true).allowMapAccess(true)
             .targetTypeMapping(Integer.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Long.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Float.class, Object.class, null, (v) -> v)
@@ -47,6 +47,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                     .allowHostAccess(all)
                     .allowAllAccess(true)
                     .allowHostClassLookup(s -> true)
+                    .allowCreateThread(false)
+                    .allowCreateProcess(false)
                     .allowPolyglotAccess(PolyglotAccess.ALL)
                     .build();
             context.initialize("js");
@@ -63,7 +65,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
         Context context = contextThreadLocal.get();
         Map<String,Value> cache = cacheThreadLocal.get();
-        context.enter();
+//        context.enter();
         try{
             saveLocalVariableName(expression, model);
             Value jsContextBindings = context.getBindings("js");
@@ -92,19 +94,24 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                     if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
                         Value member = jsContextBindings.getMember(memberKey);
                         model.put(memberKey, member.as(Object.class));
-                        jsContextBindings.putMember(memberKey, null);
+                        try {
+                            jsContextBindings.removeMember(memberKey);
+                        }catch(UnsupportedOperationException e){
+//                            e.printStackTrace();
+                            jsContextBindings.putMember(memberKey, null);
+                        }
                     }
                 }
             }
             return eval.as(Object.class);
         }
         catch (Exception ex){
-            if(ex.getMessage().startsWith("ReferenceError:")){
+            if(ex.getMessage()!=null && ex.getMessage().startsWith("ReferenceError:")){
                 return null;
             }
             throw new ExpressionException(expression, ex);
         }finally {
-            context.leave();
+//            context.leave();
         }
     }
 
@@ -116,7 +123,20 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
     @Override
     public void assertExpression(String expression) throws ExpressionException {
-        jexlExpressionHandler.assertExpression(expression);
+        Context context = contextThreadLocal.get();
+        Source js;
+        if(expression.startsWith("{")){
+            js = Source.create("js", "(" + expression + ")");
+        }else{
+            js = Source.create("js", expression);
+        }
+        try {
+            Value parse = context.eval(js);
+        }catch(PolyglotException e){
+            if(e.getMessage().startsWith("SyntaxError:")){
+                throw new ExpressionException(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -128,6 +148,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public void clearCache() {
 
     }
-
+    public Context getContext(){
+        return contextThreadLocal.get();
+    }
 }
 
