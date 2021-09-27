@@ -43,9 +43,9 @@ public class OriginalPug3Test {
             "attrs", // only timeformat different
             "filter-in-include", // missing less filter
             "pipeless-filters", //maybe missing markdown-it or different markdown syntax as in js markdown
-//            "code.iteration", // function block not working in buffered code. Maybe report to GraalVM Bugtracker.
+            "code.iteration", // function block not working in buffered code. Maybe report to GraalVM Bugtracker.
             "filters.coffeescript", // missing filter
-//            "blocks-in-if" // blocks in buffered code not recognozed. Should be fixable.
+            "blocks-in-if" // blocks in buffered code not recognozed. Should be fixable.
 
     };
 
