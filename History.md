@@ -1,4 +1,14 @@
 # History
+## 2.0.4 / 2021-12-13
+* update gson dependency to the latest available v2.8.7 -> v2.8.9 (thanks dbelyaev)
+* other dependency updates
+  * flexmark 0.60.2 -> 0.62.2
+  * caffeine 2.9.2 -> 2.9.3
+  * graalvm 21.2.0 -> 21.3.0
+  * slf4j-simple 1.7.31 -> 1.7.32
+  * jmh-core 1.23 -> 1.33
+  * jmh-generator-annprocess 1.23 -> 1.33
+
 ## 2.0.3 / 2021-09-07
 * fixed target type mapping of nested objects in GraalJsExpressionHandler
 * improved speed of GraalJsExpressionHandler
