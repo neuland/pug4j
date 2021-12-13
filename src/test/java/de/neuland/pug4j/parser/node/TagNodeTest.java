@@ -9,7 +9,8 @@ import java.util.LinkedList;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+
 
 public class TagNodeTest {
 
@@ -40,7 +41,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -58,7 +59,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + ">");
+            assertEquals("<" + tagName + ">",result);
         }
     }
 
@@ -76,7 +77,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + ">" + TEXT + "</" + tagName + ">");
+            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
         }
     }
 
@@ -95,7 +96,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -114,7 +115,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -133,7 +134,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -151,7 +152,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + ">" + TEXT + "</" + tagName + ">");
+            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
         }
     }
 
@@ -170,7 +171,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + ">" + TEXT + "</" + tagName + ">");
+            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
         }
     }
 
@@ -189,7 +190,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + ">" + TEXT + "</" + tagName + ">");
+            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
         }
     }
 
@@ -210,7 +211,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -229,7 +230,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 
@@ -248,7 +249,7 @@ public class TagNodeTest {
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertThat(result).isEqualTo("<" + tagName + "/>");
+            assertEquals("<" + tagName + "/>",result);
         }
     }
 

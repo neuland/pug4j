@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -156,9 +155,9 @@ public class OriginalLexer_0_0_8_Test {
 //        assertThat(actualString).isEqualTo(expectedString);
     }
     private void assertToken(Token token, ExpectedToken expectedToken) {
-        assertThat(typeOf(token)).isEqualTo(expectedToken.type);
-        assertThat(token.isSelfClosing()).isEqualTo(expectedToken.selfClosing);
-        assertThat(token.getValue()).isEqualTo(expectedToken.val);
+        assertEquals(expectedToken.type,typeOf(token));
+        assertEquals(expectedToken.selfClosing,token.isSelfClosing());
+        assertEquals(expectedToken.val,token.getValue());
         //assertThat(token.getLineNumber()).isEqualTo(expectedToken.line);
     }
 
