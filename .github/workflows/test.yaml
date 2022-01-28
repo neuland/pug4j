@@ -1,0 +1,19 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  unittest:
+    name: Unittests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Verify
+        run: mvn --batch-mode --update-snapshots verify
