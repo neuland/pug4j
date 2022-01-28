@@ -4,6 +4,9 @@ on:
   push:
     branches: [ master ]
 
+env:
+  TZ: "Europe/Berlin"
+
 jobs:
   unittest:
     name: Unittests
