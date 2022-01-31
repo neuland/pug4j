@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -347,16 +348,16 @@ public class CompilerTest {
     }
 
     @Test(expected = PugCompilerException.class)
-    public void expressionException() throws IOException {
+    public void expressionException() throws IOException, URISyntaxException {
         tryToRender("expression_exception");
     }
 
     @Test(expected = PugCompilerException.class)
-    public void expressionWrongMethodCall() throws IOException {
+    public void expressionWrongMethodCall() throws IOException, URISyntaxException {
         tryToRender("expression_method_invocation_exception");
     }
 
-    private void tryToRender(String file) throws IOException {
+    private void tryToRender(String file) throws IOException, URISyntaxException {
         Pug4J.render(TestFileHelper.getCompilerResourcePath(file + ".jade"), new HashMap<String, Object>());
     }
 
@@ -441,7 +442,7 @@ public class CompilerTest {
             loader = new FileTemplateLoader(
                     TestFileHelper.getCompilerResourcePath(""), "jade");
             parser = new Parser(testName, loader, expressionHandler);
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
 
@@ -463,7 +464,7 @@ public class CompilerTest {
         String html;
         try {
             html = compiler.compileToString(model);
-            assertEquals(testName, expected.trim(), html.trim());
+            assertEquals(testName, expected.trim().replaceAll("\r", ""), html.trim().replaceAll("\r", ""));
         } catch (PugCompilerException e) {
             e.printStackTrace();
             fail(e.getMessage());

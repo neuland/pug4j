@@ -87,8 +87,8 @@ public abstract class PugException extends RuntimeException {
 	}
 
 	public List<String> getTemplateLines() {
+		List<String> result = new ArrayList<String>();
 		try {
-			List<String> result = new ArrayList<String>();
 			Reader reader = templateLoader.getReader(filename);
 			BufferedReader in = new BufferedReader(reader);
 			String line;
@@ -96,8 +96,8 @@ public abstract class PugException extends RuntimeException {
 				result.add(line);
 			}
 			return result;
-		} catch (IOException e) {
-			return null;
+		} catch (Exception e) {
+			return result;
 		}
 	}
 

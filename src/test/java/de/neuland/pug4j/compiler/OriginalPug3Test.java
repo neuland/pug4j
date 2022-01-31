@@ -16,10 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -97,21 +95,21 @@ public class OriginalPug3Test {
         pugConfiguration.renderTemplate(template,model, writer);
         String html = writer.toString();
 
-        String pathToExpectedHtml = fileTemplateLoaderPath +basePath+ file.replace(".pug", ".html");
+        String pathToExpectedHtml = fileTemplateLoaderPath +File.separator+basePath+ file.replace(".pug", ".html");
         String expected = readFile(pathToExpectedHtml).trim().replaceAll("\r", "");
         if (ArrayUtils.contains(casesWithoutLinebreak, file.replace(".pug", ""))) {
             html = html.replaceAll("\\n| ","");
             expected = expected.replaceAll("\\n| ","");
         }
-        assertEquals(file, expected, html.trim());
+        assertEquals(file, expected, html.trim().replaceAll("\r", ""));
     }
 
     private String readFile(String fileName) throws IOException {
-        return FileUtils.readFileToString(new File(fileName));
+        return FileUtils.readFileToString(new File(fileName),"UTF-8");
     }
 
     @Parameterized.Parameters(name="{0}")
-    public static Collection<String[]> data() {
+    public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
         File folder = new File(TestFileHelper.getOriginalPug3ResourcePath("/cases"));
         Collection<File> files = FileUtils.listFiles(folder, new String[]{"pug"}, false);
 

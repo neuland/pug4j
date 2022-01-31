@@ -15,6 +15,8 @@ import org.junit.Test;
 
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.TestFileHelper;
+import org.slf4j.LoggerFactory;
+
 public class PugExceptionTest {
 
 	@Test
@@ -30,12 +32,13 @@ public class PugExceptionTest {
 			assertEquals(errorJade, e.getFilename());
 			String expectedHtml = readFile(exceptionHtml);
 			String html = e.toHtmlString("<html><head><title>broken");
-			assertEquals(removeAbsolutePath(expectedHtml), removeAbsolutePath(html));
+			LoggerFactory.getLogger(this.getClass()).debug("Expected: "+ expectedHtml+", Actual: "+html);
+			assertEquals(removeAbsolutePath(expectedHtml.replaceAll("\r", "")), removeAbsolutePath(html.replaceAll("\r", "")));
 		}
 	}
 
 	@Test
-	public void testMessage() throws Exception {
+	public void testMessage() {
 		try {
 			throw new PugLexerException("invalid indentation; expecting 2 spaces", "index.jade", 10,20, new FileTemplateLoader(TestFileHelper.getLexerResourcePath("")));
 		}catch(Exception e){
@@ -48,14 +51,16 @@ public class PugExceptionTest {
 	}
 
 	private String removeAbsolutePath(String html) {
-		html = html.replaceAll("(<h2>In ).*(compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>)", "$1\\.\\./$2");
-		html = html.replaceAll("(\\s)[^\\s]*(compiler/exceptions/error\\.jade:9)", "$1\\.\\./$2");
+		html = html.replaceAll("(<h2>In ).*(compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>)", "$1\\.\\./compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>");
+		html = html.replaceAll("(\\s)[^\\s]*(compiler/exceptions/error\\.jade:9)", "$1\\.\\./compiler/exceptions/error\\.jade:9");
+		html = html.replaceAll("(<h2>In ).*(compiler\\\\exceptions\\\\error\\.jade at line 9, column 0\\.</h2>)", "$1\\.\\./compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>");
+		html = html.replaceAll("(\\s)[^\\s]*(compiler\\\\exceptions\\\\error\\.jade:9)", "$1\\.\\./compiler/exceptions/error\\.jade:9");
 		return html;
 	}
 
 	private String readFile(String fileName) {
 		try {
-			return FileUtils.readFileToString(new File(fileName));
+			return FileUtils.readFileToString(new File(fileName),"UTF-8");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

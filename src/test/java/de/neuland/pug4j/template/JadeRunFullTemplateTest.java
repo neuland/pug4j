@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class JadeRunFullTemplateTest {
 
     }
 
-    public String getResourcePath(String fileName) {
+    public String getResourcePath(String fileName) throws URISyntaxException {
         try {
             return TestFileHelper.getRootResourcePath() + "/template/" + fileName;
         } catch (FileNotFoundException e) {

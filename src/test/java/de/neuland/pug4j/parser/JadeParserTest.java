@@ -10,13 +10,15 @@ import de.neuland.pug4j.parser.node.BlockNode;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.parser.node.TagNode;
 
+import java.net.URISyntaxException;
+
 public class JadeParserTest extends ParserTest {
 
     private Node blockNode;
 
 
     @Test
-    public void shouldReturnABlockWithTokens2() {
+    public void shouldReturnABlockWithTokens2() throws URISyntaxException {
         loadInParser("two_blocks_with_an_outdent.jade");
         blockNode = (BlockNode) root;
         assertThat(blockNode.getNodes(), notNullValue());
@@ -42,7 +44,7 @@ public class JadeParserTest extends ParserTest {
     }
 
     @Test
-    public void shouldReturnABlockWithTokens() {
+    public void shouldReturnABlockWithTokens() throws URISyntaxException {
         loadInParser("two_blocks_with_a_tag.jade");
         assertThat(((BlockNode) root).getNodes(), notNullValue());
         Node node = ((BlockNode) root).pollNode();

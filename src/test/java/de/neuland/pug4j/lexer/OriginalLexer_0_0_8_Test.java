@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -77,8 +78,8 @@ public class OriginalLexer_0_0_8_Test {
         return new Gson().newBuilder().disableHtmlEscaping().create().toJson(expected);
     }
 
-    private String readFile(String fileName) throws IOException {
-        return FileUtils.readFileToString(new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/" + fileName)), Charset.forName("UTF-8"));
+    private String readFile(String fileName) throws IOException, URISyntaxException {
+        return FileUtils.readFileToString(new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/" + fileName)), "UTF-8");
     }
 
     private String file;
@@ -88,11 +89,11 @@ public class OriginalLexer_0_0_8_Test {
     }
 
     @Test
-    public void shouldLexJadeToTokens() throws Exception {
+    public void shouldLexJadeToTokens() throws IOException, URISyntaxException {
         FileTemplateLoader loader1 = new FileTemplateLoader(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
         Lexer lexer1 = new Lexer(file, loader1, new JexlExpressionHandler());
         LinkedList<Token> tokens = lexer1.getTokens();
-        String[] expected = readFile(file.replace(".jade", ".expected.json")).split("\\n");
+        String[] expected = readFile(file.replace(".jade", ".expected.json")).replaceAll("\r", "").split("\\n");
         ArrayList<String> actual = new ArrayList<String>();
 
         for (Token token : tokens) {
@@ -162,7 +163,7 @@ public class OriginalLexer_0_0_8_Test {
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Collection<String[]> data() throws FileNotFoundException {
+    public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
         File folder = new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
         Collection<File> files = FileUtils.listFiles(folder, new String[]{"jade"}, false);
 

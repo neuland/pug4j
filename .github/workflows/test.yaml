@@ -21,5 +21,23 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set timezone on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          tzutil /g
+          tzutil /s "W. Europe Standard Time"
+          tzutil /g
+      - name: Compile
+        run: mvn compile
       - name: Verify
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn --batch-mode test -D"org.slf4j.simpleLogger.defaultLogLevel"="error" -D"org.slf4j.simpleLogger.log.de.neuland.pug4j"="debug" -D"test"="PugLexerTest"
+#      - name: Verify all
+#        run: mvn --batch-mode --update-snapshots verify
+

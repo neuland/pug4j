@@ -1,8 +1,11 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +15,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileTemplateLoader implements TemplateLoader {
@@ -20,6 +24,7 @@ public class FileTemplateLoader implements TemplateLoader {
 	private String templateLoaderPath = "";
 	private String extension = "pug";
 	private String basePath="";
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public FileTemplateLoader() {
 	}
@@ -34,13 +39,19 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	public FileTemplateLoader(String templateLoaderPath) {
-		if(!Files.isDirectory(Paths.get(templateLoaderPath))){
+		Path path = null;
+		try {
+			path = Paths.get(FilenameUtils.separatorsToSystem(templateLoaderPath));
+		}catch(Exception e){
+			System.out.println(templateLoaderPath + " throws Exception: " +e);
+		}
+		if(!Files.isDirectory(path)){
 			throw new PugTemplateLoaderException("Directory '"+ templateLoaderPath +"' does not exist.");
 		}
-		if(templateLoaderPath.endsWith("/"))
+		if(templateLoaderPath.endsWith(File.separator))
 			this.templateLoaderPath = templateLoaderPath;
 		else
-			this.templateLoaderPath = templateLoaderPath+"/";
+			this.templateLoaderPath = templateLoaderPath+File.separator;
 
 	}
 
@@ -81,13 +92,22 @@ public class FileTemplateLoader implements TemplateLoader {
 		return templateName;
 	}
 	private File getFile(String name) {
-		if(!StringUtils.isBlank(templateLoaderPath))
-			if(Paths.get(name).isAbsolute()) {
-				return Paths.get(templateLoaderPath+basePath+name.substring(1)).toFile();
-			}else
-				return Paths.get(templateLoaderPath).resolve(name).toFile();
-		else
+		name = FilenameUtils.separatorsToSystem(name);
+		if(!StringUtils.isBlank(templateLoaderPath)) {
+			logger.debug("Path is  " + name);
+			if (name.startsWith(File.separator)) {
+				Path path = Paths.get(templateLoaderPath + basePath + name.substring(1));
+				logger.debug("Path " + name + " is absolute. BasePath: " + basePath + " templateLoaderPath: " + templateLoaderPath + " result: "+path.toString());
+				return path.toFile();
+			} else {
+				Path resolve = Paths.get(templateLoaderPath).resolve(name);
+				logger.debug("Path " + name + " is relative. BasePath: " + basePath + " templateLoaderPath: " + templateLoaderPath + " result: "+resolve.toString());
+				return resolve.toFile();
+			}
+		} else {
+			logger.debug("templateLoaderPath is blank. Path: " + name + " . BasePath: " + basePath);
 			return Paths.get(name).toFile();
+		}
 	}
 
 	public String getExtension() {

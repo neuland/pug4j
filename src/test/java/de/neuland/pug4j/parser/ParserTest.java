@@ -1,6 +1,7 @@
 package de.neuland.pug4j.parser;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import org.junit.Assert;
@@ -14,10 +15,10 @@ public class ParserTest {
 	protected Parser parser;
 	protected Node root;
 
-	protected void loadInParser(String fileName) {
+	protected void loadInParser(String fileName) throws URISyntaxException {
 		loadInParser(fileName,"jade");
 	}
-	protected void loadInParser(String fileName,String extension) {
+	protected void loadInParser(String fileName,String extension) throws URISyntaxException {
 
 		try {
 			FileTemplateLoader loader = new FileTemplateLoader(

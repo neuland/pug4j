@@ -10,6 +10,8 @@ import de.neuland.pug4j.parser.node.BlockNode;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.parser.node.TagNode;
 
+import java.net.URISyntaxException;
+
 public class ComplexIndentOutdentParserTest extends ParserTest {
 
     private Node head;
@@ -29,7 +31,7 @@ public class ComplexIndentOutdentParserTest extends ParserTest {
     private Node block;
 
     @Test
-    public void shouldReturnABlockWithTokens2() {
+    public void shouldReturnABlockWithTokens2() throws URISyntaxException {
         loadInParser("complex_indent_outdent_file.jade");
         block = (BlockNode) root;
         assertThat(block.getNodes(), notNullValue());

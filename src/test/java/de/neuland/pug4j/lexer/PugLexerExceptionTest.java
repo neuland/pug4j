@@ -7,6 +7,7 @@ import de.neuland.pug4j.template.FileTemplateLoader;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -38,12 +39,12 @@ public class PugLexerExceptionTest {
         try {
             lex(template);
             fail("Should fail with PugLexerException and message:"+ expectedMessage);
-        }catch(PugLexerException ex){
+        }catch(PugLexerException | URISyntaxException ex){
             assertEquals(expectedMessage,ex.getMessage());
         }
     }
 
-    private void lex(String template) throws IOException {
+    private void lex(String template) throws IOException, URISyntaxException {
         FileTemplateLoader templateLoader = new FileTemplateLoader(
                 TestFileHelper.getLexerResourcePath("error-checks"), "pug");
 

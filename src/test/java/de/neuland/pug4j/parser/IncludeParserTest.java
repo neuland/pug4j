@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class IncludeParserTest extends ParserTest {
     private BlockNode pNode;
 
     @Test
-    public void testJade() throws FileNotFoundException {
+    public void testJade() throws FileNotFoundException, URISyntaxException {
         loadInParser("include_1.jade");
         tagNode = (TagNode) root.pollNode();
         assertThat(tagNode.getName(), equalTo("p"));
@@ -54,7 +55,7 @@ public class IncludeParserTest extends ParserTest {
 
     }
     @Test
-    public void testPug() throws FileNotFoundException {
+    public void testPug() throws FileNotFoundException, URISyntaxException {
         loadInParser("include_1.pug","pug");
         tagNode = (TagNode) root.pollNode();
         assertThat(tagNode.getName(), equalTo("p"));

@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class LargeBodyTextParserTest extends ParserTest {
     
 
     @Test
-    public void test() throws FileNotFoundException {
+    public void test() throws FileNotFoundException, URISyntaxException {
         loadInParser("large_body_text_with_pipes.jade");
         pTag = (TagNode) root.pollNode();
         block = pTag.getBlock();

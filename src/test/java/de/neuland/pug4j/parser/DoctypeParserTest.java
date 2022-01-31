@@ -9,12 +9,14 @@ import org.junit.Test;
 import de.neuland.pug4j.parser.node.BlockNode;
 import de.neuland.pug4j.parser.node.Node;
 
+import java.net.URISyntaxException;
+
 public class DoctypeParserTest extends ParserTest {
     
     private BlockNode blockNode;
 
     @Test
-    public void shouldReturnDoctype() {
+    public void shouldReturnDoctype() throws URISyntaxException {
         loadInParser("doctype.jade");
         blockNode = (BlockNode)root;
         assertThat(blockNode.getNodes(), notNullValue());

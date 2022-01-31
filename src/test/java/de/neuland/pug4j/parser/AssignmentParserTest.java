@@ -2,6 +2,7 @@ package de.neuland.pug4j.parser;
 
 import static org.junit.Assert.*;
 
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 
 import de.neuland.pug4j.parser.node.*;
@@ -12,7 +13,7 @@ public class AssignmentParserTest extends ParserTest {
 	private BlockNode block;
 
 	@Test
-	public void shouldReturnTagsWithTexts() {
+	public void shouldReturnTagsWithTexts() throws URISyntaxException {
 		loadInParser("assignment.jade");
 		block = (BlockNode) root;
 		LinkedList<Node> nodes = block.getNodes();

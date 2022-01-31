@@ -16,10 +16,9 @@ import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.ReaderTemplateLoader;
 import de.neuland.pug4j.template.TemplateLoader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
+
+import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +76,7 @@ public class IssuesTest {
         compareJade(templateLoader, templateName);
     }
 
-    private void compareJade(TemplateLoader templateLoader, String templateName) throws IOException {
+    private void compareJade(TemplateLoader templateLoader, String templateName) throws IOException, URISyntaxException {
         PugConfiguration jade = new PugConfiguration();
         jade.setTemplateLoader(templateLoader);
         jade.setMode(Pug4J.Mode.XHTML); // original jade uses xhtml by default
@@ -102,15 +101,15 @@ public class IssuesTest {
                 .trim()
                 .replaceAll("\r", "");
 
-        assertEquals(file, expected, html.trim());
+        assertEquals(file, expected, html.trim().replaceAll("\r", ""));
     }
 
-    private String readFile(String fileName) throws IOException {
+    private String readFile(String fileName) throws IOException, URISyntaxException {
         return FileUtils.readFileToString(new File(TestFileHelper.getIssuesResourcePath(fileName)), "UTF-8");
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Collection<String[]> data() {
+    public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
         File folder = new File(TestFileHelper.getIssuesResourcePath(""));
         Collection<File> files = FileUtils.listFiles(folder, new String[]{"jade"}, false);
 

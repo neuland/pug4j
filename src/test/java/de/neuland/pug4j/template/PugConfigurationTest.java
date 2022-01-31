@@ -4,11 +4,12 @@ import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.parser.node.Node;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 
@@ -17,18 +18,22 @@ public class PugConfigurationTest {
     protected Parser parser;
     protected Node root;
 
-    private final static String BASE_PATH = TestFileHelper.getParserResourcePath("");
-    private final static String TEMPLATE_PATH = TestFileHelper.getParserResourcePath("assignment.jade");
+    private String templatePath;
+
+    @Before
+    public void setUp() throws Exception {
+        templatePath = TestFileHelper.getParserResourcePath("assignment.jade");
+    }
 
     @Test
     public void testGetTemplate() throws IOException {
         PugConfiguration config = new PugConfiguration();
-        PugTemplate template = config.getTemplate(TEMPLATE_PATH);
+        PugTemplate template = config.getTemplate(templatePath);
         assertNotNull(template);
     }
 
     @Test
-    public void testGetTemplateWithBasepath() throws IOException {
+    public void testGetTemplateWithBasepath() throws IOException, URISyntaxException {
         PugConfiguration config = new PugConfiguration();
         config.setTemplateLoader(new FileTemplateLoader(TestFileHelper.getRootResourcePath() + "/parser/", "jade"));
         PugTemplate template = config.getTemplate("assignment");
@@ -40,9 +45,9 @@ public class PugConfigurationTest {
     public void testCache() throws IOException {
         PugConfiguration config = new PugConfiguration();
         config.setCaching(true);
-        PugTemplate template = config.getTemplate(TEMPLATE_PATH);
+        PugTemplate template = config.getTemplate(templatePath);
         assertNotNull(template);
-        PugTemplate template2 = config.getTemplate(TEMPLATE_PATH);
+        PugTemplate template2 = config.getTemplate(templatePath);
         assertNotNull(template2);
         assertSame(template, template2);
     }
@@ -64,14 +69,14 @@ public class PugConfigurationTest {
     public void testPrettyPrint() throws IOException {
         PugConfiguration config = new PugConfiguration();
         config.setPrettyPrint(true);
-        PugTemplate template = config.getTemplate(TEMPLATE_PATH);
+        PugTemplate template = config.getTemplate(templatePath);
         assertTrue(template.isPrettyPrint());
     }
 
     @Test
     public void testRootNode() throws IOException {
         PugConfiguration config = new PugConfiguration();
-        PugTemplate template = config.getTemplate(TEMPLATE_PATH);
+        PugTemplate template = config.getTemplate(templatePath);
         assertNotNull(template.getRootNode());
     }
 
