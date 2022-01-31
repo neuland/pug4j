@@ -36,8 +36,8 @@ jobs:
           tzutil /g
       - name: Compile
         run: mvn compile
-      - name: Verify
-        run: mvn --batch-mode test -D"org.slf4j.simpleLogger.defaultLogLevel"="error" -D"org.slf4j.simpleLogger.log.de.neuland.pug4j"="debug" -D"test"="PugLexerTest"
-#      - name: Verify all
-#        run: mvn --batch-mode --update-snapshots verify
+#      - name: Verify
+#        run: mvn --batch-mode test -D"org.slf4j.simpleLogger.defaultLogLevel"="error" -D"org.slf4j.simpleLogger.log.de.neuland.pug4j"="debug" -D"test"="PugLexerTest"
+      - name: Verify all
+        run: mvn --batch-mode --update-snapshots verify
 
