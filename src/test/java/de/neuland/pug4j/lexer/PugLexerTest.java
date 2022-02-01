@@ -74,11 +74,6 @@ public class PugLexerTest {
         LinkedList<Token> tokens = lexer.getTokens();
 
         expect.serializer("json").scenario(filename).toMatchSnapshot(tokens);
-
-    }
-
-    private String readFile(String fileName) throws IOException {
-        return FileUtils.readFileToString(new File(fileName),"UTF-8");
     }
 
     @Parameterized.Parameters(name="{0}")
@@ -88,15 +83,12 @@ public class PugLexerTest {
         File[] objects = files.stream().toArray(File[]::new);
         Arrays.sort(objects, NAME_COMPARATOR);
 
-
         Collection<String[]> data = new LinkedList<String[]>();
         for (File file : objects) {
             if (!ArrayUtils.contains(ignoredCases, file.getName().replace(".pug", ""))) {
                 LoggerFactory.getLogger(PugLexerTest.class).debug(file.getName());
                 data.add(new String[]{file.getName()});
-
             }
-
         }
         return data;
     }

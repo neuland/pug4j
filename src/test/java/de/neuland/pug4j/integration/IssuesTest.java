@@ -1,4 +1,4 @@
-package de.neuland.pug4j.compiler;
+package de.neuland.pug4j.integration;
 
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.PugConfiguration;
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

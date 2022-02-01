@@ -3,7 +3,6 @@ package de.neuland.pug4j.compiler;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -18,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import de.neuland.pug4j.TestFileHelper;
-import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.filter.MarkdownFilter;
 import de.neuland.pug4j.filter.PlainFilter;
 import de.neuland.pug4j.model.PugModel;

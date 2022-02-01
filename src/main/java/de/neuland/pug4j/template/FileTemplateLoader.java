@@ -120,7 +120,7 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	public void setBase(String basePath) {
-		if (basePath.endsWith("/"))
+		if (basePath.endsWith("/") || "".equals(basePath))
 			this.basePath = basePath;
 		else
 			this.basePath = basePath+"/";
