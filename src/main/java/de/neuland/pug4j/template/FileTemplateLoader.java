@@ -1,7 +1,6 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,12 +38,8 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	public FileTemplateLoader(String templateLoaderPath) {
-		Path path = null;
-		try {
-			path = Paths.get(FilenameUtils.separatorsToSystem(templateLoaderPath));
-		}catch(Exception e){
-			System.out.println(templateLoaderPath + " throws Exception: " +e);
-		}
+		templateLoaderPath = FilenameUtils.separatorsToSystem(templateLoaderPath);
+		Path path = Paths.get(templateLoaderPath);
 		if(!Files.isDirectory(path)){
 			throw new PugTemplateLoaderException("Directory '"+ templateLoaderPath +"' does not exist.");
 		}
@@ -71,6 +66,7 @@ public class FileTemplateLoader implements TemplateLoader {
 	}
 
 	public long getLastModified(String name) {
+		name = FilenameUtils.separatorsToSystem(name);
 		File templateSource = getFile(name);
 		return templateSource.lastModified();
 	}
@@ -80,6 +76,7 @@ public class FileTemplateLoader implements TemplateLoader {
 		if(name == null){
 			throw new IllegalArgumentException("Filename not provided!");
 		}
+		name = FilenameUtils.separatorsToSystem(name);
 		name = ensurePugExtension(name);
 		File templateSource = getFile(name);
 		return new InputStreamReader(new FileInputStream(templateSource), encoding);
@@ -92,21 +89,20 @@ public class FileTemplateLoader implements TemplateLoader {
 		return templateName;
 	}
 	private File getFile(String name) {
-		name = FilenameUtils.separatorsToSystem(name);
+		String filepath = getFilepath(name);
+		logger.debug("Template: "+name+" resolved filepath is " + filepath);
+		return Paths.get(filepath).toFile();
+	}
+
+	private String getFilepath(String name){
 		if(!StringUtils.isBlank(templateLoaderPath)) {
-			logger.debug("Path is  " + name);
 			if (name.startsWith(File.separator)) {
-				Path path = Paths.get(templateLoaderPath + basePath + name.substring(1));
-				logger.debug("Path " + name + " is absolute. BasePath: " + basePath + " templateLoaderPath: " + templateLoaderPath + " result: "+path.toString());
-				return path.toFile();
+				return Paths.get(templateLoaderPath + basePath + name.substring(1)).toString();
 			} else {
-				Path resolve = Paths.get(templateLoaderPath).resolve(name);
-				logger.debug("Path " + name + " is relative. BasePath: " + basePath + " templateLoaderPath: " + templateLoaderPath + " result: "+resolve.toString());
-				return resolve.toFile();
+				return Paths.get(templateLoaderPath).resolve(name).toString();
 			}
 		} else {
-			logger.debug("templateLoaderPath is blank. Path: " + name + " . BasePath: " + basePath);
-			return Paths.get(name).toFile();
+			return name;
 		}
 	}
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import de.neuland.pug4j.template.FileTemplateLoader;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class PugExceptionTest {
 		} catch (PugException e) {
 			assertTrue(e.getMessage().startsWith("unable to evaluate [non.existing.query()]"));
 			assertEquals(9, e.getLineNumber());
-			assertEquals(errorJade, e.getFilename());
+			assertEquals(FilenameUtils.getName(errorJade), e.getFilename());
 			String expectedHtml = readFile(exceptionHtml);
 			String html = e.toHtmlString("<html><head><title>broken");
 			LoggerFactory.getLogger(this.getClass()).debug("Expected: "+ expectedHtml+", Actual: "+html);

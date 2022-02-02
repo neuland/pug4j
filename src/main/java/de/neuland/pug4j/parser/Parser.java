@@ -378,6 +378,15 @@ public class Parser {
 
         String templateName = pathToken.getValue().trim();
         String path = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
+        if(path==null){
+            throw new PugParserException(
+                    this.filename,
+                    lexer.getLineno(),
+                    templateLoader,
+                    "The template [" + templateName + "] could not be opened. Maybe outside template path."
+            );
+        }
+
 
         try {
             if (filters.size()>0) {
@@ -461,6 +470,14 @@ public class Parser {
         templateName = ensurePugExtension(templateName);
         try {
             String resolvedPath = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
+            if(resolvedPath==null){
+                throw new PugParserException(
+                        this.filename,
+                        lexer.getLineno(),
+                        templateLoader,
+                        "The template [" + templateName + "] could not be opened. Maybe outside template path."
+                );
+            }
             return new Parser(resolvedPath, templateLoader, expressionHandler);
         } catch (IOException e) {
             throw new PugParserException(

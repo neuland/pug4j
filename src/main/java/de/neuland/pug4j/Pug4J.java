@@ -1,11 +1,6 @@
 package de.neuland.pug4j;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -22,6 +17,7 @@ import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.ReaderTemplateLoader;
 import de.neuland.pug4j.template.TemplateLoader;
+import org.apache.commons.io.FilenameUtils;
 
 public class Pug4J {
 
@@ -88,19 +84,22 @@ public class Pug4J {
     }
 
 	public static PugTemplate getTemplate(String filename) throws IOException {
-
-		FileTemplateLoader loader;
-		if(filename != null && filename.endsWith(".jade")){
-			loader = new FileTemplateLoader(Charset.forName("UTF-8"),"jade");
-		}else{
-			loader = new FileTemplateLoader(Charset.forName("UTF-8"));
+		if(filename==null){
+			throw new IllegalArgumentException("Filename can not be null");
 		}
-		return createTemplate(filename, new FileTemplateLoader(Charset.forName("UTF-8")), new JexlExpressionHandler());
+		String prefix = FilenameUtils.getFullPath(filename);
+		String filePath = FilenameUtils.getName(filename);
+		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"));
+		return createTemplate(filePath, loader, new JexlExpressionHandler());
 	}
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
-		Path path = Paths.get(filename);
-		FileTemplateLoader loader = new FileTemplateLoader(path.getParent().toString(),Charset.forName("UTF-8"), extension);
-		return createTemplate(path.getFileName().toString(), loader, new JexlExpressionHandler());
+		if(filename==null){
+			throw new IllegalArgumentException("Filename can not be null");
+		}
+		String prefix = FilenameUtils.getFullPath(filename);
+		String filePath = FilenameUtils.getName(filename);
+		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"), extension);
+		return createTemplate(filePath, loader, new JexlExpressionHandler());
 	}
 
 	private static PugTemplate getTemplate(Reader reader, String name) throws IOException {

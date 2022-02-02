@@ -104,7 +104,6 @@ public class PugConfiguration {
 
     private PugTemplate createTemplate(String name) throws PugException, IOException {
         PugTemplate template = new PugTemplate();
-
         Parser parser = new Parser(name, templateLoader, expressionHandler);
         Node root = parser.parse();
         template.setTemplateLoader(templateLoader);
