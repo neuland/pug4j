@@ -21,11 +21,11 @@ public class PathHelper {
         String inputParamsLog = "ParentFilename: " + parentTemplateName + ", TemplateName: " + templateName + ", BasePath:" + basePath;
 
         if(parentTemplateName.startsWith("/") && basePath.length() > 0){
-            parentTemplateName = FilenameUtils.normalize(basePath + parentTemplateName);
+            parentTemplateName = FilenameUtils.normalize(basePath + parentTemplateName,true);
         }
 
         if(templateName.startsWith("/") && basePath.length() > 0){
-            String path = FilenameUtils.normalize(basePath + templateName);
+            String path = FilenameUtils.normalize(basePath + templateName,true);
             LOGGER.debug(inputParamsLog + " Result: " + path);
             return path;
         }
