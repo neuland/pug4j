@@ -1,6 +1,7 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,9 +14,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class FileTemplateLoader implements TemplateLoader {
 
@@ -39,8 +37,8 @@ public class FileTemplateLoader implements TemplateLoader {
 
 	public FileTemplateLoader(String templateLoaderPath) {
 		templateLoaderPath = FilenameUtils.separatorsToSystem(templateLoaderPath);
-		Path path = Paths.get(templateLoaderPath);
-		if(!Files.isDirectory(path)){
+
+		if(!FileUtils.isDirectory(new File(templateLoaderPath))){
 			throw new PugTemplateLoaderException("Directory '"+ templateLoaderPath +"' does not exist.");
 		}
 		if(templateLoaderPath.endsWith(File.separator))
@@ -91,15 +89,15 @@ public class FileTemplateLoader implements TemplateLoader {
 	private File getFile(String name) {
 		String filepath = getFilepath(name);
 		logger.debug("Template: "+name+" resolved filepath is " + filepath);
-		return Paths.get(filepath).toFile();
+		return new File(filepath);
 	}
 
 	private String getFilepath(String name){
 		if(!StringUtils.isBlank(templateLoaderPath)) {
 			if (name.startsWith(File.separator)) {
-				return Paths.get(templateLoaderPath + basePath + name.substring(1)).toString();
+				return FilenameUtils.normalize(templateLoaderPath + basePath + name.substring(1));
 			} else {
-				return Paths.get(templateLoaderPath).resolve(name).toString();
+				return FilenameUtils.normalize(templateLoaderPath + name);
 			}
 		} else {
 			return name;

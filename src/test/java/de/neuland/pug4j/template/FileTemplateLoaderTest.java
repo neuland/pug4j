@@ -22,6 +22,12 @@ public class FileTemplateLoaderTest {
         fileTemplateLoader.getReader(RESOURCE_PATH+"/pages/subdir/test.pug");
     }
     @Test
+    public void shouldGetAbsoluteFileWithBasePath() throws IOException {
+        FileTemplateLoader fileTemplateLoader = new FileTemplateLoader();
+        fileTemplateLoader.setBase("pages");
+        fileTemplateLoader.getReader(RESOURCE_PATH+"/pages/subdir/test.pug");
+    }
+    @Test
     public void shouldGetReleativeFile() throws IOException {
         FileTemplateLoader fileTemplateLoader = new FileTemplateLoader(RESOURCE_PATH);
         fileTemplateLoader.getReader("/pages/subdir/test.pug");
