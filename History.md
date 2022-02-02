@@ -1,4 +1,8 @@
 # History
+## 2.0.5 / 2022-02-02
+* refactoring filepathhandling to support windows
+* fixed tests to run on windows platform
+
 ## 2.0.4 / 2021-12-13
 * update gson dependency to the latest available v2.8.7 -> v2.8.9 (thanks dbelyaev)
 * other dependency updates
