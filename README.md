@@ -1,4 +1,4 @@
-![Test Status](https://github.com/neuland/pug4j/actions/workflows/test.yaml/badge.svg)
+[![Test Status](https://github.com/neuland/pug4j/actions/workflows/test.yaml/badge.svg)](https://github.com/neuland/pug4j/actions)
 
 # pug4j - a pug implementation written in Java
 pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
