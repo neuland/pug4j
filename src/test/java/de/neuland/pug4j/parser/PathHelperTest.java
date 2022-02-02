@@ -19,76 +19,76 @@ public class PathHelperTest extends ParserTest {
     @Test
     public void name() throws IOException {
         String resolvePath = pathHelper.resolvePath("pages/index.pug", "subdir/layout.pug","");
-        assertEquals(FilenameUtils.separatorsToSystem("pages/subdir/layout.pug"),resolvePath);
+        assertEquals("pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name2() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "layout.pug","");
-        assertEquals(FilenameUtils.separatorsToSystem("pages/subdir/layout.pug"),resolvePath);
+        assertEquals("pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name3() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "/index.pug","pages/");
-        assertEquals(FilenameUtils.separatorsToSystem("pages/index.pug"),resolvePath);
+        assertEquals("pages/index.pug",resolvePath);
     }
     @Test
     public void name4() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "../index.pug","pages/");
-        assertEquals(FilenameUtils.separatorsToSystem(   "pages/index.pug"),resolvePath);
+        assertEquals(   "pages/index.pug",resolvePath);
     }
 
     @Test
     public void name5() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "../../modules/include.pug","pages/");
-        assertEquals(FilenameUtils.separatorsToSystem("modules/include.pug"),resolvePath);
+        assertEquals("modules/include.pug",resolvePath);
     }
 
     @Test
     public void name6() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "layout.pug","pages/");
-        assertEquals(FilenameUtils.separatorsToSystem("pages/subdir/layout.pug"),resolvePath);
+        assertEquals("pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name7() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "/subdir/layout.pug","pages/");
-        assertEquals(FilenameUtils.separatorsToSystem("pages/subdir/layout.pug"),resolvePath);
+        assertEquals("pages/subdir/layout.pug",resolvePath);
     }
     @Test
     public void name8() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "/layout.pug","");
-        assertEquals(FilenameUtils.separatorsToSystem("/layout.pug"),resolvePath);
+        assertEquals("/layout.pug",resolvePath);
 
     }
 
     @Test
     public void name9() {
         String resolvePath = pathHelper.resolvePath("pages/subdir/test.pug", "../../layout.pug","");
-        assertEquals(FilenameUtils.separatorsToSystem("layout.pug"),resolvePath);
+        assertEquals("layout.pug",resolvePath);
 
     }
 
     @Test
     public void shouldThrowExceptionOnAbsoluteParentTemplateName() throws Exception {
         String result = pathHelper.resolvePath("/bla/index.jade","../_layout.jade", "kek");
-        assertEquals(FilenameUtils.separatorsToSystem("kek/_layout.jade"),result);
+        assertEquals("kek/_layout.jade",result);
 
     }
     @Test(expected = PugTemplateLoaderException.class)
     public void shouldThrowExceptionOnAbsoluteBasePath() throws Exception {
         String result = pathHelper.resolvePath("kek/index.jade","../_layout.jade", "/kek");
-        assertEquals(FilenameUtils.separatorsToSystem("_layout.jade"),result);
+        assertEquals("_layout.jade",result);
 
     }
     @Test()
     public void shouldResolvePathWindows2() throws Exception {
         String result = pathHelper.resolvePath("kek/index.jade","../_layout.jade", "");
-        assertEquals(FilenameUtils.separatorsToSystem("_layout.jade"),result);
+        assertEquals("_layout.jade",result);
 
     }
     @Test()
     public void shouldResolveClasspath() throws Exception {
         String result = pathHelper.resolvePath("kek/index.jade","../_layout.jade", "");
-        assertEquals(FilenameUtils.separatorsToSystem("_layout.jade"),result);
+        assertEquals("_layout.jade",result);
 
     }
 }
