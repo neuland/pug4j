@@ -22,13 +22,17 @@ public abstract class PugException extends RuntimeException {
 	private int colNumber;
 	private TemplateLoader templateLoader;
 
-	public PugException(String message, String filename, int lineNumber, TemplateLoader templateLoader, Throwable e) {
+	/**
+	 * Just use protected for constructor of abstract class
+	 * See more at <a href="https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993">https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993</a>
+ 	 */
+	protected PugException(String message, String filename, int lineNumber, TemplateLoader templateLoader, Throwable e) {
 		super(message, e);
 		this.filename = filename;
 		this.lineNumber = lineNumber;
 		this.templateLoader = templateLoader;
 	}
-	public PugException(String message, String filename, int lineNumber, int column, TemplateLoader templateLoader, Throwable e) {
+	protected PugException(String message, String filename, int lineNumber, int column, TemplateLoader templateLoader, Throwable e) {
 		super(message, e);
 		this.filename = filename;
 		this.lineNumber = lineNumber;
@@ -36,7 +40,7 @@ public abstract class PugException extends RuntimeException {
 		this.templateLoader = templateLoader;
 	}
 
-	public PugException(String message) {
+	protected PugException(String message) {
 		super(message);
 	}
 

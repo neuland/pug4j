@@ -17,60 +17,60 @@ public abstract class Token implements Cloneable{
     private int indents;
     private boolean selfClosing = false;
     private String type = this.getType();
-    public Token(){
+    protected Token(){
     }
 
-    public Token(String value){
+    protected Token(String value){
         this.value = value;
     }
-    public Token(String value, boolean buffer){
+    protected Token(String value, boolean buffer){
         this.value = value;
         this.buffer = buffer;
     }
-    public Token(String value, int startLineNumber) {
+    protected Token(String value, int startLineNumber) {
         this.value = value;
         this.startLineNumber = startLineNumber;
     }
 
-    public Token(String value, int startLineNumber, int startColumn) {
+    protected Token(String value, int startLineNumber, int startColumn) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.startColumn = startColumn;
     }
 
-    public Token(String value, int startLineNumber, boolean buffer) {
+    protected Token(String value, int startLineNumber, boolean buffer) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.buffer = buffer;
     }
 
-    public Token(String value, int startLineNumber, int startColumn, boolean buffer) {
+    protected Token(String value, int startLineNumber, int startColumn, boolean buffer) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.startColumn = startColumn;
         this.buffer = buffer;
     }
-    public Token(String value, int startLineNumber, String filename) {
+    protected Token(String value, int startLineNumber, String filename) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.fileName = filename;
     }
 
-    public Token(String value, int startLineNumber, int startColumn, String filename) {
+    protected Token(String value, int startLineNumber, int startColumn, String filename) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.startColumn = startColumn;
         this.fileName = filename;
     }
 
-    public Token(String value, int startLineNumber, String filename, boolean buffer) {
+    protected Token(String value, int startLineNumber, String filename, boolean buffer) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.fileName = filename;
         this.buffer = buffer;
     }
 
-    public Token(String value, int startLineNumber, int startColumn, String filename, boolean buffer) {
+    protected Token(String value, int startLineNumber, int startColumn, String filename, boolean buffer) {
         this.value = value;
         this.startLineNumber = startLineNumber;
         this.startColumn = startColumn;
