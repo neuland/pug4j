@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class FileTemplateLoader implements TemplateLoader {
 
@@ -77,7 +78,7 @@ public class FileTemplateLoader implements TemplateLoader {
 		name = FilenameUtils.separatorsToSystem(name);
 		name = ensurePugExtension(name);
 		File templateSource = getFile(name);
-		return new InputStreamReader(new FileInputStream(templateSource), encoding);
+		return new InputStreamReader(Files.newInputStream(templateSource.toPath()), encoding);
 	}
 
 	private String ensurePugExtension(String templateName) {
