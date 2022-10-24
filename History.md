@@ -1,4 +1,7 @@
 # History
+## 2.0.6 / 2022-10-24
+* updated libraries (commons-text to 1.10.0 - CVE-2022-42889)
+
 ## 2.0.5 / 2022-02-02
 * refactoring filepathhandling to support windows
 * fixed tests to run on windows platform
