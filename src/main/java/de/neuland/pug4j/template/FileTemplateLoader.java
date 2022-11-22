@@ -7,14 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class FileTemplateLoader implements TemplateLoader {
 
@@ -78,7 +75,9 @@ public class FileTemplateLoader implements TemplateLoader {
 		name = FilenameUtils.separatorsToSystem(name);
 		name = ensurePugExtension(name);
 		File templateSource = getFile(name);
-		return new InputStreamReader(Files.newInputStream(templateSource.toPath()), encoding);
+		final Path path = templateSource.toPath();
+		final InputStream inputStream = Files.newInputStream(path);
+		return new InputStreamReader(inputStream, encoding);
 	}
 
 	private String ensurePugExtension(String templateName) {
