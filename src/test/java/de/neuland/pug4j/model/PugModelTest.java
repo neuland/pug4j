@@ -26,8 +26,15 @@ public class PugModelTest {
 		model.pushScope();
 		model.putLocal("hello", "new world");
 		assertEquals("new world", model.get("hello"));
+
+		// Test the put() method here, ensure the key will be put to local scope because the "hello" key exists in local
+		model.put("hello", "new new world");
+		// But the put() method will put foo key to global scope because the local doesn't have the "foo" key
+		model.put("foo", "baz");
+
 		model.popScope();
 		assertEquals("world", model.get("hello"));
+		assertEquals("baz", model.get("foo"));
 	}
 	
 	@Test
@@ -41,5 +48,6 @@ public class PugModelTest {
 		assertFalse(defaults.containsKey("new"));
 		assertTrue(model.containsKey("new"));
 		assertEquals(model.get("hello"), "world");
+
 	}
 }

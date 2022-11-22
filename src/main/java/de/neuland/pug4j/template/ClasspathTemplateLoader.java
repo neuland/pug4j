@@ -17,7 +17,7 @@ import java.nio.file.Paths;
  */
 public class ClasspathTemplateLoader implements TemplateLoader {
 
-    private FileTemplateLoader fileTemplateLoader;
+    private final FileTemplateLoader fileTemplateLoader;
     private String getResourcePath(String path){
         try {
             return Paths.get(Thread.currentThread().getContextClassLoader().getResource(path).toURI()).toString();
