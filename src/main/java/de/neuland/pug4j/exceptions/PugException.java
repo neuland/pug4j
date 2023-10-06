@@ -25,6 +25,12 @@ public abstract class PugException extends RuntimeException {
 	/**
 	 * Just use protected for constructor of abstract class
 	 * See more at <a href="https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993">https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993</a>
+	 *
+	 * @param message Description message of exception
+	 * @param filename Filename where exception was thrown
+	 * @param lineNumber Linenumer where exception was thrown
+	 * @param templateLoader TemplateLoader to load templates
+	 * @param e Thrown exception
  	 */
 	protected PugException(String message, String filename, int lineNumber, TemplateLoader templateLoader, Throwable e) {
 		super(message, e);
