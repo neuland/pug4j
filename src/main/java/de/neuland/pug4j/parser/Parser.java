@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
+    public static final Pattern PATTERN_REST = Pattern.compile("^\\.\\.\\.");
     private final Lexer lexer;
     private LinkedHashMap<String, BlockNode> blocks = new LinkedHashMap<>();
     private final TemplateLoader templateLoader;
@@ -259,14 +260,28 @@ public class Parser {
             String rest;
 
             if (args.size() > 0) {
-                Matcher matcher = Pattern.compile("^\\.\\.\\.").matcher(args.get(args.size() - 1).trim());
+                Matcher matcher = PATTERN_REST.matcher(args.get(args.size() - 1).trim());
                 if (matcher.find(0)) {
                     rest = args.remove(args.size() - 1).trim().replaceAll("^\\.\\.\\.", "");
                     node.setRest(rest);
 
                 }
             }
-
+            List<String> newArgs = new ArrayList<>();
+            HashMap<String,String> defaultValues = new HashMap<String,String>();
+            for (String arg : args) {
+                String key;
+                Matcher matcher = Pattern.compile("^([a-zA-Z][a-zA-Z0-9]*)=(.*)$").matcher(arg);
+                if(matcher.find(0) && matcher.groupCount() > 1){
+                    key=matcher.group(1);
+                    defaultValues.put(key,matcher.group(2));
+                }else{
+                    key=arg;
+                }
+                newArgs.add(key);
+            }
+            node.setArguments(newArgs);
+            node.setDefaultValues(defaultValues);
             node.setBlock(block());
             node.setCall(false);
             this.mixins.put(mixinToken.getValue(), node);

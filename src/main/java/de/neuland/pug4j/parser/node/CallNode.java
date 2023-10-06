@@ -61,13 +61,7 @@ public class CallNode extends AttrsNode {
 			model.putLocal("block",null);
 			model.popScope();
 
-		}else{
-
 		}
-
-
-
-
 	}
 
 	private List<MixinBlockNode> getInjectionPoints(Node block) {
@@ -99,18 +93,20 @@ public class CallNode extends AttrsNode {
 
 		for (int i = 0; i < names.size(); i++) {
 			String key = names.get(i);
+			String valueExpression = mixin.getDefaultValues().get(key);
 			Object value = null;
 			if (i < values.size()) {
-				value = values.get(i);
+				valueExpression = values.get(i);
 			}
-			if (value != null) {
+			if (valueExpression != null) {
 				try {
-					value = template.getExpressionHandler().evaluateExpression(values.get(i), model);
+					value = template.getExpressionHandler().evaluateExpression(valueExpression, model);
 				} catch (Throwable e) {
 					throw new PugCompilerException(this, template.getTemplateLoader(), e);
 				}
 			}
 			if (key != null) {
+
 				model.putLocal(key, value);
 			}
 		}

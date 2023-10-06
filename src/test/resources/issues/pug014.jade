@@ -1,0 +1,14 @@
+//- Declaration
+mixin article(body, title='Default Title', list=[1,2])
+  .article
+    .article-wrapper
+      h1= title
+      p= body
+      ul
+        each val in list
+          li= val
+
+//- Use
++article("This is a body")
+
++article('What a beautiful day', 'Hello world', [1,2,3])

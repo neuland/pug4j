@@ -8,6 +8,8 @@ public class Mixin extends Token {
     public Mixin(String value, int lineNumber) {
 		super(value, lineNumber);
 	}
+    public Mixin() {
+	}
 
     public void setArguments(String args) {
         this.arguments = args;
