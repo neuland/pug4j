@@ -23,13 +23,10 @@ public class OriginalPug3Test {
 
             // try to read files in ../
             //unsupported
-            "styles", // wrong indent, rest ok.
             "filters.include", //unsupported filters
             "filters.stylus", //missing filter
             "filters.less", // missing filter
             "filters.nested", // missing filter
-            "attrs-data", // only timeformat different
-            "attrs", // only timeformat different
             "filter-in-include", // missing less filter
             "pipeless-filters", //maybe missing markdown-it or different markdown syntax as in js markdown
             "code.iteration", // function block not working in buffered code. Maybe report to GraalVM Bugtracker.

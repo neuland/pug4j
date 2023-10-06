@@ -1,5 +1,6 @@
 package de.neuland.pug4j.parser.node;
 
+import java.time.Instant;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -272,9 +273,13 @@ public abstract class AttrsNode extends Node {
                     if (template.isTerse()) {
                         value = null;
                     }
+                } else if (expressionValue instanceof Instant) {
+                    Instant instantValue = (Instant) expressionValue;
+                    value = instantValue.toString();
                 } else if (
-                        expressionValue.getClass().isArray()
-                                || expressionValue instanceof Map || expressionValue instanceof List
+                    expressionValue.getClass().isArray()
+                    || expressionValue instanceof Map
+                    || expressionValue instanceof List
                 ) {
                     value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
                 }else{
