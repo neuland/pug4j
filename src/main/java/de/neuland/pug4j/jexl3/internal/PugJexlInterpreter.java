@@ -3,7 +3,9 @@ package de.neuland.pug4j.jexl3.internal;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlInfo;
+import org.apache.commons.jexl3.JexlOptions;
 import org.apache.commons.jexl3.internal.Engine;
+import org.apache.commons.jexl3.internal.Frame;
 import org.apache.commons.jexl3.internal.Interpreter;
 import org.apache.commons.jexl3.internal.Scope;
 import org.apache.commons.jexl3.parser.ASTIdentifier;
@@ -13,11 +15,9 @@ import org.apache.commons.jexl3.parser.JexlNode;
 import org.apache.commons.jexl3.parser.Token;
 
 public class PugJexlInterpreter extends Interpreter {
-	public PugJexlInterpreter(Engine engine, JexlContext aContext, Scope.Frame eFrame) {
-		super(engine, aContext, eFrame);
+	protected PugJexlInterpreter(final Engine engine, final JexlOptions opts, final JexlContext aContext, final Frame eFrame) {
+		super(engine, opts, aContext, eFrame);
 	}
-
-
 
 	@Override
 	protected Object visit(ASTReference node, Object data) {

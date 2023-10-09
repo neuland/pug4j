@@ -4,10 +4,11 @@ package de.neuland.pug4j.jexl3.internal;
 import de.neuland.pug4j.jexl3.PugJexlArithmetic;
 import org.apache.commons.jexl3.*;
 import org.apache.commons.jexl3.internal.Engine;
-import org.apache.commons.jexl3.internal.Interpreter;
-import org.apache.commons.jexl3.internal.Scope;
 import de.neuland.pug4j.jexl3.internal.introspection.PugUberspect;
+import org.apache.commons.jexl3.internal.Frame;
+import org.apache.commons.jexl3.internal.Interpreter;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,8 @@ public class PugJexlEngine extends Engine {
 	 * using a semi strict interpreter and non strict arithmetic
 	 */
 	public PugJexlEngine(int cacheSize) {
-		super(new JexlBuilder().arithmetic(new PugJexlArithmetic(false)).uberspect(new PugUberspect(null,
-				new JexlUberspect.ResolverStrategy() {
+		super(new JexlBuilder().arithmetic(new PugJexlArithmetic(false)).uberspect(new PugUberspect(LogFactory.getLog(JexlEngine.class),
+                new JexlUberspect.ResolverStrategy() {
                     public List<JexlUberspect.PropertyResolver> apply(JexlOperator op, Object obj) {
                         if(obj instanceof Map){
                             return JexlUberspect.MAP;
@@ -34,9 +35,7 @@ public class PugJexlEngine extends Engine {
                     }
                 })).strict(false).cache(cacheSize));
 	}
-
-	@Override
-	protected Interpreter createInterpreter(JexlContext context, Scope.Frame frame) {
-		return new PugJexlInterpreter(this, context == null ? EMPTY_CONTEXT : context, frame);
-	}
+    protected Interpreter createInterpreter(final JexlContext context, final Frame frame, final JexlOptions opts) {
+        return new PugJexlInterpreter(this, opts, context == null ? EMPTY_CONTEXT : context, frame);
+    }
 }
