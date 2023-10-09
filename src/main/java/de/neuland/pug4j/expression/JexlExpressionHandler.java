@@ -1,7 +1,7 @@
 package de.neuland.pug4j.expression;
 
 import org.apache.commons.jexl3.JexlScript;
-import org.apache.commons.jexl3.internal.PugJexlEngine;
+import de.neuland.pug4j.jexl3.internal.PugJexlEngine;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 

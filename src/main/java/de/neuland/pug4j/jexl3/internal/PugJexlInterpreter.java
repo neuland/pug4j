@@ -1,5 +1,8 @@
-package org.apache.commons.jexl3;
+package de.neuland.pug4j.jexl3.internal;
 
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.JexlInfo;
 import org.apache.commons.jexl3.internal.Engine;
 import org.apache.commons.jexl3.internal.Interpreter;
 import org.apache.commons.jexl3.internal.Scope;

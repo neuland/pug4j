@@ -1,6 +1,7 @@
-package org.apache.commons.jexl3;
+package de.neuland.pug4j.jexl3;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.jexl3.JexlArithmetic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,6 +13,7 @@ public class PugJexlArithmetic extends JexlArithmetic {
         super(astrict);
     }
 
+    @Override
     protected int compare(Object left, Object right, String operator) {
         if (left != null && right != null) {
             if (left instanceof String || right instanceof String) {
@@ -101,5 +103,9 @@ public class PugJexlArithmetic extends JexlArithmetic {
         else {
             return super.add(left, right);
         }
+    }
+    @Override
+    public MapBuilder mapBuilder(int size) {
+        return new de.neuland.pug4j.jexl3.internal.MapBuilder(size);
     }
 }
