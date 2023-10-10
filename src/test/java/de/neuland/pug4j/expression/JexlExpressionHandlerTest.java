@@ -2,6 +2,8 @@ package de.neuland.pug4j.expression;
 
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
+import de.neuland.pug4j.helper.beans.Level2TestBean;
+import de.neuland.pug4j.helper.beans.TestBean;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.BlockNode;
 import de.neuland.pug4j.template.PugTemplate;
@@ -158,5 +160,23 @@ public class JexlExpressionHandlerTest {
         Object what = pugModel.get("x");
     }
 
+    @Test
+    public void testAntishHashMapAccess() throws ExpressionException {
+        final HashMap<String, String> level1 = new HashMap<>();
+        level1.put("level2","value");
+        pugModel.put("level1", level1);
+        final String value = jexlExpressionHandler.evaluateStringExpression("level1.level2", pugModel);
+        assertEquals("value",value);
+    }
 
+    @Test
+    public void testAntishObjectAccess() throws ExpressionException {
+        TestBean b = new TestBean();
+        Level2TestBean b2 = new Level2TestBean();
+        b2.setName("value");
+        b.setLevel2(b2);
+        pugModel.put("level1", b);
+        final String value = jexlExpressionHandler.evaluateStringExpression("level1.level2.name", pugModel);
+        assertEquals("value",value);
+    }
 }

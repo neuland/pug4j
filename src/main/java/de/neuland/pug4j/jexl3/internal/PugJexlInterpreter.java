@@ -7,7 +7,6 @@ import org.apache.commons.jexl3.JexlOptions;
 import org.apache.commons.jexl3.internal.Engine;
 import org.apache.commons.jexl3.internal.Frame;
 import org.apache.commons.jexl3.internal.Interpreter;
-import org.apache.commons.jexl3.internal.Scope;
 import org.apache.commons.jexl3.parser.ASTIdentifier;
 import org.apache.commons.jexl3.parser.ASTMethodNode;
 import org.apache.commons.jexl3.parser.ASTReference;

@@ -1,13 +1,16 @@
 package de.neuland.pug4j.expression;
 
-import org.apache.commons.jexl3.JexlScript;
-import de.neuland.pug4j.jexl3.internal.PugJexlEngine;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.MapContext;
+import de.neuland.pug4j.jexl3.PugJexlArithmetic;
+import de.neuland.pug4j.jexl3.PugJexlBuilder;
+import de.neuland.pug4j.jexl3.internal.introspection.PugUberspect;
+import org.apache.commons.jexl3.*;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
+import org.apache.commons.jexl3.introspection.JexlUberspect;
+import org.apache.commons.logging.LogFactory;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,11 +21,39 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	public static Pattern isplusplus = Pattern.compile("\\+\\+\\s*;{0,1}\\s*$");
 	public static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
 	public static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
+
+	private final PugUberspect pugUberspect = new PugUberspect(LogFactory.getLog(JexlEngine.class),
+		(op, obj) -> {
+			if (obj instanceof Map) {
+				return JexlUberspect.MAP;
+			}
+			if (op == JexlOperator.ARRAY_GET) {
+				return JexlUberspect.MAP;
+			} else if (op == JexlOperator.ARRAY_SET) {
+				return JexlUberspect.MAP;
+			} else {
+				return op == null && obj instanceof Map ? JexlUberspect.MAP : JexlUberspect.POJO;
+			}
+		}
+	);
+
+	private final PugJexlArithmetic pugJexlArithmetic = new PugJexlArithmetic(false);
+
+	private JexlEngine getJexlEngine(final int maxEntries) {
+		return new PugJexlBuilder()
+				.arithmetic(pugJexlArithmetic)
+				.uberspect(pugUberspect)
+				.safe(true)
+				.silent(false)
+				.strict(false)
+				.cache(maxEntries)
+				.create();
+	}
+
 	private JexlEngine jexl;
 
 	public JexlExpressionHandler() {
-		jexl = new PugJexlEngine(MAX_ENTRIES);
-
+		jexl = getJexlEngine(MAX_ENTRIES);
 	}
 
 	public Boolean evaluateBooleanExpression(String expression, PugModel model) throws ExpressionException {
@@ -85,7 +116,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	}
 	
 	public void setCache(boolean cache) {
-		jexl = new PugJexlEngine(cache ? MAX_ENTRIES : 0);
+		jexl = getJexlEngine(cache ? MAX_ENTRIES : 0);
 	}
 
     public void clearCache() {

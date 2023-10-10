@@ -25,7 +25,7 @@ public class PugExceptionTest {
 		String errorJade = TestFileHelper.getCompilerResourcePath("exceptions/error.jade");
 		String exceptionHtml = TestFileHelper.getCompilerResourcePath("exceptions/error.html");
 		try {
-			Pug4J.render(errorJade, new HashMap<String, Object>());
+			final String render = Pug4J.render(errorJade, new HashMap<String, Object>());
 			fail();
 		} catch (PugException e) {
 			assertTrue(e.getMessage().startsWith("unable to evaluate [non.existing.query()]"));
