@@ -1,4 +1,11 @@
 # History
+## 2.1.0 / 2023-10-10
+* updated dependencies
+* jexl is now on version 3.2.1
+* graalvm is now on version 21.3.2 (thanks dbelyaev)
+* FileTemplateLoader now uses nio file api
+* Fixed issue #14: Default Mixin Arguments
+
 ## 2.0.6 / 2022-10-24
 * updated libraries (commons-text to 1.10.0 - CVE-2022-42889)
 
