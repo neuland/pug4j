@@ -3,10 +3,7 @@ package de.neuland.pug4j.jexl3;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jexl3.JexlArithmetic;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PugJexlArithmetic extends JexlArithmetic {
 
