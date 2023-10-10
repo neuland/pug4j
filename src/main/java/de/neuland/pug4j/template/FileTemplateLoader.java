@@ -1,7 +1,6 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -10,12 +9,13 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.util.concurrent.TimeUnit;
 
 public class FileTemplateLoader implements TemplateLoader {
 
-    private Charset encoding = StandardCharsets.UTF_8;
+	private final String separator = FileSystems.getDefault().getSeparator();
+	private Charset encoding = StandardCharsets.UTF_8;
 	private String templateLoaderPath = "";
 	private String extension = "pug";
 	private String basePath="";
@@ -35,15 +35,14 @@ public class FileTemplateLoader implements TemplateLoader {
 
 	public FileTemplateLoader(String templateLoaderPath) {
 		templateLoaderPath = FilenameUtils.separatorsToSystem(templateLoaderPath);
-
-		if(!FileUtils.isDirectory(new File(templateLoaderPath))){
+		if(!Files.isDirectory(Paths.get(templateLoaderPath))){
 			throw new PugTemplateLoaderException("Directory '"+ templateLoaderPath +"' does not exist.");
 		}
-		if(templateLoaderPath.endsWith(File.separator))
-			this.templateLoaderPath = templateLoaderPath;
-		else
-			this.templateLoaderPath = templateLoaderPath+File.separator;
 
+		if(!templateLoaderPath.endsWith(separator)) {
+			templateLoaderPath += separator;
+		}
+		this.templateLoaderPath = templateLoaderPath;
 	}
 
 	public FileTemplateLoader(String templateLoaderPath, Charset encoding) {
@@ -61,10 +60,9 @@ public class FileTemplateLoader implements TemplateLoader {
 		this.encoding = encoding;
 	}
 
-	public long getLastModified(String name) {
-		name = FilenameUtils.separatorsToSystem(name);
-		File templateSource = getFile(name);
-		return templateSource.lastModified();
+	public long getLastModified(String name) throws IOException {
+		Path filepath = getFilepath(name);
+		return Files.getLastModifiedTime(filepath).to(TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -72,11 +70,9 @@ public class FileTemplateLoader implements TemplateLoader {
 		if(name == null){
 			throw new IllegalArgumentException("Filename not provided!");
 		}
-		name = FilenameUtils.separatorsToSystem(name);
-		name = ensurePugExtension(name);
-		File templateSource = getFile(name);
-		final Path path = templateSource.toPath();
-		final InputStream inputStream = Files.newInputStream(path);
+		Path filepath = getFilepath(name);
+		logger.debug("Template: "+name+" resolved filepath is " + filepath.toAbsolutePath());
+		final InputStream inputStream = Files.newInputStream(filepath);
 		return new InputStreamReader(inputStream, encoding);
 	}
 
@@ -86,22 +82,21 @@ public class FileTemplateLoader implements TemplateLoader {
 		}
 		return templateName;
 	}
-	private File getFile(String name) {
-		String filepath = getFilepath(name);
-		logger.debug("Template: "+name+" resolved filepath is " + filepath);
-		return new File(filepath);
-	}
 
-	private String getFilepath(String name){
+	private Path getFilepath(String name){
+		name = FilenameUtils.separatorsToSystem(name);
+		name = ensurePugExtension(name);
+		String filePath;
 		if(!StringUtils.isBlank(templateLoaderPath)) {
-			if (name.startsWith(File.separator)) {
-				return FilenameUtils.normalize(templateLoaderPath + basePath + name.substring(1));
+			if (name.startsWith(separator)) {
+				filePath = FilenameUtils.normalize(templateLoaderPath + basePath + name.substring(1));
 			} else {
-				return FilenameUtils.normalize(templateLoaderPath + name);
+				filePath =  FilenameUtils.normalize(templateLoaderPath + name);
 			}
 		} else {
-			return name;
+			filePath = name;
 		}
+		return Paths.get(filePath);
 	}
 
 	public String getExtension() {

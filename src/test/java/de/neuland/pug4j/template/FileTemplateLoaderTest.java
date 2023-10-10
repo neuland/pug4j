@@ -26,6 +26,8 @@ public class FileTemplateLoaderTest {
     public void shouldGetAbsoluteFile() throws IOException {
         FileTemplateLoader fileTemplateLoader = new FileTemplateLoader();
         fileTemplateLoader.getReader(RESOURCE_PATH+"/pages/subdir/test.pug");
+        final long lastModified = fileTemplateLoader.getLastModified(RESOURCE_PATH + "/pages/subdir/test.pug");
+        assertEquals(1696925587000l,lastModified);
     }
     @Test
     public void shouldGetAbsoluteFileWithBasePath() throws IOException {
