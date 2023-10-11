@@ -7,6 +7,7 @@ import org.apache.commons.jexl3.*;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,7 +35,8 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 			} else {
 				return op == null && obj instanceof Map ? JexlUberspect.MAP : JexlUberspect.POJO;
 			}
-		}
+		},
+		JexlPermissions.UNRESTRICTED
 	);
 
 	private final PugJexlArithmetic pugJexlArithmetic = new PugJexlArithmetic(false);

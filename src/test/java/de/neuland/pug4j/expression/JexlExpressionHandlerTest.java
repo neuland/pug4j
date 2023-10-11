@@ -94,7 +94,7 @@ public class JexlExpressionHandlerTest {
 
     @Test
     public void testInt() throws ExpressionException  {
-        jexlExpressionHandler.evaluateExpression("var count = 5", pugModel);
+        jexlExpressionHandler.evaluateExpression("var count = 5; var count2 = 6;", pugModel);
         int count = (int) pugModel.get("count");
         assertEquals(5,count);
 
