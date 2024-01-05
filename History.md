@@ -1,4 +1,9 @@
 # History
+## 2.2.0 / 2024-01-05
+* updated dependencies
+* jexl is now on version 3.3
+* graalvm is now on version 21.3.8
+
 ## 2.1.0 / 2023-10-10
 * updated dependencies
 * jexl is now on version 3.2.1
