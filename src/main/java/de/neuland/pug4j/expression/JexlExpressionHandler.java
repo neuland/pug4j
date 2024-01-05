@@ -101,6 +101,8 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 
 	private String removeVar(String expression) {
 		expression = expression.replace("var ",";");
+		expression = expression.replace("let ",";");
+		expression = expression.replace("const ",";");
 		return expression;
 	}
 

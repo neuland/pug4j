@@ -14,7 +14,6 @@ import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
-    JexlExpressionHandler jexlExpressionHandler = new JexlExpressionHandler();
     final HostAccess all = newBuilder().allowAllImplementations(true).allowPublicAccess(true).allowArrayAccess(true).allowListAccess(true).allowMapAccess(true)
             .targetTypeMapping(Integer.class, Object.class, null, (v) -> v)
             .targetTypeMapping(Long.class, Object.class, null, (v) -> v)

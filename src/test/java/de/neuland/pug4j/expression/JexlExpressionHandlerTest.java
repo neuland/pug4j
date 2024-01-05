@@ -93,8 +93,22 @@ public class JexlExpressionHandlerTest {
     }
 
     @Test
-    public void testInt() throws ExpressionException  {
+    public void testIntVar() throws ExpressionException  {
         jexlExpressionHandler.evaluateExpression("var count = 5; var count2 = 6;", pugModel);
+        int count = (int) pugModel.get("count");
+        assertEquals(5,count);
+
+    }
+    @Test
+    public void testIntLet() throws ExpressionException  {
+        jexlExpressionHandler.evaluateExpression("let count = 5; let count2 = 6;", pugModel);
+        int count = (int) pugModel.get("count");
+        assertEquals(5,count);
+
+    }
+    @Test
+    public void testIntConst() throws ExpressionException  {
+        jexlExpressionHandler.evaluateExpression("const count = 5; const count2 = 6;", pugModel);
         int count = (int) pugModel.get("count");
         assertEquals(5,count);
 
