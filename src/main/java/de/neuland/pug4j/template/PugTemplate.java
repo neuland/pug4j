@@ -1,7 +1,5 @@
 package de.neuland.pug4j.template;
 
-import java.io.Writer;
-
 import de.neuland.pug4j.Pug4J.Mode;
 import de.neuland.pug4j.compiler.Compiler;
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -9,6 +7,7 @@ import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.lexer.token.Doctypes;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.Node;
+import java.io.Writer;
 import org.apache.commons.lang3.StringUtils;
 
 public class PugTemplate {
@@ -22,9 +21,27 @@ public class PugTemplate {
 	private String doctypeLine;
 
 	public void process(PugModel model, Writer writer) throws PugCompilerException {
+                //
+                // Create a new `template` using data from this instance.
+                // We need it to workaround the multithreading corruption of `doctypeLine`
+                // as it's modified during `compiler.compile()` call and it can happen simultaneously
+                // for mutltiple threads rendering the same template.
+                //
+                // The fix looks somewhat ugly but it fixes the issue and shouldn't impact performance.
+                // The proper fix requires bigger changes to the whole template-compiler interaction, 
+                // preferable using a contructor for members initialization and making all members final.
+                
+                PugTemplate template = new PugTemplate();
+                template.setTemplateLoader(templateLoader);
+                template.setExpressionHandler(expressionHandler);
+                template.setPrettyPrint(prettyPrint);
+                template.setRootNode(rootNode);
+                template.terse = terse;
+                template.xml = xml;
+                
 		Compiler compiler = new Compiler(rootNode);
 		compiler.setPrettyPrint(prettyPrint);
-		compiler.setTemplate(this);
+		compiler.setTemplate(template);
 		compiler.compile(model, writer);
 	}
 
