@@ -247,11 +247,38 @@ config.setSharedVariables(defaults);
 <a name="api-template-loader"></a>
 ### Template Loader
 
-By default, pug4j searches for template files in your work directory. By specifying your own `FileTemplateLoader`, you can alter that behavior. You can also implement the `TemplateLoader` interface to create your own.
+By default, pug4j searches for template files in your work directory. 
 
 ```java
 TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8");
 config.setTemplateLoader(loader);
+```
+
+By specifying your own `FileTemplateLoader`, you can alter that behavior. You can also implement the `TemplateLoader` interface to create your own.
+
+```java
+public class ClasspathTemplateLoader implements TemplateLoader {
+    @Override
+    public long getLastModified(String name) throws IOException {
+        return 1;
+    }
+
+    @Override
+    public Reader getReader(String name) throws IOException {
+        name = getBase() + name + getExtension();
+        return new InputStreamReader(getClass().getResourceAsStream(name), StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public String getExtension() {
+        return ".pug";
+    }
+
+    @Override
+    public String getBase() {
+        return "/templates/";
+    }
+}
 ```
 
 <a name="expressions"></a>
