@@ -22,7 +22,8 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	public static Pattern isplusplus = Pattern.compile("\\+\\+\\s*;{0,1}\\s*$");
 	public static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
 	public static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
-
+	private JexlEngine jexl;
+	private JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
 	private final PugUberspect pugUberspect = new PugUberspect(LogFactory.getLog(JexlEngine.class),
 		(op, obj) -> {
 			if (obj instanceof Map) {
@@ -41,21 +42,29 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 
 	private final PugJexlArithmetic pugJexlArithmetic = new PugJexlArithmetic(false);
 
-	private JexlEngine getJexlEngine(final int maxEntries) {
+
+	public JexlExpressionHandler() {
+		jexl = getJexlEngine(options);
+	}
+
+	public JexlExpressionHandler(JexlExpressionHandlerOptions options) {
+		jexl = getJexlEngine(options);
+	}
+
+	private JexlEngine getJexlEngine(JexlExpressionHandlerOptions options) {
+		return getPugJexlBuilder(options).create();
+	}
+
+	private JexlBuilder getPugJexlBuilder(JexlExpressionHandlerOptions options) {
 		return new PugJexlBuilder()
 				.arithmetic(pugJexlArithmetic)
 				.uberspect(pugUberspect)
 				.safe(true)
 				.silent(false)
 				.strict(false)
-				.cache(maxEntries)
-				.create();
-	}
-
-	private JexlEngine jexl;
-
-	public JexlExpressionHandler() {
-		jexl = getJexlEngine(MAX_ENTRIES);
+				.cacheThreshold(options.getCacheThreshold())
+				.cache(options.getCache())
+				.debug(options.isDebug());
 	}
 
 	public Boolean evaluateBooleanExpression(String expression, PugModel model) throws ExpressionException {
@@ -120,7 +129,11 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	}
 	
 	public void setCache(boolean cache) {
-		jexl = getJexlEngine(cache ? MAX_ENTRIES : 0);
+		if(cache)
+			options.setCache(MAX_ENTRIES);
+		else
+			options.setCache(0);
+		jexl = getJexlEngine(options);
 	}
 
     public void clearCache() {
