@@ -5,7 +5,6 @@ import de.neuland.pug4j.Pug4J.Mode;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.exceptions.PugException;
 import de.neuland.pug4j.expression.ExpressionHandler;
-import de.neuland.pug4j.expression.GraalJsExpressionHandler;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.CssFilter;
@@ -38,7 +37,6 @@ public class PugConfiguration {
     private Map<String, Object> sharedVariables = new HashMap<String, Object>();
     private TemplateLoader templateLoader = new FileTemplateLoader();
     private ExpressionHandler expressionHandler = new JexlExpressionHandler();
-    //private ExpressionHandler expressionHandler = new GraalJsExpressionHandler();
     protected static final int MAX_ENTRIES = 1000;
 
     public PugConfiguration() {
@@ -103,14 +101,12 @@ public class PugConfiguration {
     }
 
     private PugTemplate createTemplate(String name) throws PugException, IOException {
-        PugTemplate template = new PugTemplate();
         Parser parser = new Parser(name, templateLoader, expressionHandler);
         Node root = parser.parse();
+        PugTemplate template = new PugTemplate(root,getMode());
         template.setTemplateLoader(templateLoader);
         template.setExpressionHandler(expressionHandler);
-        template.setRootNode(root);
         template.setPrettyPrint(prettyPrint);
-        template.setMode(getMode());
         return template;
     }
 

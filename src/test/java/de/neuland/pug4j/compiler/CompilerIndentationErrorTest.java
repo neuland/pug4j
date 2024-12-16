@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.neuland.pug4j.expression.JexlExpressionHandler;
+import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -46,8 +47,9 @@ public class CompilerIndentationErrorTest {
                 "jade");
         parser = new Parser(testName, loader, new JexlExpressionHandler());
         Node root = parser.parse();
-        Compiler compiler = new Compiler(root);
-        compiler.setPrettyPrint(pretty);
+        PugTemplate pugTemplate = new PugTemplate(root);
+        pugTemplate.setPrettyPrint(pretty);
+        Compiler compiler = new Compiler(pugTemplate);
         String expected = readFile(testName + ".html");
         model.addFilter("markdown", new MarkdownFilter());
         model.addFilter("plain", new PlainFilter());

@@ -3,8 +3,6 @@ package de.neuland.pug4j;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -42,8 +40,7 @@ public class Pug4J {
 	public static void render(String filename, Map<String, Object> model, Writer writer, boolean pretty) throws IOException,
 			PugCompilerException {
 		PugTemplate template = getTemplate(filename);
-		template.setPrettyPrint(pretty);
-		template.process(new PugModel(model), writer);
+		render(template,model,writer,pretty);
 	}
 
 	public static String render(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
@@ -112,10 +109,9 @@ public class Pug4J {
 	private static PugTemplate createTemplate(String filename, TemplateLoader loader, ExpressionHandler expressionHandler) throws IOException {
 		Parser parser = new Parser(filename, loader, expressionHandler);
 		Node root = parser.parse();
-		PugTemplate template = new PugTemplate();
+		PugTemplate template = new PugTemplate(root);
 		template.setExpressionHandler(expressionHandler);
 		template.setTemplateLoader(loader);
-		template.setRootNode(root);
 		return template;
 	}
 
