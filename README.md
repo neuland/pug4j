@@ -254,6 +254,8 @@ TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8");
 config.setTemplateLoader(loader);
 ```
 
+There is also a `ClasspathTemplateLoader` and `ReaderTemplateLoader`.
+
 <a name="expressions"></a>
 ## Expressions
 
