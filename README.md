@@ -153,6 +153,8 @@ model.put("company", "neuland");
 
 config.renderTemplate(template, model);
 ```
+Pug is now allowed to read all files below /root/dir/ but not in / and /root.
+
 <a name="api-caching"></a>
 ### Caching
 
