@@ -2,11 +2,11 @@ package de.neuland.pug4j.expression;
 
 import de.neuland.pug4j.jexl3.PugJexlArithmetic;
 import de.neuland.pug4j.jexl3.PugJexlBuilder;
-import de.neuland.pug4j.jexl3.internal.introspection.PugUberspect;
 import org.apache.commons.jexl3.*;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
+import org.apache.commons.jexl3.internal.introspection.Uberspect;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.apache.commons.logging.LogFactory;
@@ -24,7 +24,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	public static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
 	private JexlEngine jexl;
 	private JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
-	private final PugUberspect pugUberspect = new PugUberspect(LogFactory.getLog(JexlEngine.class),
+	private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlEngine.class),
 		(op, obj) -> {
 			if (obj instanceof Map) {
 				return JexlUberspect.MAP;
