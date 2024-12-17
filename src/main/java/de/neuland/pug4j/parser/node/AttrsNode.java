@@ -35,23 +35,6 @@ public abstract class AttrsNode extends Node {
         return this;
 	}
 
-	public String getAttribute(String key) {
-		for (int i = 0, len = this.attributes.size(); i < len; ++i) {
-			if (this.attributes.get(i) != null && this.attributes.get(i).getName().equals(key)) {
-				return attributeValueToString(this.attributes.get(i).getValue());
-			}
-		}
-		return null;
-	}
-
-	private String attributeValueToString(Object value) {
-		if (value instanceof ExpressionString) {
-			String expression = ((ExpressionString) value).getValue();
-			return "#{" + expression + "}";
-		}
-		return value.toString();
-	}
-
 	@Override
 	public AttrsNode clone() throws CloneNotSupportedException {
 		AttrsNode clone = (AttrsNode) super.clone();

@@ -1,6 +1,5 @@
 package de.neuland.pug4j.parser;
 
-import de.neuland.pug4j.exceptions.PugParserException;
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;

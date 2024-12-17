@@ -9,25 +9,12 @@ import java.util.LinkedList;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class TagNode extends AttrsNode {
-    private Node textNode;
     private static final String[] inlineTags = {"a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map", "samp", "small", "span", "strong", "sub", "sup"};
     private static final String[] whitespaceSensitiveTags = {"pre","textarea"};
     private boolean interpolated = false;
 
     public TagNode() {
         this.block = new BlockNode();
-    }
-
-    public void setTextNode(Node textNode) {
-        this.textNode = textNode;
-    }
-
-    public Node getTextNode() {
-        return textNode;
-    }
-
-    public boolean hasTextNode() {
-        return textNode != null;
     }
 
     public boolean isInline() {
@@ -85,16 +72,8 @@ public class TagNode extends AttrsNode {
     public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
         writer.increment();
 
-
         if (isWhitespaceSensitive()) {
             writer.setEscape(true);
-        }
-
-        if (!writer.isCompiledTag()) {
-            if (!writer.isCompiledDoctype() && "html".equals(name)) {
-// TODO:             template.setDoctype(null);
-            }
-            writer.setCompiledTag(true);
         }
 
         // pretty print
@@ -146,11 +125,6 @@ public class TagNode extends AttrsNode {
         }
         writer.append(">");
     }
-
-    private void handleIgnoredBlock() {
-        // TODO Fehlerbehandlung
-    }
-
 
     private String bufferName(PugTemplate template, PugModel model) {
         if (isInterpolated()) {

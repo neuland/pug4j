@@ -7,14 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class IndentWriter {
     private int indent = 0;
-    private int parentIndents = 0;
     private boolean useIndent = false;
-    private boolean empty = true;
     private Writer writer;
     private String pp = "  ";
     private boolean escape;
-    private boolean compiledTag;
-    private boolean compiledDoctype;
 
     public IndentWriter(Writer writer) {
         this.writer = writer;
@@ -40,7 +36,6 @@ public class IndentWriter {
     private void write(String string) {
 		try {
 			writer.write(string);
-			empty = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}    	
@@ -76,21 +71,5 @@ public class IndentWriter {
 
     public boolean isPp(){
         return this.pp.length()!=0 && useIndent;
-    }
-
-    public void setCompiledTag(boolean compiledTag) {
-        this.compiledTag = compiledTag;
-    }
-
-    public boolean isCompiledTag() {
-        return compiledTag;
-    }
-
-    public boolean isCompiledDoctype() {
-        return compiledDoctype;
-    }
-
-    public void setCompiledDoctype(boolean compiledDoctype) {
-        this.compiledDoctype = compiledDoctype;
     }
 }

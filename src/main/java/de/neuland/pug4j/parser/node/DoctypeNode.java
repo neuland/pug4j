@@ -19,6 +19,5 @@ public class DoctypeNode extends Node {
 			doctypeLine = "<!DOCTYPE " + name + ">";
 		}
 		writer.append(doctypeLine);
-		writer.setCompiledDoctype(true);
 	}
 }

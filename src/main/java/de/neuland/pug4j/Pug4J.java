@@ -89,6 +89,7 @@ public class Pug4J {
 		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"));
 		return createTemplate(filePath, loader, new JexlExpressionHandler());
 	}
+
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
 		if(filename==null){
 			throw new IllegalArgumentException("Filename can not be null");
@@ -101,9 +102,6 @@ public class Pug4J {
 
 	private static PugTemplate getTemplate(Reader reader, String name) throws IOException {
 		return createTemplate(name, new ReaderTemplateLoader(reader, name), new JexlExpressionHandler());
-	}
-	private static PugTemplate getTemplate(Reader reader, String name, String extension) throws IOException {
-		return createTemplate(name, new ReaderTemplateLoader(reader, name,extension), new JexlExpressionHandler());
 	}
 
 	private static PugTemplate createTemplate(String filename, TemplateLoader loader, ExpressionHandler expressionHandler) throws IOException {
@@ -118,10 +116,7 @@ public class Pug4J {
 	private static String templateToString(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
 		PugModel pugModel = new PugModel(model);
 		StringWriter writer = new StringWriter();
-
 		template.process(pugModel, writer);
 		return writer.toString();
 	}
-
-
 }
