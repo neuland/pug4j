@@ -73,10 +73,6 @@ public class CallNode extends AttrsNode {
                 for (IfConditionNode condition : ((ConditionalNode) node).getConditions()) {
                     result.addAll(getInjectionPoints(condition.getBlock()));
                 }
-//            } else if(node instanceof CaseNode.When){
-//                for (CaseConditionNode condition : ((CaseNode) node).getCaseConditionNodes()) {
-//                    result.addAll(getInjectionPoints(condition.getBlock()));
-//                }
             } else if (node.hasBlock()) {
                 result.addAll(getInjectionPoints(node.getBlock()));
             }
