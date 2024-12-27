@@ -146,7 +146,7 @@ fileLoader.setBase("base/path");
 PugConfiguration config = new PugConfiguration();
 config.setTemplateLoader(fileLoader);
 
-PugTemplate template = config.getTemplate("index");
+PugTemplate template = config.getTemplate("/index");
 
 Map<String, Object> model = new HashMap<String, Object>();
 model.put("company", "neuland");
