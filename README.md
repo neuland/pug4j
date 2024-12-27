@@ -259,9 +259,12 @@ config.setSharedVariables(defaults);
 By default, pug4j searches for template files in your work directory. By specifying your own `FileTemplateLoader`, you can alter that behavior. You can also implement the `TemplateLoader` interface to create your own.
 
 ```java
-TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8");
+TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8"); //Defines the path under which all templates are found. You can't include templates from parent directory "/"
+loader.setBase("my-maintemplates/"); //the folder where all files starting with "/" are found. This where your main templates are.
 config.setTemplateLoader(loader);
 ```
+* '/index' points to '/templates/my-maintemplates/index.pug'
+* 'index' points to '/templates/index.pug'
 
 There is also a `ClasspathTemplateLoader` and `ReaderTemplateLoader`.
 
