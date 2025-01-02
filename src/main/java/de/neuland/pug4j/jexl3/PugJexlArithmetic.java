@@ -2,6 +2,7 @@ package de.neuland.pug4j.jexl3;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.jexl3.JexlArithmetic;
+import org.apache.commons.jexl3.JexlOperator;
 
 import java.util.Collection;
 
@@ -20,7 +21,7 @@ public class PugJexlArithmetic extends JexlArithmetic {
      * @return int
      */
     @Override
-    protected int compare(final Object left, final Object right, final String operator) {
+    protected int compare(final Object left, final Object right, final JexlOperator operator) {
         if (left != null && right != null) {
             if (left instanceof String || right instanceof String) {
                 return toString(left).compareTo(toString(right));
@@ -48,11 +49,6 @@ public class PugJexlArithmetic extends JexlArithmetic {
             return (String)left + right;
         }
         return super.add(left, right);
-    }
-
-    @Override
-    public MapBuilder mapBuilder(int size) {
-        return this.mapBuilder(size, false);
     }
 
     @Override
