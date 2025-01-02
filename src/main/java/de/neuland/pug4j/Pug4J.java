@@ -3,8 +3,6 @@ package de.neuland.pug4j;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -42,8 +40,7 @@ public class Pug4J {
 	public static void render(String filename, Map<String, Object> model, Writer writer, boolean pretty) throws IOException,
 			PugCompilerException {
 		PugTemplate template = getTemplate(filename);
-		template.setPrettyPrint(pretty);
-		template.process(new PugModel(model), writer);
+		render(template,model,writer,pretty);
 	}
 
 	public static String render(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
@@ -92,6 +89,7 @@ public class Pug4J {
 		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"));
 		return createTemplate(filePath, loader, new JexlExpressionHandler());
 	}
+
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
 		if(filename==null){
 			throw new IllegalArgumentException("Filename can not be null");
@@ -105,27 +103,20 @@ public class Pug4J {
 	private static PugTemplate getTemplate(Reader reader, String name) throws IOException {
 		return createTemplate(name, new ReaderTemplateLoader(reader, name), new JexlExpressionHandler());
 	}
-	private static PugTemplate getTemplate(Reader reader, String name, String extension) throws IOException {
-		return createTemplate(name, new ReaderTemplateLoader(reader, name,extension), new JexlExpressionHandler());
-	}
 
 	private static PugTemplate createTemplate(String filename, TemplateLoader loader, ExpressionHandler expressionHandler) throws IOException {
 		Parser parser = new Parser(filename, loader, expressionHandler);
 		Node root = parser.parse();
-		PugTemplate template = new PugTemplate();
+		PugTemplate template = new PugTemplate(root);
 		template.setExpressionHandler(expressionHandler);
 		template.setTemplateLoader(loader);
-		template.setRootNode(root);
 		return template;
 	}
 
 	private static String templateToString(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
 		PugModel pugModel = new PugModel(model);
 		StringWriter writer = new StringWriter();
-
 		template.process(pugModel, writer);
 		return writer.toString();
 	}
-
-
 }

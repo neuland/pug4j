@@ -18,13 +18,12 @@ public class CallNode extends AttrsNode {
 	@Override
 	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
 		boolean dynamic = getName().charAt(0)=='#';
-  		if (dynamic)
-			this.dynamicMixins = true;
+		this.dynamicMixins = dynamic;
 		String newname = (dynamic ? getName().substring(2,getName().length()-1):'"'+getName()+'"');
 		try {
 			newname = (String) template.getExpressionHandler().evaluateExpression(newname,model);
 		} catch (ExpressionException e) {
-			e.printStackTrace();
+			throw new PugCompilerException(this, template.getTemplateLoader(), e);
 		}
 
 		MixinNode mixin;
@@ -73,10 +72,6 @@ public class CallNode extends AttrsNode {
                 for (IfConditionNode condition : ((ConditionalNode) node).getConditions()) {
                     result.addAll(getInjectionPoints(condition.getBlock()));
                 }
-//            } else if(node instanceof CaseNode.When){
-//                for (CaseConditionNode condition : ((CaseNode) node).getCaseConditionNodes()) {
-//                    result.addAll(getInjectionPoints(condition.getBlock()));
-//                }
             } else if (node.hasBlock()) {
                 result.addAll(getInjectionPoints(node.getBlock()));
             }
@@ -106,7 +101,6 @@ public class CallNode extends AttrsNode {
 				}
 			}
 			if (key != null) {
-
 				model.putLocal(key, value);
 			}
 		}
@@ -132,31 +126,23 @@ public class CallNode extends AttrsNode {
 
 	private void writeAttributes(PugModel model, MixinNode mixin, PugTemplate template) {
 		LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
-		if (attributeBlocks.size()>0) {
-			//Todo: AttributesBlock needs to be evaluated
-
+		if (!attributeBlocks.isEmpty()) {
 			for (String attributeBlock : attributeBlocks) {
 			   Object o = null;
 			   try {
 				   o = template.getExpressionHandler().evaluateExpression(attributeBlock, model);
 			   } catch (ExpressionException e) {
-				   e.printStackTrace();
+				   throw new PugCompilerException(this, template.getTemplateLoader(), e);
 			   }
-			   if(o!=null) {
-				   if(o instanceof Map) {
-					   for (Map.Entry<String, String> entry : ((Map<String,String>) o).entrySet()) {
-						   Attr attr = new Attr(entry.getKey(),entry.getValue(),false);
-						   newAttributes.add(attr);
-					   }
-				   }else if(o instanceof String){
-					   System.out.print(o);
-				   }
-
+			   if(o instanceof Map) {
+                   ((Map<String, String>) o).entrySet().stream()
+						   .map(entry -> new Attr(entry.getKey(), entry.getValue(), false))
+						   .forEachOrdered(newAttributes::add);
 			   }
 		   }
   		}
 
-		if (newAttributes.size()>0) {
+		if (!newAttributes.isEmpty()) {
 			Map<String,String> attrs = attrs(model, template, newAttributes);
 			model.putLocal("attributes", attrs);
   		}else{

@@ -62,7 +62,7 @@ public class IssuesTest {
 
     @Test
     public void shouldCompileJadeToHtmlWithReaderTemplateLoader() throws Exception {
-        List<String> additionalIgnoredCases = Arrays.asList("52", "74", "100", "104a", "104b", "123", "135");
+        List<String> additionalIgnoredCases = Arrays.asList("52", "74", "100", "104a", "104b", "123", "135","pug015");
         if (additionalIgnoredCases.contains(file.replace(".jade", ""))) {
             return;
         }

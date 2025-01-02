@@ -3,7 +3,7 @@ package de.neuland.pug4j.parser;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;

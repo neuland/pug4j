@@ -9,7 +9,6 @@ import de.neuland.pug4j.template.TemplateLoader;
 import de.neuland.pug4j.util.CharacterParser;
 import de.neuland.pug4j.util.CharacterParserException;
 import de.neuland.pug4j.util.Options;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -227,8 +226,6 @@ public class Lexer {
         return fail();
     }
     
-
-
     public void consume(int len) {
         scanner.consume(len);
     }
@@ -1499,9 +1496,8 @@ public class Lexer {
             newToken.setFileName(this.filename);
             return newToken;
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            throw new PugLexerException("Clone Not Supported",this.filename, this.lineno,this.colno,templateLoader);
         }
-        return null;
     }
 
     private boolean pipelessText() {
@@ -1606,13 +1602,6 @@ public class Lexer {
 
     private boolean fail() {
         throw error("UNEXPECTED_TEXT","unexpected text \"" + StringUtils.substring(scanner.getInput(),0,5) + "\"");
-    }
-
-    private String ensurePugExtension(String templateName) {
-        if ( StringUtils.isBlank(FilenameUtils.getExtension(templateName))) {
-            return templateName + "." + templateLoader.getExtension();
-        }
-        return templateName;
     }
 
     public boolean getPipeless() {

@@ -880,8 +880,6 @@ public class Parser {
         conditional.setColumn(conditionalToken.getStartColumn());
         conditional.setFileName(filename);
 
-        List<IfConditionNode> conditions = conditional.getConditions();
-
         IfConditionNode main = new IfConditionNode(conditionalToken.getValue(), conditionalToken.getStartLineNumber());
         main.setInverse(conditionalToken.isInverseCondition());
         main.setFileName(filename);
@@ -890,7 +888,7 @@ public class Parser {
         }else{
             main.setBlock(emptyBlock());
         }
-        conditions.add(main);
+        conditional.addCondition(main);
 
         while (true) {
             if(peek() instanceof Newline){
@@ -904,7 +902,7 @@ public class Parser {
                 }else{
                     elseIf.setBlock(emptyBlock());
                 }
-                conditions.add(elseIf);
+                conditional.addCondition(elseIf);
             }else if(peek() instanceof Else){
                 Else token = (Else) expect(Else.class);
                 IfConditionNode elseNode = new IfConditionNode(null, token.getStartLineNumber());
@@ -915,7 +913,7 @@ public class Parser {
                 }else{
                     elseNode.setBlock(emptyBlock());
                 }
-                conditions.add(elseNode);
+                conditional.addCondition(elseNode);
 
                 break;
             }else{

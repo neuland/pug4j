@@ -89,15 +89,13 @@ public class PugConfigurationCaffeine {
     }
 
     private PugTemplate createTemplate(String name) throws PugException, IOException {
-        PugTemplate template = new PugTemplate();
 
         Parser parser = new Parser(name, templateLoader, expressionHandler);
         Node root = parser.parse();
+        PugTemplate template = new PugTemplate(root,getMode());
         template.setTemplateLoader(templateLoader);
         template.setExpressionHandler(expressionHandler);
-        template.setRootNode(root);
         template.setPrettyPrint(prettyPrint);
-        template.setMode(getMode());
         return template;
     }
 

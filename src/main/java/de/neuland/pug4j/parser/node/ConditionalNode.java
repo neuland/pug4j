@@ -1,5 +1,6 @@
 package de.neuland.pug4j.parser.node;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,11 +35,11 @@ public class ConditionalNode extends Node {
 	}
 
 	public List<IfConditionNode> getConditions() {
-		return conditions;
+		return Collections.unmodifiableList(conditions);
 	}
 
-	public void setConditions(List<IfConditionNode> conditions) {
-		this.conditions = conditions;
+	public void addCondition(IfConditionNode condition) {
+		this.conditions.add(condition);
 	}
 
     @Override

@@ -29,15 +29,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XHTML);
-
-        TagNode tagNode = new TagNode();
 
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -47,15 +44,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseBodylessTagsWithoutSlashAndIgnoreBlockWhenCompilingToHtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.HTML);
-
-        TagNode tagNode = new TagNode();
 
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -65,15 +59,11 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseBodylessTagsWithEndTagWhenCompilingToXml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -83,16 +73,13 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XHTML);
-
-        TagNode tagNode = new TagNode();
 
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -102,16 +89,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.HTML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -121,16 +104,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : bodylessTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -140,15 +119,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseNormalTagsWithEndTagWhenCompilingToXhtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XHTML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -159,15 +135,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseNormalTagsWithEndTagWhenCompilingToHtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.HTML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -178,15 +151,12 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseNormalTagsWithEndTagWhenCompilingToXml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
             withTextBlock(tagNode);
-            template.setRootNode(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -198,16 +168,13 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XHTML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -217,16 +184,13 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.HTML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
@@ -236,16 +200,13 @@ public class TagNodeTest {
 
     @Test
     public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
-        PugTemplate template = new PugTemplate();
-        template.setMode(Pug4J.Mode.XML);
-
-        TagNode tagNode = new TagNode();
-
         for (String tagName : normalTags) {
+            TagNode tagNode = new TagNode();
             tagNode.setName(tagName);
-            withTextBlock(tagNode);
             tagNode.setSelfClosing(true);
-            template.setRootNode(tagNode);
+            withTextBlock(tagNode);
+            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+
 
             String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 

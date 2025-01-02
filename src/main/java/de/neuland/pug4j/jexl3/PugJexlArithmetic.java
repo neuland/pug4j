@@ -17,7 +17,7 @@ public class PugJexlArithmetic extends JexlArithmetic {
      * @param left     the left operand
      * @param right    the right operator
      * @param operator the operator
-     * @return
+     * @return int
      */
     @Override
     protected int compare(final Object left, final Object right, final String operator) {
@@ -52,6 +52,12 @@ public class PugJexlArithmetic extends JexlArithmetic {
 
     @Override
     public MapBuilder mapBuilder(int size) {
-        return new de.neuland.pug4j.jexl3.internal.MapBuilder(size);
+        return this.mapBuilder(size, false);
     }
+
+    @Override
+    public MapBuilder mapBuilder(int size, boolean extended) {
+        return new de.neuland.pug4j.jexl3.internal.MapBuilder(size, extended);
+    }
+
 }

@@ -6,10 +6,9 @@ import de.neuland.pug4j.Pug4J.Mode;
 import de.neuland.pug4j.compiler.Compiler;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
-import de.neuland.pug4j.lexer.token.Doctypes;
 import de.neuland.pug4j.model.PugModel;
+import de.neuland.pug4j.parser.node.DoctypeNode;
 import de.neuland.pug4j.parser.node.Node;
-import org.apache.commons.lang3.StringUtils;
 
 public class PugTemplate {
 
@@ -19,12 +18,21 @@ public class PugTemplate {
 	private boolean xml = false;
 	private TemplateLoader templateLoader;
 	private ExpressionHandler expressionHandler;
-	private String doctypeLine;
+
+	public PugTemplate() {
+	}
+
+	public PugTemplate(final Node rootNode) {
+		setRootNode(rootNode);
+	}
+
+	public PugTemplate(final Node rootNode, final Mode mode) {
+		setMode(mode);
+		setRootNode(rootNode);
+	}
 
 	public void process(PugModel model, Writer writer) throws PugCompilerException {
-		Compiler compiler = new Compiler(rootNode);
-		compiler.setPrettyPrint(prettyPrint);
-		compiler.setTemplate(this);
+		Compiler compiler = new Compiler(this);
 		compiler.compile(model, writer);
 	}
 
@@ -40,7 +48,13 @@ public class PugTemplate {
 		return rootNode;
 	}
 
+	//@TODO: Deprecated: Remove in 3.0.0
 	public void setRootNode(Node rootNode) {
+		final Node peek = rootNode.getNodes().peek();
+		if(peek instanceof DoctypeNode){
+			DoctypeNode doctypeNode = (DoctypeNode) peek;
+			setDoctype(doctypeNode.getValue());
+		}
 		this.rootNode = rootNode;
 	}
 
@@ -61,33 +75,13 @@ public class PugTemplate {
 	}
 
 	public void setDoctype(String name){
-		if (name == null || StringUtils.isBlank(name)) {
-			name = "default";
-		}
-		doctypeLine = Doctypes.get(name);
-		if (doctypeLine == null) {
-			doctypeLine = "<!DOCTYPE " + name + ">";
-		}
-
-		this.terse = "<!doctype html>".equals(this.doctypeLine.toLowerCase());
-		this.xml = doctypeLine.startsWith("<?xml");
+		this.terse = "html".equals(name);
+		this.xml = "xml".equals(name);
  	}
 
-	public String getDoctypeLine() {
-		return doctypeLine;
-	}
-
+	 //@TODO: Deprecated: Remove in 3.0.0, use constructor
 	public void setMode(Mode mode) {
-		xml = false;
-		terse = false;
-		switch (mode) {
-		case HTML:
-			terse = true;
-			break;
-		case XML:
-			xml = true;
-			break;
-		}
+		setDoctype(mode.name().toLowerCase());
 	}
 
 	public void setExpressionHandler(ExpressionHandler expressionHandler) {

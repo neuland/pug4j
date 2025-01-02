@@ -10,7 +10,6 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.parser.node.ExpressionString;
 
 public class Utils {
 	public static Pattern interpolationPattern = Pattern.compile("(\\\\)?([#!])\\{");

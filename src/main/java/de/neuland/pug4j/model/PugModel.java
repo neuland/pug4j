@@ -20,8 +20,8 @@ public class PugModel implements Map<String, Object> {
 	public static final String LOCAL_VARS = "pug4j__localVars";
 	public static final String PUG4J_MODEL_PREFIX = "pug4j__";
 	private Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
-	private Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
-	private Map<String, Filter> filter = new HashMap<String, Filter>();
+	private final Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
+	private final Map<String, Filter> filter = new HashMap<String, Filter>();
 
 	public PugModel(Map<String, Object> defaults) {
 		pushScope();
@@ -138,7 +138,7 @@ public class PugModel implements Map<String, Object> {
 	@Override
 	// adds the object to the correct scope
 	public Object put(String key, Object value) {
-		Set<String> localVars= getLocalVars();
+		Set<String> localVars = getLocalVars();
 		if(localVars.contains(key)) {
 			return putLocal(key, value);
 		}else{

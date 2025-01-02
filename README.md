@@ -135,17 +135,26 @@ Pug4J.render(template, model, writer);
 ## Full API
 
 If you need more control you can instantiate a `PugConfiguration` object.
+Pug4J needs a Base path, so that it can determine the parent path. In the simple static API the basePath is empty.
+To configure a basePath. You need to use the FileTemplateLoader or ClassPathTemplateLoader and set setBase("").
+Example for template location: /root/dir/base/path/index.pug
 
 ```java
-PugConfiguration config = new PugConfiguration();
+FileTemplateLoader fileLoader = new FileTemplateLoader("/root/dir/");
+fileLoader.setBase("base/path");
 
-PugTemplate template = config.getTemplate("index");
+PugConfiguration config = new PugConfiguration();
+config.setTemplateLoader(fileLoader);
+
+PugTemplate template = config.getTemplate("/index");
 
 Map<String, Object> model = new HashMap<String, Object>();
 model.put("company", "neuland");
 
 config.renderTemplate(template, model);
 ```
+Pug is now allowed to read all files below /root/dir/ but not in / and /root.
+
 <a name="api-caching"></a>
 ### Caching
 
@@ -250,9 +259,14 @@ config.setSharedVariables(defaults);
 By default, pug4j searches for template files in your work directory. By specifying your own `FileTemplateLoader`, you can alter that behavior. You can also implement the `TemplateLoader` interface to create your own.
 
 ```java
-TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8");
+TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8"); //Defines the path under which all templates are found. You can't include templates from parent directory "/"
+loader.setBase("my-maintemplates/"); //the folder where all files starting with "/" are found. This where your main templates are.
 config.setTemplateLoader(loader);
 ```
+* '/index' points to '/templates/my-maintemplates/index.pug'
+* 'index' points to '/templates/index.pug'
+
+There is also a `ClasspathTemplateLoader` and `ReaderTemplateLoader`.
 
 <a name="expressions"></a>
 ## Expressions
