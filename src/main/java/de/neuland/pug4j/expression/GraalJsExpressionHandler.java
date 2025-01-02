@@ -96,7 +96,6 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                         try {
                             jsContextBindings.removeMember(memberKey);
                         }catch(UnsupportedOperationException e){
-//                            e.printStackTrace();
                             jsContextBindings.putMember(memberKey, null);
                         }
                     }

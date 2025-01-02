@@ -131,8 +131,7 @@ public class TagNode extends AttrsNode {
             try {
                 return template.getExpressionHandler().evaluateStringExpression(name, model);
             } catch (ExpressionException e) {
-                e.printStackTrace();
-                return null;
+                throw new PugCompilerException(this, template.getTemplateLoader(), e);
             }
         } else {
             return name;

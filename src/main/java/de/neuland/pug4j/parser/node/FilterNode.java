@@ -2,9 +2,7 @@ package de.neuland.pug4j.parser.node;
 
 import java.util.*;
 
-import com.vladsch.flexmark.ast.Link;
 import de.neuland.pug4j.compiler.IndentWriter;
-import de.neuland.pug4j.compiler.Utils;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
@@ -60,12 +58,6 @@ public class FilterNode extends AttrsNode {
 				result = filter.convert(result, convertToFilterAttributes(template, model, filterValue.getAttributes()), model);
 			}
 		}
-
-//		try {
-//			result = Utils.interpolate(result, model, false, expressionHandler);
-//		} catch (ExpressionException e) {
-//			throw new PugCompilerException(this, template.getTemplateLoader(), e);
-//		}
 		writer.append(result);
 	}
 

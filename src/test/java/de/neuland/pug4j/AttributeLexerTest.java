@@ -11,10 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class AttributeLexerTest {
@@ -33,8 +32,7 @@ public class AttributeLexerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        LinkedList<Token> tokens = lexer.getTokens();
-        return tokens;
+        return lexer.getTokens();
     }
 
     private void assertExpressionStringWithValue(Object expression, String expectedValue) {

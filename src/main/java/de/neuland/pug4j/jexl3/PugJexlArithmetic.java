@@ -17,7 +17,7 @@ public class PugJexlArithmetic extends JexlArithmetic {
      * @param left     the left operand
      * @param right    the right operator
      * @param operator the operator
-     * @return
+     * @return int
      */
     @Override
     protected int compare(final Object left, final Object right, final String operator) {

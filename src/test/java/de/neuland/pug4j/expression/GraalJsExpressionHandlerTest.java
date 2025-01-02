@@ -41,8 +41,8 @@ public class GraalJsExpressionHandlerTest {
         List<Object> addedHostList = Arrays.asList(1,2,3,4);
         pugModel.put("hostList",addedHostList);
         graalJsExpressionHandler.evaluateExpression("var list = [1,2,3]", pugModel);
-        List list = (List) pugModel.get("list");
-        List hostList = (List) pugModel.get("hostList");
+        List<Object> list = (List<Object>) pugModel.get("list");
+        List<Object> hostList = (List) pugModel.get("hostList");
         Integer expected = 1;
         assertEquals(expected,list.get(0));
         assertEquals(expected,hostList.get(0));

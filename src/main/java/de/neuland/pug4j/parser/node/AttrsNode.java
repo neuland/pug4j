@@ -91,7 +91,7 @@ public abstract class AttrsNode extends Node {
                 try {
                     o = template.getExpressionHandler().evaluateExpression(attributeBlock, model);
                 } catch (ExpressionException e) {
-                    e.printStackTrace();
+                    throw new PugCompilerException(this, template.getTemplateLoader(), e);
                 }
                 if(o instanceof Map) {
                     Map<String, String> map = (Map<String, String>) o;

@@ -1496,9 +1496,8 @@ public class Lexer {
             newToken.setFileName(this.filename);
             return newToken;
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            throw new PugLexerException("Clone Not Supported",this.filename, this.lineno,this.colno,templateLoader);
         }
-        return null;
     }
 
     private boolean pipelessText() {

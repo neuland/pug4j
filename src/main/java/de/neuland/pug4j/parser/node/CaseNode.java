@@ -1,8 +1,5 @@
 package de.neuland.pug4j.parser.node;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -24,7 +21,6 @@ public class CaseNode extends Node {
 			boolean skip = false;
 			for (Node when : block.getNodes()) {
 				if (skip || "default".equals(when.getValue()) || checkCondition(model, when,template.getExpressionHandler())) {
-					skip = false;
 					if(when.getBlock()!=null) {
 						when.execute(writer, model, template);
 						break;

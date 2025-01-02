@@ -1,7 +1,6 @@
 package de.neuland.pug4j.exceptions;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ import java.util.Map;
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class PugException extends RuntimeException {
 
@@ -61,7 +59,7 @@ public abstract class PugException extends RuntimeException {
 	public int getColNumber() {
 		return colNumber;
 	}
-	@NotNull
+
 	private String createErrorMessage(String message, int line, int column, String filename) {
 		String fullMessage;
 		String location = line + (column !=0 ? ":" + column : "");
