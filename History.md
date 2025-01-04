@@ -1,4 +1,11 @@
 # History
+## 2.3.0 / 2025-01-04
+* Updated GraalJS to 21.3.12 (fixes runtime errors on jdk 9+ when using GraalJSExpressionHandler)
+* Updated to jexl 3.4
+* Allow setting JexlOptions on JexlExpressionHandler constructor. Setting debug option to false as default #24
+* Fixed multithreading usage of template rendering #31
+* Set Automatic Module Name to de.neuland.pug4j
+
 ## 2.2.0 / 2024-01-05
 * updated dependencies
 * jexl is now on version 3.3
