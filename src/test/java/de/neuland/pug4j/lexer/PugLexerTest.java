@@ -68,7 +68,7 @@ public class PugLexerTest {
     @Test
     public void shouldCompileJadeToHtml() throws IOException, URISyntaxException {
         String filename = file;
-        String basePath = TestFileHelper.getLexerResourcePath("/cases");
+        String basePath = TestFileHelper.getLexerResourcePath("cases/");
         FileTemplateLoader templateLoader = new FileTemplateLoader(basePath,  "pug");
         Lexer lexer = new Lexer(filename, templateLoader, new JexlExpressionHandler());
         LinkedList<Token> tokens = lexer.getTokens();
@@ -78,7 +78,7 @@ public class PugLexerTest {
 
     @Parameterized.Parameters(name="{0}")
     public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
-        File folder = new File(TestFileHelper.getLexerResourcePath("/cases"));
+        File folder = new File(TestFileHelper.getLexerResourcePath("cases/"));
         Collection<File> files = FileUtils.listFiles(folder, new String[]{"pug"}, false);
         File[] objects = files.stream().toArray(File[]::new);
         Arrays.sort(objects, NAME_COMPARATOR);
