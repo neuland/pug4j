@@ -29,7 +29,11 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             .targetTypeMapping(Value.class, Object.class, Value::isMetaObject, (v) -> v)
             .targetTypeMapping(Value.class, Object.class, Value::hasMembers, (v) -> v.as(Map.class))
             .build();
-    final Engine engine = Engine.newBuilder().option("engine.WarnInterpreterOnly", "false").allowExperimentalOptions(true).build();
+    final Engine engine = Engine.newBuilder()
+            .option("engine.WarnInterpreterOnly", "false")
+            .allowExperimentalOptions(true)
+            .build();
+
     final ThreadLocal<Map<String,Value>> cacheThreadLocal = ThreadLocal.withInitial(new Supplier<Map<String,Value>>() {
 
         @Override
@@ -49,6 +53,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                     .allowCreateThread(false)
                     .allowCreateProcess(false)
                     .allowPolyglotAccess(PolyglotAccess.ALL)
+                    .allowValueSharing(false)
                     .build();
             context.initialize("js");
             return context;
@@ -62,12 +67,14 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
     @Override
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
-        Context context = contextThreadLocal.get();
+        Context context = getContext();
         Map<String,Value> cache = cacheThreadLocal.get();
-//        context.enter();
         try{
+            context.enter();
+
             saveLocalVariableName(expression, model);
             Value jsContextBindings = context.getBindings("js");
+//            jsContextBindings.putMember("pugModel", model);
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
                 if(!PugModel.LOCAL_VARS.equals(key)) {
@@ -78,11 +85,11 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             Source js;
             Value eval = cache.get(expression);
             if(eval==null){
+                String script = expression;
                 if(expression.startsWith("{")){
-                    js = Source.create("js", "(" + expression + ")");
-                }else{
-                    js = Source.create("js", expression);
+                    script = "(" + expression + ")";
                 }
+                js = Source.newBuilder("js", script,"<eval>").buildLiteral();
                 eval = context.parse(js);
                 cache.put(expression,eval);
             }
@@ -109,7 +116,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             }
             throw new ExpressionException(expression, ex);
         }finally {
-//            context.leave();
+            context.leave();
         }
     }
 
@@ -121,19 +128,21 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
     @Override
     public void assertExpression(String expression) throws ExpressionException {
-        Context context = contextThreadLocal.get();
-        Source js;
+        Context context = getContext();
+        String script = expression;
         if(expression.startsWith("{")){
-            js = Source.create("js", "(" + expression + ")");
-        }else{
-            js = Source.create("js", expression);
+            script = "(" + expression + ")";
         }
+        Source js = Source.newBuilder("js", script,"<eval>").buildLiteral();
         try {
-            Value parse = context.eval(js);
+            context.enter();
+            context.eval(js);
         }catch(PolyglotException e){
             if(e.getMessage().startsWith("SyntaxError:")){
                 throw new ExpressionException(e.getMessage());
             }
+        }finally {
+            context.leave();
         }
     }
 
