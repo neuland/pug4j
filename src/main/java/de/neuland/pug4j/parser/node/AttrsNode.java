@@ -6,7 +6,6 @@ import java.util.*;
 import com.google.gson.Gson;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.lang3.ArrayUtils;
@@ -84,28 +83,33 @@ public abstract class AttrsNode extends Node {
     }
 
 	protected String visitAttributes(PugModel model, PugTemplate template) {
-        LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
-        if(attributeBlocks.size()>0){
-            for (String attributeBlock : attributeBlocks) {
-                Object o = null;
-                try {
-                    o = template.getExpressionHandler().evaluateExpression(attributeBlock, model);
-                } catch (ExpressionException e) {
-                    throw new PugCompilerException(this, template.getTemplateLoader(), e);
-                }
-                if(o instanceof Map) {
-                    Map<String, String> map = (Map<String, String>) o;
-                    for (Map.Entry<String, String> entry : map.entrySet()) {
-                        Attr attr = new Attr(String.valueOf(entry.getKey()),entry.getValue(),false);
-                        newAttributes.add(attr);
-                    }
-                }
+        LinkedList<Attr> attributesList = new LinkedList<Attr>(attributes);
+        //if attributes block than add to attributes from tag
+        if(attributeBlocks.size()>0) {
+            for (String attributeBlockExpression : attributeBlocks) {
+                addAttributesBlockToAttributesList(model, template, attributeBlockExpression, attributesList);
             }
-            Map<String,String> attrs = attrs(model, template,newAttributes);
-            return attrsToString(attrs);
+        }
+        Map<String,String> attrs = attrs(model, template, attributesList);
+        return attrsToString(attrs);
+    }
+
+    private void addAttributesBlockToAttributesList(final PugModel model, final PugTemplate template, final String attributeBlockExpression, final LinkedList<Attr> newAttributes) {
+        Object attributesBlock = null;
+        try {
+            attributesBlock = template.getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
+        } catch (ExpressionException e) {
+            throw new PugCompilerException(this, template.getTemplateLoader(), e);
+        }
+        if (attributesBlock instanceof Map) {
+            Map<String, Object> map = (Map<String, Object>) attributesBlock;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                //Attributes applied using &attributes are not automatically escaped. You must be sure to sanitize any user inputs to avoid cross-site scripting (XSS). If passing in attributes from a mixin call, this is done automatically.
+                Attr attr = new Attr(String.valueOf(entry.getKey()), entry.getValue(), false);
+                newAttributes.add(attr);
+            }
         }else{
-            Map<String,String> attrs = attrs(model, template, newAttributes);
-            return attrsToString(attrs);
+            throw new PugCompilerException(this, template.getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
         }
     }
 
@@ -126,190 +130,180 @@ public abstract class AttrsNode extends Node {
     protected Map<String,String> attrs(PugModel model, PugTemplate template, LinkedList<Attr> attrs) {
         ArrayList<String> classes = new ArrayList<>();
         ArrayList<Boolean> classEscaping = new ArrayList<>();
-        Map<String,String> newAttributes = new LinkedHashMap<>();
+        Map<String,String> normalAttributes = new LinkedHashMap<>();
 
         for (Attr attribute : attrs) {
-            try {
-                addAttributesToMap(newAttributes,classes,classEscaping, attribute, model, template);
-            } catch (ExpressionException e) {
-                throw new PugCompilerException(this, template.getTemplateLoader(), e);
-            }
+            createAttributeValues(normalAttributes, classes, classEscaping, attribute, model, template);
         }
 
+        //Put class as the first attribute
         Map<String,String> finalAttributes = new LinkedHashMap<>();
         if(!classes.isEmpty()){
-            String out = "";
-            for (int i = 0; i < classes.size(); i++) {
-                String classname;
-                if(classEscaping.get(i))
-                    classname = StringEscapeUtils.escapeHtml4(classes.get(i));
-                else
-                    classname = classes.get(i);
-
-                if(i==0)
-                    out = classname;
-                else
-                    out = out + " " + classname;
-            }
-            finalAttributes.put("class", out);
+            final String classList = renderClassList(classes, classEscaping);
+            finalAttributes.put("class", classList);
         }
-        finalAttributes.putAll(newAttributes);
+        finalAttributes.putAll(normalAttributes);
         return finalAttributes;
     }
 
-    private void addAttributesToMap(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, PugTemplate template) throws ExpressionException {
-        String name = attribute.getName();
+    private String renderClassList(final ArrayList<String> classes, final ArrayList<Boolean> classEscaping) {
+        final StringBuilder classList = new StringBuilder();
+        for (int i = 0; i < classes.size(); i++) {
+            final String className;
+            final Boolean escaped = classEscaping.get(i);
+
+            if(escaped)
+                className = StringEscapeUtils.escapeHtml4(classes.get(i));
+            else
+                className = classes.get(i);
+
+            if(i>0)
+                classList.append(" ");
+            classList.append(className);
+        }
+        return classList.toString();
+    }
+
+    private void createAttributeValues(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, PugTemplate template)  {
+        final String name = attribute.getName();
         boolean escaped = attribute.isEscaped();
 
         String value = null;
         Object attributeValue = attribute.getValue();
-        if("class".equals(name)) {
-            if (attributeValue instanceof String) {
-                value = (String) attributeValue;
-            } else if (attributeValue instanceof ExpressionString) {
-                Object expressionValue = evaluateExpression((ExpressionString) attributeValue, model,template.getExpressionHandler());
-
-                //List to String
-                if (expressionValue != null && expressionValue instanceof List){
-                    StringBuffer s = new StringBuffer("");
-                    List list = (List) expressionValue;
-
-                    boolean first = true;
-                    for (Object o : list) {
-                        if (!first)
-                            s.append(" ");
-                        s.append(o.toString());
-                        first = false;
-                    }
-                    value = s.toString();
-                }
-                //Array to String
-                else if (expressionValue != null && expressionValue.getClass().isArray()) {
-                    StringBuffer s = new StringBuffer("");
-                    boolean first = true;
-                    if (expressionValue instanceof int[]) {
-                        for (int o : (int[]) expressionValue) {
-                            if (!first)
-                                s.append(" ");
-                            s.append(o);
-                            first = false;
-                        }
-                    } else {
-                        for (Object o : (Object[]) expressionValue) {
-                            if (!first)
-                                s.append(" ");
-                            s.append(o.toString());
-                            first = false;
-                        }
-                    }
-                    value = s.toString();
-                }else if (expressionValue != null && expressionValue instanceof Map) {
-                    Map<String,Object> map = (Map<String,Object>) expressionValue;
-                    for (Map.Entry<String,Object> entry : map.entrySet()) {
-                        if(entry.getValue() instanceof Boolean){
-                            if(((Boolean) entry.getValue()) == true){
-                                classes.add(entry.getKey());
-                                classEscaping.add(false);
-                            }
-                        }
-                    }
-                }else if(expressionValue!=null && expressionValue instanceof Boolean){
-                    if((Boolean) expressionValue) {
-                        value = expressionValue.toString();
-                    }
-                }else if(expressionValue!=null){
-                    value = expressionValue.toString();
-                }
-            }
-            if(!StringUtils.isBlank(value)) {
-                classes.add(value);
-                classEscaping.add(escaped);
-            }
-            return;
-        } else {
-            if("style".equals(name)){
-                if (attributeValue instanceof ExpressionString) { //isConstant
-                    ExpressionString expressionString = (ExpressionString) attributeValue;
-                    Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
-                    if (expressionValue == null) {
-                        return;
-                    }
-                    attributeValue = style(expressionValue);
-                } else {
-                    attributeValue = style(attributeValue);
-                }
-            }
-            if (attributeValue instanceof ExpressionString) {
-                ExpressionString expressionString = (ExpressionString) attributeValue;
-                Object expressionValue = evaluateExpression(expressionString, model, template.getExpressionHandler());
-                if (expressionValue == null) {
-                    return;
-                }
-
-                if (expressionValue instanceof Boolean) {
-                    Boolean booleanValue = (Boolean) expressionValue;
-                    if (booleanValue) {
-                        value = name;
-                    } else {
-                        return;
-                    }
-                    if (template.isTerse()) {
-                        value = null;
-                    }
-                } else if (expressionValue instanceof Instant) {
-                    Instant instantValue = (Instant) expressionValue;
-                    value = instantValue.toString();
-                } else if (
-                    expressionValue.getClass().isArray()
-                    || expressionValue instanceof Map
-                    || expressionValue instanceof List
-                ) {
-                    value = StringEscapeUtils.unescapeJava(gson.toJson(expressionValue));
-                }else{
-                    value = expressionValue.toString();
-                }
-            }else if (attributeValue instanceof String) {
-                value = (String) attributeValue;
-            } else if (attributeValue instanceof Boolean) {
-                Boolean booleanValue = (Boolean) attributeValue;
-                if (booleanValue) {
-                    value = name;
-                } else {
-                    return;
-                }
-                if (template.isTerse()) {
-                    value = null;
-                }
-            }
+        if(attributeValue instanceof ExpressionString){
+            ExpressionString expressionString = (ExpressionString) attributeValue;
+            attributeValue = evaluateExpression(expressionString, model, template);
         }
+
+        if(skipAttribute(attributeValue)){
+            return;
+        }
+
+        if("class".equals(name)) {
+            addClassValueToClassArray(classes, classEscaping, attributeValue, escaped);
+            return;
+        } else if("style".equals(name)){
+            value = renderStyleValue(attributeValue);
+        } else {
+            value = renderNormalValue(template, attributeValue, name);
+        }
+
         if(escaped)
             value = StringEscapeUtils.escapeHtml4(value);
+
         newAttributes.put(name,value);
     }
 
-    private String style(Object value) {
+    private Boolean skipAttribute(final Object attributeValue) {
+        Boolean skipAttribute = false;
+        if(attributeValue == null){
+            skipAttribute = true;
+        }
+        if(attributeValue instanceof Boolean){
+            if (!(Boolean) attributeValue) {
+                skipAttribute = true;
+            }
+        }
+        return skipAttribute;
+    }
+
+    private String renderNormalValue(final PugTemplate template, final Object attributeValue, final String name) {
+        String value=null;
+        if (attributeValue instanceof Boolean) {
+            Boolean booleanValue = (Boolean) attributeValue;
+            if (booleanValue) {
+                value = name;
+            }
+            if (template.isTerse()) {
+                value = null;
+            }
+        } else if (attributeValue instanceof Instant) {
+            Instant instantValue = (Instant) attributeValue;
+            value = instantValue.toString();
+        } else if (attributeValue != null && (
+                attributeValue.getClass().isArray()
+                        || attributeValue instanceof Map
+                        || attributeValue instanceof List)
+        ) {
+            value = StringEscapeUtils.unescapeJava(gson.toJson(attributeValue));
+        } else if (attributeValue instanceof String) {
+            value = (String) attributeValue;
+        } else if (attributeValue != null) {
+            value = attributeValue.toString();
+        }
+        return value;
+    }
+
+    private void addClassValueToClassArray(final ArrayList<String> classes, final ArrayList<Boolean> classEscaping, final Object attributeValue, final boolean escaped) {
+        //List to String
+        String value = null;
+        if (attributeValue instanceof List){
+            List list = (List) attributeValue;
+            for (Object o : list) {
+                classes.add(o.toString());
+                classEscaping.add(escaped);
+            }
+        }
+        //Array to String
+        else if (attributeValue != null && attributeValue.getClass().isArray()) {
+            if (attributeValue instanceof int[]) {
+                for (int o : (int[]) attributeValue) {
+                    classes.add(String.valueOf(o));
+                    classEscaping.add(escaped);
+                }
+            } else {
+                for (Object o : (Object[]) attributeValue) {
+                    classes.add(o.toString());
+                    classEscaping.add(escaped);
+                }
+            }
+        }else if (attributeValue instanceof Map) {
+            Map<String,Object> map = (Map<String,Object>) attributeValue;
+            for (Map.Entry<String,Object> entry : map.entrySet()) {
+                if(entry.getValue() instanceof Boolean){
+                    if(((Boolean) entry.getValue())){
+                        classes.add(entry.getKey());
+                        classEscaping.add(false);
+                    }
+                }
+            }
+        }else if(attributeValue instanceof Boolean){
+            if((Boolean) attributeValue) {
+                value = attributeValue.toString();
+            }
+        }else if(attributeValue !=null){
+            value = attributeValue.toString();
+        }
+        if (!StringUtils.isBlank(value)) {
+            classes.add(value);
+            classEscaping.add(escaped);
+        }
+
+    }
+
+    private String renderStyleValue(Object value) {
         if(value instanceof Boolean && !(Boolean) value){
             return "";
         }
         if(value instanceof Map){
-            String out = "";
+            StringBuilder out = new StringBuilder();
             Set<Map.Entry<String, String>> entries = ((Map<String, String>) value).entrySet();
             for (Map.Entry<String, String> style : entries) {
-                out = out + style.getKey() + ":" + style.getValue()+";";
+                out.append(style.getKey()).append(":").append(style.getValue()).append(";");
             }
-            return out;
+            return out.toString();
         }else{
             return String.valueOf(value);
         }
     }
 
-    private Object evaluateExpression(ExpressionString attribute, PugModel model, ExpressionHandler expressionHandler) throws ExpressionException {
+    private Object evaluateExpression(ExpressionString attribute, PugModel model, PugTemplate pugTemplate) {
         String expression = attribute.getValue();
-	    Object result = expressionHandler.evaluateExpression(expression, model);
-        if (result instanceof ExpressionString) {
-            return evaluateExpression((ExpressionString) result, model, expressionHandler);
+        try {
+            return pugTemplate.getExpressionHandler().evaluateExpression(expression, model);
+        } catch (ExpressionException e) {
+            throw new PugCompilerException(this, pugTemplate.getTemplateLoader(), e);
         }
-        return result;
     }
 
     protected boolean isSelfClosingTag() {
