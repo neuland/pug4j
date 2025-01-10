@@ -5,6 +5,8 @@ import org.apache.commons.jexl3.JexlArithmetic;
 
 import java.util.Collection;
 
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+
 public class PugJexlArithmetic extends JexlArithmetic {
 
     public PugJexlArithmetic(boolean astrict) {
@@ -41,11 +43,17 @@ public class PugJexlArithmetic extends JexlArithmetic {
         }
         return super.toBoolean(val);
     }
-
+    @Override
+    public Object subtract(final Object left, final Object right) {
+        if ((left instanceof String && !isNumeric((String)left) && !isFloatingPointNumber(left)) || (right instanceof String&& !isNumeric((String)right) && !isFloatingPointNumber(right))) {
+            return "null";
+        }
+        return super.subtract(left, right);
+    }
     @Override
     public Object add(Object left, Object right) {
-        if (left instanceof String && right instanceof String) {
-            return (String)left + right;
+        if (left instanceof String || right instanceof String) {
+            return (left == null ? "" : toString(left)).concat(right == null ? "" : toString(right));
         }
         return super.add(left, right);
     }
