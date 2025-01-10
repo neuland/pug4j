@@ -1,4 +1,8 @@
 # History
+## 2.3.1 / 2025-01-10
+* Fixed issue #32 Reduce number of ignored NumberFormatExceptions in PugJexlArithmetic#add operation (thanks to Selaron)
+* Fixed issue #33 Attributes Block is not rendered completely in HTML
+
 ## 2.3.0 / 2025-01-04
 * Updated GraalJS to 21.3.12 (fixes runtime errors on jdk 9+ when using GraalJSExpressionHandler)
 * Updated to jexl 3.4

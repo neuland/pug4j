@@ -4,8 +4,7 @@
 pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
 
 pug4j was formerly known as jade4j. Because of the naming change of the javascript version and the alignment to the featureset of pug.js (https://pugjs.org/) we decided to switch the name.
-
-With the addition of a new [GraalJsExpressionHandler](#graalvm) your code can be more compatible to the js version than before. 
+ 
 ## Contents
 
 - [Example](#example)
@@ -88,7 +87,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>2.3.0</version>
+  <version>2.3.1</version>
 </dependency>
 ```
 
@@ -300,13 +299,13 @@ book["size"] // works
 You can read more about this in the [JEXL documentation](https://commons.apache.org/proper/commons-jexl/reference/syntax.html#Language_Elements).
 
 <a name="graalvm"></a>
-### GraalVM Expressionhandler (NEW! since 2.0.0)
-If you want to use pure javascript expression handling, you can try out the new GraalJS Expression Handler. It supports native javascript expressions but is slower than the Jexl Expression Handler. You can configure it like this:
+### GraalVM Expressionhandler (NEW! since 2.0.0 / experimental!)
+If you want to use pure javascript expression handling, you can try out the new GraalJS Expression Handler. It supports native javascript expressions but is slower (really slow!) than the Jexl Expression Handler. You can configure it like this:
 
 ```java
 PugConfiguration config = new PugConfiguration();
 
-config.setExpressionHandler(new GraalJsExpressionHandler())
+config.setExpressionHandler(new GraalJsExpressionHandler());
 ```
 
 
