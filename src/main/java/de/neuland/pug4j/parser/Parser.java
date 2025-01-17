@@ -2,7 +2,6 @@ package de.neuland.pug4j.parser;
 
 import de.neuland.pug4j.exceptions.PugParserException;
 import de.neuland.pug4j.expression.ExpressionHandler;
-import de.neuland.pug4j.lexer.token.Assignment;
 import de.neuland.pug4j.lexer.token.Each;
 import de.neuland.pug4j.lexer.Lexer;
 import de.neuland.pug4j.lexer.token.*;
@@ -139,9 +138,6 @@ public class Parser {
         if (token instanceof Each) {
             return parseEach();
         }
-        if (token instanceof Code) {
-            return parseCode();
-        }
         if (token instanceof Expression) {
             return parseCode();
         }
@@ -166,10 +162,6 @@ public class Parser {
         if (token instanceof CssClass || token instanceof CssId) {
             return parseCssClassOrId();
         }
-        if (token instanceof Assignment) {
-            return parseAssignment();
-        }
-
         throw error("INVALID_TOKEN","unexpected token \"" + peek().getType() + "\"",peek());
     }
 
@@ -700,17 +692,6 @@ public class Parser {
             node.setBlock(emptyBlock());
         }
 
-        return node;
-    }
-
-    private Node parseAssignment() {
-        Token token = expect(Assignment.class);
-        Token assignmentToken = (Assignment) token;
-        Node node = new AssigmentNode();
-        node.setName(assignmentToken.getName());
-        node.setValue(assignmentToken.getValue());
-        node.setLineNumber(assignmentToken.getStartLineNumber());
-        node.setFileName(filename);
         return node;
     }
 

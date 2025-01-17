@@ -135,10 +135,11 @@ public class CallNode extends AttrsNode {
 				   throw new PugCompilerException(this, template.getTemplateLoader(), e);
 			   }
 			   if(o instanceof Map) {
-                   ((Map<String, String>) o).entrySet().stream()
-						   .map(entry -> new Attr(entry.getKey(), entry.getValue(), false))
-						   .forEachOrdered(newAttributes::add);
-			   }
+                   for (Map.Entry<String, String> entry : ((Map<String, String>) o).entrySet()) {
+                       Attr attr = new Attr(entry.getKey(), entry.getValue(), false);
+                       newAttributes.add(attr);
+                   }
+               }
 		   }
   		}
 

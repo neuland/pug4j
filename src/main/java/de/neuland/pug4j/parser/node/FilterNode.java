@@ -62,7 +62,7 @@ public class FilterNode extends AttrsNode {
 	}
 
 	private Map<String, Object> convertToFilterAttributes(PugTemplate template, PugModel model, LinkedList<Attr> attributes) {
-		Map evaluatedAttributes = new HashMap<String,Object>() ;
+		Map<String,Object> evaluatedAttributes = new HashMap<String,Object>() ;
 		for (Attr attribute : attributes) {
 			if(attribute.getValue() instanceof ExpressionString) {
 				try {
@@ -81,7 +81,4 @@ public class FilterNode extends AttrsNode {
 		this.filters = filters;
 	}
 
-	public boolean hasFilters(){
-		return this.filters.size()>0;
-	}
 }

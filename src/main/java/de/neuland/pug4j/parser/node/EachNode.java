@@ -64,7 +64,7 @@ public class EachNode extends Node {
 
 	private void runMap(Map<Object, Object> result, PugModel model, IndentWriter writer, PugTemplate template) {
 		Set<Object> keys = result.keySet();
-		if (keys.size() == 0) {
+		if (keys.isEmpty()) {
 			executeElseNode(model, writer, template);
 			return;
 		}
@@ -95,10 +95,6 @@ public class EachNode extends Node {
 
 	public void setKey(String key) {
 		this.key = key;
-	}
-
-	public Node getElseNode() {
-		return elseNode;
 	}
 
 	public void setElseNode(Node elseNode) {
