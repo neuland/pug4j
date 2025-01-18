@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.neuland-bfi</groupId>
     <artifactId>pug4j</artifactId>
@@ -29,8 +30,9 @@
         <url>https://github.com/neuland/pug4j</url>
         <connection>scm:git:git://github.com/neuland/pug4j.git</connection>
         <developerConnection>scm:git:git@github.com:neuland/pug4j.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
+
     <developers>
         <developer>
             <name>Artur Tomas</name>
@@ -62,6 +64,7 @@
         <graalvm.version>21.3.12</graalvm.version>
         <java.version>8</java.version>
     </properties>
+
     <profiles>
         <profile>
             <id>javac-release</id>
@@ -130,7 +133,7 @@
                     <useFile>false</useFile>
                     <useModulePath>false</useModulePath>
                     <trimStackTrace>false</trimStackTrace>
-                    <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
+                    <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                 </configuration>
             </plugin>
             <plugin>
@@ -187,7 +190,9 @@
                     <execution>
                         <id>deploy</id>
                         <phase>deploy</phase>
-                        <goals><goal>deploy</goal></goals>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -269,9 +274,9 @@
             <version>1.12.0</version>
         </dependency>
         <dependency>
-          <groupId>com.github.ben-manes.caffeine</groupId>
-          <artifactId>caffeine</artifactId>
-          <version>2.9.3</version>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.9.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -279,9 +284,9 @@
             <version>2.10.1</version>
         </dependency>
         <dependency>
-          <groupId>com.vladsch.flexmark</groupId>
-          <artifactId>flexmark</artifactId>
-          <version>0.62.2</version>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark</artifactId>
+            <version>0.62.2</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
@@ -366,16 +371,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.openjdk.jmh</groupId>
-          <artifactId>jmh-core</artifactId>
-          <version>1.37</version>
-          <scope>test</scope>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.openjdk.jmh</groupId>
-          <artifactId>jmh-generator-annprocess</artifactId>
-          <version>1.37</version>
-          <scope>test</scope>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
