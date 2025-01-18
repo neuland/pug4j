@@ -1,4 +1,6 @@
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.lexer;
+
+import de.neuland.pug4j.parser.CharacterParserOptions;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,19 +37,19 @@ public class CharacterParser {
         }
     }
     public State parse(String src) {
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         options.setEnd(src.length());
         return this.parse(src,this.defaultState(),options);
     }
     public State parse(String src,State state) {
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         options.setEnd(src.length());
         return this.parse(src,state,options);
     }
 
-    public State parse(String src,State state,Options options){
+    public State parse(String src, State state, CharacterParserOptions options){
       if(options == null) {
-          options = new Options();
+          options = new CharacterParserOptions();
           options.setEnd(src.length());
       }
       if(state == null)
@@ -87,12 +89,12 @@ public class CharacterParser {
 //      };
 //    }
     public Match parseMax(String src) throws SyntaxError {
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         return this.parseMax(src, options);
     }
-    public Match parseMax(String src,Options options) throws SyntaxError {
+    public Match parseMax(String src, CharacterParserOptions options) throws SyntaxError {
         if(options == null)
-            options = new Options();
+            options = new CharacterParserOptions();
       int start = options.getStart();
       int index = start;
       State state = this.defaultState();
@@ -143,11 +145,11 @@ public class CharacterParser {
         return -1;
     }
     public Match parseMaxBracket(String src,char bracket) throws SyntaxError {
-        return this.parseMaxBracket(src,bracket,new Options());
+        return this.parseMaxBracket(src,bracket,new CharacterParserOptions());
     }
-    public Match parseMaxBracket(String src,char bracket,Options options) throws SyntaxError {
+    public Match parseMaxBracket(String src, char bracket, CharacterParserOptions options) throws SyntaxError {
         if (options == null)
-            options = new Options();
+            options = new CharacterParserOptions();
         int start = options.getStart();
         int index = start;
         State state = this.defaultState();
@@ -182,11 +184,11 @@ public class CharacterParser {
 //      };
 //    }
     public Match parseUntil(String src,String delimiter) {
-        return this.parseUntil(src,delimiter,new Options());
+        return this.parseUntil(src,delimiter,new CharacterParserOptions());
     }
-    public Match parseUntil(String src,String delimiter,Options options){
+    public Match parseUntil(String src, String delimiter, CharacterParserOptions options){
         if (options == null)
-            options = new Options();
+            options = new CharacterParserOptions();
 
         boolean includeLineComment = options.isIncludeLineComment();
         int start = options.getStart();
@@ -408,7 +410,7 @@ public class CharacterParser {
         public boolean isComment(){
             return this.lineComment || this.blockComment;
         }
-        public boolean isNesting(Options options){
+        public boolean isNesting(CharacterParserOptions options){
             return this.isString() || this.isComment() || this.regexp || this.roundDepth > 0 || this.curlyDepth > 0 || this.squareDepth > 0;
         }
         public boolean isNesting(){

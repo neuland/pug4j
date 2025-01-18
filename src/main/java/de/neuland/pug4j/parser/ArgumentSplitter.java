@@ -1,5 +1,5 @@
 
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.parser;
 
     import java.util.ArrayList;
     import java.util.Collections;

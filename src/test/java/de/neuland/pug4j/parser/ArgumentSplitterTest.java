@@ -1,10 +1,10 @@
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.parser;
 
 import org.junit.Test;
 
 import java.util.List;
 
-import static de.neuland.pug4j.util.ArgumentSplitter.split;
+import static de.neuland.pug4j.parser.ArgumentSplitter.split;
 import static org.junit.Assert.assertEquals;
 
 /**

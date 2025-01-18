@@ -1,6 +1,6 @@
-package de.neuland.pug4j;
+package de.neuland.pug4j.lexer;
 
-import de.neuland.pug4j.lexer.Lexer;
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.lexer.token.Attribute;
 import de.neuland.pug4j.lexer.token.Token;
 import de.neuland.pug4j.parser.node.ExpressionString;

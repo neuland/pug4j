@@ -1,9 +1,9 @@
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.parser;
 
 /**
  * Created by christoph on 14.10.15.
  */
-public class Options {
+public class CharacterParserOptions {
     private int start = 0;
     private int end = 0;
     boolean includeLineComment = false;

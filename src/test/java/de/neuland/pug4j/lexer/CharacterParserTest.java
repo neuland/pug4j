@@ -1,5 +1,6 @@
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.lexer;
 
+import de.neuland.pug4j.parser.CharacterParserOptions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class CharacterParserTest {
         assertEquals(16,section.getEnd());//exclusive end of string
         assertEquals("foo=\"(\", bar=\"}\"",section.getSrc());
 
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         options.setStart(1);
         section = characterParser.parseMax("{foo=\"(\", bar=\"}\"} bing bong", options);
         assertEquals(1,section.getStart());
@@ -65,7 +66,7 @@ public class CharacterParserTest {
         assertEquals(17,section.getEnd());//exclusive end of string
         assertEquals("foo.bar(\"%>\").baz",section.getSrc());
 
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         options.setStart(2);
         section = characterParser.parseUntil("<%foo.bar(\"%>\").baz%> bing bong", "%",options);
         assertEquals(2,section.getStart());

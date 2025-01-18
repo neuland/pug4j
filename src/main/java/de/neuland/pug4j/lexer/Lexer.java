@@ -6,9 +6,7 @@ import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.lexer.token.*;
 import de.neuland.pug4j.parser.node.ExpressionString;
 import de.neuland.pug4j.template.TemplateLoader;
-import de.neuland.pug4j.util.CharacterParser;
-import de.neuland.pug4j.util.CharacterParserException;
-import de.neuland.pug4j.util.Options;
+import de.neuland.pug4j.parser.CharacterParserOptions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -258,7 +256,7 @@ public class Lexer {
         closingBrackets.put('{','}');
         closingBrackets.put('[',']');
         char end = closingBrackets.get(start);
-        Options options = new Options();
+        CharacterParserOptions options = new CharacterParserOptions();
         options.setStart(skip+1);
         CharacterParser.Match range;
         try {

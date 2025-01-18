@@ -7,7 +7,7 @@ import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.PugTemplate;
-import de.neuland.pug4j.util.ArgumentSplitter;
+import de.neuland.pug4j.parser.ArgumentSplitter;
 
 public class CallNode extends AttrsNode {
 

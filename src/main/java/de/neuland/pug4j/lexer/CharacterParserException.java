@@ -1,4 +1,4 @@
-package de.neuland.pug4j.util;
+package de.neuland.pug4j.lexer;
 
 
 public class CharacterParserException  extends RuntimeException {
