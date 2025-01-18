@@ -1,6 +1,7 @@
 package de.neuland.pug4j;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import de.neuland.pug4j.Pug4J.Mode;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.exceptions.PugException;
@@ -19,6 +20,7 @@ import de.neuland.pug4j.template.TemplateLoader;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +33,13 @@ public class PugConfiguration {
 
     private boolean prettyPrint = false;
     private boolean caching = true;
-    private Mode mode = Pug4J.Mode.XHTML;
+    private Mode mode = Pug4J.Mode.HTML;
 
     private Map<String, Filter> filters = new HashMap<String, Filter>();
     private Map<String, Object> sharedVariables = new HashMap<String, Object>();
     private TemplateLoader templateLoader = new FileTemplateLoader();
     private ExpressionHandler expressionHandler = new JexlExpressionHandler();
-    protected static final int MAX_ENTRIES = 1000;
+    protected static final long MAX_ENTRIES = 1000l;
 
     public PugConfiguration() {
         setFilter(FILTER_CDATA, new CDATAFilter());
@@ -45,40 +47,26 @@ public class PugConfiguration {
         setFilter(FILTER_STYLE, new CssFilter());
     }
 
-    private Map<String, PugTemplate> cache = new ConcurrentLinkedHashMap.Builder<String, PugTemplate>().maximumWeightedCapacity(
-            MAX_ENTRIES + 1).build();
-    private Map<String, String> lockCache = new ConcurrentLinkedHashMap.Builder<String, String>().maximumWeightedCapacity(
-            MAX_ENTRIES + 1).build();
+    private Cache<String, PugTemplate> cache = Caffeine.newBuilder().maximumSize(MAX_ENTRIES).build();
 
     public PugTemplate getTemplate(String name) throws IOException, PugException {
-        if (caching) {
-            long lastModified = templateLoader.getLastModified(name);
-            PugTemplate template = cache.get(getKeyValue(name, lastModified));
-            if (template != null) {
-                return template;
-            }
 
-            String key = getCachedKey(name, lastModified);
-            synchronized (key) {
-                PugTemplate newTemplate = createTemplate(name);
-                cache.put(key, newTemplate);
-                return newTemplate;
-            }
+        if (caching) {
+
+            long lastModified = templateLoader.getLastModified(name);
+            return cache.get(getKeyValue(name, lastModified), value -> {
+
+                try {
+                    return createTemplate(name);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+
+            });
+
         }
 
         return createTemplate(name);
-    }
-
-    private synchronized String getCachedKey(String name, long lastModified) {
-        String key = getKeyValue(name, lastModified);
-        String cachedKey = lockCache.get(name);
-        if (key.equals(cachedKey)) {
-            return cachedKey;
-        } else if (cachedKey != null) {
-            cache.remove(cachedKey);
-        }
-        lockCache.put(name, key);
-        return key;
     }
 
     private String getKeyValue(String name, long lastModified) {
@@ -101,6 +89,7 @@ public class PugConfiguration {
     }
 
     private PugTemplate createTemplate(String name) throws PugException, IOException {
+
         Parser parser = new Parser(name, templateLoader, expressionHandler);
         Node root = parser.parse();
         PugTemplate template = new PugTemplate(root,getMode());
@@ -187,6 +176,6 @@ public class PugConfiguration {
 
     public void clearCache() {
         expressionHandler.clearCache();
-        cache.clear();
+        cache.invalidateAll();
     }
 }
