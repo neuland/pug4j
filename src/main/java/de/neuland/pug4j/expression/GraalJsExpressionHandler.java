@@ -64,7 +64,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
         Context context = contextThreadLocal.get();
         Map<String,Value> cache = cacheThreadLocal.get();
-//        context.enter();
+        context.enter();
         try{
             saveLocalVariableName(expression, model);
             Value jsContextBindings = context.getBindings("js");
@@ -109,7 +109,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             }
             throw new ExpressionException(expression, ex);
         }finally {
-//            context.leave();
+            context.leave();
         }
     }
 
