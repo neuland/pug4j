@@ -2,68 +2,18 @@ package de.neuland.pug4j.parser.node;
 
 import java.util.*;
 
-import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.parser.ArgumentSplitter;
 
 public class CallNode extends AttrsNode {
 
 	protected List<String> arguments = new ArrayList<String>();
 	boolean call = false;
-	private boolean dynamicMixins = false;
 
-	@Override
-	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
-		boolean dynamic = getName().charAt(0)=='#';
-		this.dynamicMixins = dynamic;
-		String newname = (dynamic ? getName().substring(2,getName().length()-1):'"'+getName()+'"');
-		try {
-			newname = (String) template.getExpressionHandler().evaluateExpression(newname,model);
-		} catch (ExpressionException e) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), e);
-		}
-
-		MixinNode mixin;
-		if(dynamic)
-			mixin = model.getMixin(newname);
-		else
-			mixin = model.getMixin(getName());
-
-		if (mixin == null) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), "mixin " + getName() + " is not defined");
-		}
-
-		// Clone mixin
-		try {
-			mixin = (MixinNode) mixin.clone();
-		} catch (CloneNotSupportedException e) {
-			// Can't happen
-			throw new IllegalStateException(e);
-		}
-
-		if (hasBlock()) {
-			List<MixinBlockNode> injectionPoints = getInjectionPoints(mixin.getBlock());
-            for (MixinBlockNode point : injectionPoints) {
-				point.getNodes().add(block);
-            }
-		}
-
-		if (this.isCall()) {
-			model.pushScope();
-			model.putLocal("block", block);
-			writeVariables(model, mixin, template);
-			writeAttributes(model, mixin, template);
-			mixin.getBlock().execute(writer, model, template);
-			model.putLocal("block",null);
-			model.popScope();
-
-		}
-	}
-
-	private List<MixinBlockNode> getInjectionPoints(Node block) {
+	public List<MixinBlockNode> getInjectionPoints(Node block) {
         List<MixinBlockNode> result = new ArrayList<MixinBlockNode>();
 		for (Node node : block.getNodes()) {
 			if (node instanceof MixinBlockNode && !node.hasNodes()) {
@@ -79,7 +29,7 @@ public class CallNode extends AttrsNode {
 		return result;
 	}
 
-	private void writeVariables(PugModel model, MixinNode mixin, PugTemplate template) {
+	public void writeVariables(PugModel model, MixinNode mixin, PugConfiguration configuration) {
 		List<String> names = mixin.getArguments();
 		List<String> values = arguments;
 		if (names == null) {
@@ -95,9 +45,9 @@ public class CallNode extends AttrsNode {
 			}
 			if (valueExpression != null) {
 				try {
-					value = template.getExpressionHandler().evaluateExpression(valueExpression, model);
+					value = configuration.getExpressionHandler().evaluateExpression(valueExpression, model);
 				} catch (Throwable e) {
-					throw new PugCompilerException(this, template.getTemplateLoader(), e);
+					throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
 				}
 			}
 			if (key != null) {
@@ -113,9 +63,9 @@ public class CallNode extends AttrsNode {
 				}
 				if (value != null) {
 					try {
-						value = template.getExpressionHandler().evaluateExpression(values.get(i), model);
+						value = configuration.getExpressionHandler().evaluateExpression(values.get(i), model);
 					} catch (Throwable e) {
-						throw new PugCompilerException(this, template.getTemplateLoader(), e);
+						throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
 					}
 				}
 				restArguments.add(value);
@@ -124,15 +74,15 @@ public class CallNode extends AttrsNode {
 		}
 	}
 
-	private void writeAttributes(PugModel model, MixinNode mixin, PugTemplate template) {
+	public void writeAttributes(PugModel model, MixinNode mixin, PugConfiguration configuration, boolean terse) {
 		LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
 		if (!attributeBlocks.isEmpty()) {
 			for (String attributeBlock : attributeBlocks) {
 			   Object o = null;
 			   try {
-				   o = template.getExpressionHandler().evaluateExpression(attributeBlock, model);
+				   o = configuration.getExpressionHandler().evaluateExpression(attributeBlock, model);
 			   } catch (ExpressionException e) {
-				   throw new PugCompilerException(this, template.getTemplateLoader(), e);
+				   throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
 			   }
 			   if(o instanceof Map) {
                    for (Map.Entry<String, String> entry : ((Map<String, String>) o).entrySet()) {
@@ -144,7 +94,7 @@ public class CallNode extends AttrsNode {
   		}
 
 		if (!newAttributes.isEmpty()) {
-			Map<String,String> attrs = attrs(model, template, newAttributes);
+			Map<String,String> attrs = attrs(model, configuration, newAttributes,terse);
 			model.putLocal("attributes", attrs);
   		}else{
 			model.putLocal("attributes", new LinkedHashMap<>());

@@ -69,8 +69,7 @@ public class PugConfigurationTest {
     public void testPrettyPrint() throws IOException {
         PugConfiguration config = new PugConfiguration();
         config.setPrettyPrint(true);
-        PugTemplate template = config.getTemplate(templatePath);
-        assertTrue(template.isPrettyPrint());
+        assertTrue(config.isPrettyPrint());
     }
 
     @Test

@@ -4,10 +4,10 @@ import java.time.Instant;
 import java.util.*;
 
 import com.google.gson.Gson;
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,24 +82,24 @@ public abstract class AttrsNode extends Node {
         return codeNode != null;
     }
 
-	protected String visitAttributes(PugModel model, PugTemplate template) {
+	protected String visitAttributes(PugModel model, PugConfiguration configuration, boolean terse) {
         LinkedList<Attr> attributesList = new LinkedList<Attr>(attributes);
         //if attributes block than add to attributes from tag
         if(attributeBlocks.size()>0) {
             for (String attributeBlockExpression : attributeBlocks) {
-                addAttributesBlockToAttributesList(model, template, attributeBlockExpression, attributesList);
+                addAttributesBlockToAttributesList(model, configuration, attributeBlockExpression, attributesList);
             }
         }
-        Map<String,String> attrs = attrs(model, template, attributesList);
+        Map<String,String> attrs = attrs(model, configuration, attributesList,terse);
         return attrsToString(attrs);
     }
 
-    private void addAttributesBlockToAttributesList(final PugModel model, final PugTemplate template, final String attributeBlockExpression, final LinkedList<Attr> newAttributes) {
+    private void addAttributesBlockToAttributesList(final PugModel model, final PugConfiguration configuration, final String attributeBlockExpression, final LinkedList<Attr> newAttributes) {
         Object attributesBlock = null;
         try {
-            attributesBlock = template.getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
+            attributesBlock = configuration.getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(this, template.getTemplateLoader(), e);
+            throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
         }
         if (attributesBlock instanceof Map) {
             Map<String, Object> map = (Map<String, Object>) attributesBlock;
@@ -109,7 +109,7 @@ public abstract class AttrsNode extends Node {
                 newAttributes.add(attr);
             }
         }else{
-            throw new PugCompilerException(this, template.getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
+            throw new PugCompilerException(this, configuration.getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
         }
     }
 
@@ -127,13 +127,13 @@ public abstract class AttrsNode extends Node {
         return sb.toString();
     }
 
-    protected Map<String,String> attrs(PugModel model, PugTemplate template, LinkedList<Attr> attrs) {
+    protected Map<String,String> attrs(PugModel model, PugConfiguration configuration, LinkedList<Attr> attrs, boolean terse) {
         ArrayList<String> classes = new ArrayList<>();
         ArrayList<Boolean> classEscaping = new ArrayList<>();
         Map<String,String> normalAttributes = new LinkedHashMap<>();
 
         for (Attr attribute : attrs) {
-            createAttributeValues(normalAttributes, classes, classEscaping, attribute, model, template);
+            createAttributeValues(normalAttributes, classes, classEscaping, attribute, model, terse,configuration);
         }
 
         //Put class as the first attribute
@@ -164,7 +164,7 @@ public abstract class AttrsNode extends Node {
         return classList.toString();
     }
 
-    private void createAttributeValues(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, PugTemplate template)  {
+    private void createAttributeValues(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model,boolean terse, PugConfiguration configuration)  {
         final String name = attribute.getName();
         boolean escaped = attribute.isEscaped();
 
@@ -172,7 +172,7 @@ public abstract class AttrsNode extends Node {
         Object attributeValue = attribute.getValue();
         if(attributeValue instanceof ExpressionString){
             ExpressionString expressionString = (ExpressionString) attributeValue;
-            attributeValue = evaluateExpression(expressionString, model, template);
+            attributeValue = evaluateExpression(expressionString, model, configuration);
         }
 
         if(skipAttribute(attributeValue)){
@@ -185,7 +185,7 @@ public abstract class AttrsNode extends Node {
         } else if("style".equals(name)){
             value = renderStyleValue(attributeValue);
         } else {
-            value = renderNormalValue(template, attributeValue, name);
+            value = renderNormalValue(configuration, attributeValue, name,terse);
         }
 
         if(escaped)
@@ -207,14 +207,14 @@ public abstract class AttrsNode extends Node {
         return skipAttribute;
     }
 
-    private String renderNormalValue(final PugTemplate template, final Object attributeValue, final String name) {
+    private String renderNormalValue(final PugConfiguration configuration, final Object attributeValue, final String name,boolean terse) {
         String value=null;
         if (attributeValue instanceof Boolean) {
             Boolean booleanValue = (Boolean) attributeValue;
             if (booleanValue) {
                 value = name;
             }
-            if (template.isTerse()) {
+            if (terse) {
                 value = null;
             }
         } else if (attributeValue instanceof Instant) {
@@ -297,16 +297,16 @@ public abstract class AttrsNode extends Node {
         }
     }
 
-    private Object evaluateExpression(ExpressionString attribute, PugModel model, PugTemplate pugTemplate) {
+    private Object evaluateExpression(ExpressionString attribute, PugModel model, PugConfiguration configuration) {
         String expression = attribute.getValue();
         try {
-            return pugTemplate.getExpressionHandler().evaluateExpression(expression, model);
+            return configuration.getExpressionHandler().evaluateExpression(expression, model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(this, pugTemplate.getTemplateLoader(), e);
+            throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
         }
     }
 
-    protected boolean isSelfClosingTag() {
+    public boolean isSelfClosingTag() {
         return ArrayUtils.contains(selfClosingTags, name);
     }
 

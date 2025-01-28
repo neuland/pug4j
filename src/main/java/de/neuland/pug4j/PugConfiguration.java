@@ -79,7 +79,7 @@ public class PugConfiguration {
             pugModel.addFilter(filterName, filters.get(filterName));
         }
         pugModel.putAll(model);
-        template.process(pugModel, writer);
+        template.process(pugModel, writer,this);
     }
 
     public String renderTemplate(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
@@ -93,9 +93,6 @@ public class PugConfiguration {
         Parser parser = new Parser(name, templateLoader, expressionHandler);
         Node root = parser.parse();
         PugTemplate template = new PugTemplate(root,getMode());
-        template.setTemplateLoader(templateLoader);
-        template.setExpressionHandler(expressionHandler);
-        template.setPrettyPrint(prettyPrint);
         return template;
     }
 

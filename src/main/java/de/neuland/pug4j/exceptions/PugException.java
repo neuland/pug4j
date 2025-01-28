@@ -26,7 +26,7 @@ public abstract class PugException extends RuntimeException {
 	 *
 	 * @param message Description message of exception
 	 * @param filename Filename where exception was thrown
-	 * @param lineNumber Linenumer where exception was thrown
+	 * @param lineNumber Linenumber where exception was thrown
 	 * @param templateLoader TemplateLoader to load templates
 	 * @param e Thrown exception
  	 */

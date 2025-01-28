@@ -6,15 +6,12 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.expression.ExpressionHandler;
-import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.ReaderTemplateLoader;
-import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.io.FilenameUtils;
 
 public class Pug4J {
@@ -28,9 +25,10 @@ public class Pug4J {
 	}
 
 	public static String render(String filename, Map<String, Object> model, boolean pretty) throws IOException, PugCompilerException {
-		PugTemplate template = getTemplate(filename);
-		template.setPrettyPrint(pretty);
-		return templateToString(template, model);
+		PugConfiguration pugConfiguration = new PugConfiguration();
+		pugConfiguration.setPrettyPrint(pretty);
+		PugTemplate template = getTemplate(filename,pugConfiguration);
+		return templateToString(template, model, pugConfiguration);
 	}
 
 	public static void render(String filename, Map<String, Object> model, Writer writer) throws IOException, PugCompilerException {
@@ -48,8 +46,9 @@ public class Pug4J {
 	}
 
 	public static String render(PugTemplate template, Map<String, Object> model, boolean pretty) throws PugCompilerException {
-		template.setPrettyPrint(pretty);
-		return templateToString(template, model);
+		final PugConfiguration pugConfiguration = new PugConfiguration();
+		pugConfiguration.setPrettyPrint(pretty);
+		return templateToString(template, model, pugConfiguration);
 	}
 
 	public static void render(PugTemplate template, Map<String, Object> model, Writer writer) throws PugCompilerException {
@@ -57,8 +56,9 @@ public class Pug4J {
 	}
 
 	public static void render(PugTemplate template, Map<String, Object> model, Writer writer, boolean pretty) throws PugCompilerException {
-		template.setPrettyPrint(pretty);
-		template.process(new PugModel(model), writer);
+		final PugConfiguration pugConfiguration = new PugConfiguration();
+		pugConfiguration.setPrettyPrint(pretty);
+		template.process(new PugModel(model), writer, pugConfiguration);
 	}
 
     public static String render(URL url, Map<String, Object> model) throws IOException, PugCompilerException {
@@ -79,15 +79,19 @@ public class Pug4J {
         PugTemplate template = getTemplate(reader, filename);
         return render(template, model, pretty);
     }
-
 	public static PugTemplate getTemplate(String filename) throws IOException {
+		return getTemplate(filename,new PugConfiguration());
+	}
+	private static PugTemplate getTemplate(String filename, PugConfiguration pugConfiguration) throws IOException {
 		if(filename==null){
 			throw new IllegalArgumentException("Filename can not be null");
 		}
+
 		String prefix = FilenameUtils.getFullPath(filename);
 		String filePath = FilenameUtils.getName(filename);
 		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"));
-		return createTemplate(filePath, loader, new JexlExpressionHandler());
+		pugConfiguration.setTemplateLoader(loader);
+		return createTemplate(filePath, pugConfiguration);
 	}
 
 	public static PugTemplate getTemplate(String filename, String extension) throws IOException {
@@ -97,26 +101,29 @@ public class Pug4J {
 		String prefix = FilenameUtils.getFullPath(filename);
 		String filePath = FilenameUtils.getName(filename);
 		FileTemplateLoader loader = new FileTemplateLoader(prefix,Charset.forName("UTF-8"), extension);
-		return createTemplate(filePath, loader, new JexlExpressionHandler());
+		PugConfiguration pugConfiguration = new PugConfiguration();
+		pugConfiguration.setTemplateLoader(loader);
+		return createTemplate(filePath, pugConfiguration);
 	}
 
 	private static PugTemplate getTemplate(Reader reader, String name) throws IOException {
-		return createTemplate(name, new ReaderTemplateLoader(reader, name), new JexlExpressionHandler());
+		final ReaderTemplateLoader readerTemplateLoader = new ReaderTemplateLoader(reader, name);
+		PugConfiguration pugConfiguration = new PugConfiguration();
+		pugConfiguration.setTemplateLoader(readerTemplateLoader);
+		return createTemplate(name, pugConfiguration);
 	}
 
-	private static PugTemplate createTemplate(String filename, TemplateLoader loader, ExpressionHandler expressionHandler) throws IOException {
-		Parser parser = new Parser(filename, loader, expressionHandler);
+	private static PugTemplate createTemplate(String filename,PugConfiguration pugConfiguration) throws IOException {
+		Parser parser = new Parser(filename, pugConfiguration.getTemplateLoader(), pugConfiguration.getExpressionHandler());
 		Node root = parser.parse();
 		PugTemplate template = new PugTemplate(root);
-		template.setExpressionHandler(expressionHandler);
-		template.setTemplateLoader(loader);
 		return template;
 	}
 
-	private static String templateToString(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
+	private static String templateToString(PugTemplate template, Map<String, Object> model, PugConfiguration pugConfiguration) throws PugCompilerException {
 		PugModel pugModel = new PugModel(model);
 		StringWriter writer = new StringWriter();
-		template.process(pugModel, writer);
+		template.process(pugModel, writer, pugConfiguration);
 		return writer.toString();
 	}
 }

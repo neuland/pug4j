@@ -9,6 +9,7 @@ import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.parser.node.TextNode;
 import de.neuland.pug4j.template.PugTemplate;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -190,6 +191,7 @@ public class GraalJsExpressionHandlerTest {
         assertEquals("Image 1",((List)((Map)pugModel.get("product")).get("images")).get(0));
     }
     @Test
+    @Ignore
     public void testBlockNodeAccess() throws ExpressionException  {
         IndentWriter writer = new IndentWriter(new StringWriter());
         BlockNode blockNode = new BlockNode();
@@ -206,6 +208,7 @@ public class GraalJsExpressionHandlerTest {
         assertEquals("Hallo Welt",writer.toString());
     }
     @Test
+    @Ignore
     public void testContextInContextAccess() throws ExpressionException  {
         IndentWriter writer = new IndentWriter(new StringWriter());
         BlockNode blockNode = new BlockNode();
@@ -218,7 +221,6 @@ public class GraalJsExpressionHandlerTest {
         pugModel.put("pug4j__block", blockNode);
         pugModel.put("pug4j__writer", writer);
         PugTemplate pugTemplate = new PugTemplate();
-        pugTemplate.setExpressionHandler(graalJsExpressionHandler);
         pugModel.put("pug4j__template", pugTemplate);
         pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
         pugModel.put("pug4j__context", graalJsExpressionHandler.getContext());

@@ -41,7 +41,7 @@ public class JadeRunFullTemplateTest {
 
         StringWriter out = new StringWriter();
         try {
-            temp.process(model, out);
+            temp.process(model, out,cfg);
         } catch (PugCompilerException e) {
             e.printStackTrace();
             fail();
@@ -66,7 +66,7 @@ public class JadeRunFullTemplateTest {
 
         StringWriter out = new StringWriter();
         try {
-            temp.process(model, out);
+            temp.process(model, out, cfg);
         } catch (PugCompilerException e) {
             e.printStackTrace();
             fail();

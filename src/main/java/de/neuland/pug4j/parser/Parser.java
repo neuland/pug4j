@@ -28,9 +28,8 @@ public class Parser {
     private final String filename;
     private LinkedList<Parser> contexts = new LinkedList<>();
     private int inMixin = 0;
-    private HashMap<String, MixinNode> mixins = new HashMap<>();
-    private int inBlock = 0;
-    private PathHelper pathHelper = new PathHelper();
+    private Map<String, MixinNode> mixins = new HashMap<>();
+    private final PathHelper pathHelper = new PathHelper();
     private Node extendingNode;
 
     public Parser(String filename, TemplateLoader templateLoader, ExpressionHandler expressionHandler) throws IOException {
@@ -181,16 +180,16 @@ public class Parser {
         int line = tok.getStartLineNumber();
         int column = tok.getStartColumn();
         Token body = this.peek();
-        String text = "";
+        StringBuilder text = new StringBuilder();
 
         if(body instanceof StartPipelessText){
             advance();
             while (!(peek() instanceof EndPipelessText)){
                 tok = advance();
                 if(tok instanceof Text){
-                    text += tok.getValue();
+                    text.append(tok.getValue());
                 }else if(tok instanceof Newline){
-                    text += "\n";
+                    text.append("\n");
                 }else{
                     throw error("INVALID_TOKEN","Unexpected token type: "+tok.getType(),tok);
                 }
@@ -199,7 +198,7 @@ public class Parser {
         }
 
         ExpressionNode node = new ExpressionNode();
-        node.setValue(text);
+        node.setValue(text.toString());
         node.setBuffer(false);
         node.setEscape(false);
         node.setInline(false);
@@ -251,7 +250,7 @@ public class Parser {
 
             String rest;
 
-            if (args.size() > 0) {
+            if (!args.isEmpty()) {
                 Matcher matcher = PATTERN_REST.matcher(args.get(args.size() - 1).trim());
                 if (matcher.find(0)) {
                     rest = args.remove(args.size() - 1).trim().replaceAll("^\\.\\.\\.", "");
@@ -260,7 +259,7 @@ public class Parser {
                 }
             }
             List<String> newArgs = new ArrayList<>();
-            HashMap<String,String> defaultValues = new HashMap<String,String>();
+            HashMap<String,String> defaultValues = new HashMap<>();
             for (String arg : args) {
                 String key;
                 Matcher matcher = Pattern.compile("^([a-zA-Z][a-zA-Z0-9]*)=(.*)$").matcher(arg);
@@ -341,7 +340,7 @@ public class Parser {
 
         BlockNode prev = this.blocks.get(name);
         if (prev != null) {
-            LinkedList<Node> nodes = new LinkedList<Node>();
+            LinkedList<Node> nodes = new LinkedList<>();
             if ("replace".equals(mode)) {
                 nodes = blockNode.getNodes();
             } else if ("append".equals(mode)) {
@@ -376,7 +375,7 @@ public class Parser {
     private Node parseInclude() {
         Include includeToken = (Include)expect(Include.class);
 
-        LinkedList<IncludeFilterNode> filters = new LinkedList<IncludeFilterNode>();
+        LinkedList<IncludeFilterNode> filters = new LinkedList<>();
         while(peek() instanceof Filter){
             filters.add(parseIncludeFilter());
         }
@@ -396,7 +395,7 @@ public class Parser {
 
 
         try {
-            if (filters.size()>0) {
+            if (!filters.isEmpty()) {
                 Reader reader = templateLoader.getReader(path);
                 FilterNode node = new FilterNode();
                 node.setFilter(filters);
@@ -407,14 +406,12 @@ public class Parser {
                 text.setValue(IOUtils.toString(reader));
 
                 BlockNode block = new BlockNode();
-                LinkedList<Node> nodes = new LinkedList<Node>();
+                LinkedList<Node> nodes = new LinkedList<>();
                 nodes.add(text);
                 block.setNodes(nodes);
-                if (block != null)
-                    node.setBlock(block);
-                else {
-                    node.setBlock(emptyBlock(includeToken.getStartLineNumber()));
-                }
+                block.setLineNumber(includeToken.getStartLineNumber());
+                block.setFileName(this.filename);
+                node.setBlock(block);
                 return node;
             }
         } catch (IOException e) {
@@ -423,7 +420,7 @@ public class Parser {
 
         // non-jade
         String extension = FilenameUtils.getExtension(path);
-        if (!templateLoader.getExtension().equals(extension) && !"".equals(extension)) {
+        if (!templateLoader.getExtension().equals(extension) && !extension.isEmpty()) {
             try {
                 Reader reader = templateLoader.getReader(path);
                 LiteralNode node = new LiteralNode();
@@ -444,7 +441,7 @@ public class Parser {
         Node ast = parser.parse();
         contexts.pop();
         ast.setFileName(path);
-        if (peek() instanceof Indent && ast != null) {
+        if (peek() instanceof Indent) {
             //Fill YieldBlock with Nodes and make it a normal Block
             BlockNode includeBlock = ((BlockNode) ast).getYieldBlock();
             includeBlock.push(block());
@@ -455,7 +452,7 @@ public class Parser {
     }
 
     private Node parseExtends() {
-        ExtendsToken extendsToken = (ExtendsToken) expect(ExtendsToken.class);
+        expect(ExtendsToken.class);
         Path path = (Path) expect(Path.class);
 
         String templateName = path.getValue().trim();
@@ -555,7 +552,7 @@ public class Parser {
     }
 
     private Node parseText(boolean block) {
-        LinkedList<Node>  tags = new LinkedList<Node>();
+        LinkedList<Node>  tags = new LinkedList<>();
         int lineno = peek().getStartLineNumber();
         Token nextToken = peek();
 
@@ -609,7 +606,7 @@ public class Parser {
     }
 
     private LinkedList<Node> parseTextHtml(){
-        LinkedList<Node>  nodes= new LinkedList<Node>();
+        LinkedList<Node>  nodes= new LinkedList<>();
         Node currentNode = null;
         while(true){
             if(peek() instanceof TextHtml){
@@ -707,8 +704,8 @@ public class Parser {
         tagNode.setValue(name);
         return this.tag(tagNode,true);
     }
-    private Node tag(AttrsNode tagNode) {
-        return tag(tagNode,false);
+    private void tag(AttrsNode tagNode) {
+        tag(tagNode,false);
     }
 
     private Node tag(AttrsNode tagNode,boolean selfClosingAllowed) {
@@ -719,19 +716,15 @@ public class Parser {
             if (incomingToken instanceof CssId) {
                 Token tok = advance();
                 tagNode.setAttribute("id", tok.getValue(), false);
-                continue;
             } else if (incomingToken instanceof CssClass) {
                 Token tok = advance();
                 tagNode.setAttribute("class", tok.getValue(), false);
-                continue;
             } else if (incomingToken instanceof StartAttributes) {
                 if (seenAttrs) {
                     throw new PugParserException(filename, line(), templateLoader, this.filename + ", line " + this.peek().getStartLineNumber() + ":\nYou should not have jade tags with multiple attributes.");
                 }
                 seenAttrs = true;
                 attrs(tagNode);
-
-                continue;
             } else if (incomingToken instanceof AttributesBlock) {
                 Token tok = this.advance();
                 tagNode.addAttributes(tok.getValue());
@@ -758,7 +751,7 @@ public class Parser {
         } else if (peek() instanceof Expression) {
             tagNode.getBlock().push(parseCode(true));
         } else if (peek() instanceof Colon) {
-            Token next = advance();
+            advance();
             Node node = parseExpr();
             if(node instanceof BlockNode) {
                 tagNode.setBlock(node);
@@ -1068,12 +1061,8 @@ public class Parser {
         return node;
     }
 
-    private Token lookahead(int i) {
-        return lexer.lookahead(i);
-    }
-
     private Token peek() {
-        return lookahead(0);
+        return lexer.lookahead(0);
     }
 
     private Token advance() {
@@ -1121,7 +1110,7 @@ public class Parser {
         this.contexts = contexts;
     }
 
-    public void setMixins(HashMap mixins) {
+    public void setMixins(Map<String,MixinNode> mixins) {
         this.mixins = mixins;
     }
 }

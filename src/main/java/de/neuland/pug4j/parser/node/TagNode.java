@@ -1,10 +1,11 @@
 package de.neuland.pug4j.parser.node;
 
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.template.PugTemplate;
+
 import java.util.LinkedList;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -68,57 +69,10 @@ public class TagNode extends AttrsNode {
         return everyIsInline(nodes);
     }
 
-    @Override
-    public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
-        writer.increment();
-
-        if (isWhitespaceSensitive()) {
-            writer.setEscape(true);
-        }
-
-        // pretty print
-        if (writer.isPp() && !isInline()) {
-            writer.prettyIndent(0, true);
-        }
-
-        if (isSelfClosing() || (!template.isXml() && isSelfClosingTag())) {
-            openTag(writer, model, template, !(template.isTerse() && !isSelfClosing()));
-            // TODO: if it is non-empty throw an error
-//            if (tag.code ||
-//                    tag.block &&
-//                            !(tag.block.type === 'Block' && tag.block.nodes.length === 0) &&
-//                            tag.block.nodes.some(function (tag) {
-//                return tag.type !== 'Text' || !/^\s*$/.test(tag.val)
-//            })) {
-//                this.error(name + ' is a self closing element: <'+name+'/> but contains nested content.', 'SELF_CLOSING_CONTENT', tag);
-//            }
-        } else {
-            openTag(writer, model, template, false);
-
-            if (hasCodeNode()) {
-                codeNode.execute(writer, model, template);
-            }
-            if (hasBlock()) {
-                block.execute(writer, model, template);
-            }
-            if (writer.isPp() && !isInline() && !isWhitespaceSensitive() && !canInline()) {
-                writer.prettyIndent(0, true);
-            }
-            writer.append("</");
-            writer.append(bufferName(template, model));
-            writer.append(">");
-        }
-
-        if (isWhitespaceSensitive()) {
-            writer.setEscape(false);
-        }
-        writer.decrement();
-    }
-
-    private void openTag(IndentWriter writer, PugModel model, PugTemplate template, boolean selfClosing) {
+    public void openTag(IndentWriter writer, PugModel model, PugConfiguration configuration, boolean selfClosing, final boolean terse) {
         writer.append("<")
-            .append(bufferName(template, model))
-            .append(visitAttributes(model, template));
+            .append(bufferName(configuration, model))
+            .append(visitAttributes(model, configuration,terse));
 
         if (selfClosing) {
             writer.append("/");
@@ -126,12 +80,12 @@ public class TagNode extends AttrsNode {
         writer.append(">");
     }
 
-    private String bufferName(PugTemplate template, PugModel model) {
+    public String bufferName(PugConfiguration configuration, PugModel model) {
         if (isInterpolated()) {
             try {
-                return template.getExpressionHandler().evaluateStringExpression(name, model);
+                return configuration.getExpressionHandler().evaluateStringExpression(name, model);
             } catch (ExpressionException e) {
-                throw new PugCompilerException(this, template.getTemplateLoader(), e);
+                throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
             }
         } else {
             return name;

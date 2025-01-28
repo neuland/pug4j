@@ -445,11 +445,12 @@ public class CompilerTest {
 
 
         Node root = parser.parse();
+        PugConfiguration config = new PugConfiguration();
+        config.setPrettyPrint(pretty);
+        config.setTemplateLoader(loader);
+        config.setExpressionHandler(expressionHandler);
         PugTemplate pugTemplate = new PugTemplate(root);
-        pugTemplate.setPrettyPrint(pretty);
-        pugTemplate.setTemplateLoader(loader);
-        pugTemplate.setExpressionHandler(expressionHandler);
-        Compiler compiler = new Compiler(pugTemplate);
+        Compiler compiler = new Compiler(pugTemplate,config);
 
         String expected = readFile(testName + expectedFileNameExtension);
         model.addFilter("markdown", new MarkdownFilter());

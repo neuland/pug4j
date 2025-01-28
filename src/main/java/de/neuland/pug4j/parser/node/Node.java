@@ -2,11 +2,6 @@ package de.neuland.pug4j.parser.node;
 
 import java.util.LinkedList;
 
-import de.neuland.pug4j.compiler.IndentWriter;
-import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.template.PugTemplate;
-
 public abstract class Node implements Cloneable {
 
 	protected LinkedList<Node> nodes = new LinkedList<Node>();
@@ -17,12 +12,10 @@ public abstract class Node implements Cloneable {
     protected Node block;
     protected String fileName;
 
-    protected boolean isTextNode(Node node) {
+    public boolean isTextNode(Node node) {
         return node instanceof TextNode || node instanceof LiteralNode || (node instanceof FilterNode && node.hasBlock() && node.getBlock().getNodes().size()>0 );
     }
 
-    public abstract void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException;
-    
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
     }

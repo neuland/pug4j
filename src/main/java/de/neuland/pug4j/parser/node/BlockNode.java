@@ -1,11 +1,6 @@
 package de.neuland.pug4j.parser.node;
 
-import de.neuland.pug4j.compiler.IndentWriter;
-import de.neuland.pug4j.exceptions.ExpressionException;
-import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
-import de.neuland.pug4j.template.PugTemplate;
 
 public class BlockNode extends Node {
 
@@ -13,43 +8,6 @@ public class BlockNode extends Node {
 	private String mode;
 	private Parser parser;
 	private boolean namedBlock;
-
-	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
-
-		// Pretty print multi-line text
-		if (writer.isPp() && getNodes().size() > 1 && !writer.isEscape() && isTextNode(getNodes().get(0)) && isTextNode(getNodes().get(1)))
-			writer.prettyIndent(1, true);
-		String bufferedExpressionString = "";
-		for (int i = 0; i < getNodes().size(); ++i) {
-			// Pretty print text
-			Node node = getNodes().get(i);
-			if (writer.isPp() && i > 0 && !writer.isEscape() && isTextNode(node) && isTextNode(getNodes().get(i - 1)) && (getNodes().get(i - 1).getValue() != null && getNodes().get(i - 1).getValue().contains("\n")))
-				writer.prettyIndent(1, false);
-			if(node instanceof ExpressionNode && (node.hasBlock()||node.getValue().trim().startsWith("}"))){
-				((ExpressionNode) node).setBufferedExpressionString(bufferedExpressionString);
-			}
-			node.execute(writer, model, template);
-			if(node instanceof ExpressionNode && (node.hasBlock()||node.getValue().trim().startsWith("}"))){
-				bufferedExpressionString = ((ExpressionNode) node).getBufferedExpressionString();
-			}
-
-			Node nextNode = null;
-			if(i+1 < getNodes().size())
-				nextNode = getNodes().get(i + 1);
-
-			//If multiple expressions in a row evaluate buffered code
-			if(bufferedExpressionString.length()>0 && (nextNode==null || !(nextNode!=null && nextNode instanceof ExpressionNode && (nextNode.hasBlock()||nextNode.getValue().trim().startsWith("}"))))){
-				try {
-					template.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
-				} catch (ExpressionException e) {
-					throw new PugCompilerException(this, template.getTemplateLoader(), e);
-				}
-				bufferedExpressionString = "";
-			}
-		}
-
-
-	}
 
 	public void setYield(boolean yield) {
 		this.yield = yield;
