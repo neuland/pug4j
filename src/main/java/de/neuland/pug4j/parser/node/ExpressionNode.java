@@ -18,48 +18,50 @@ import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 
 public class ExpressionNode extends Node {
 
-	private boolean escape;
-	private boolean buffer;
-	private boolean inline;
-	private String nodeId;
-	public ExpressionNode() {
-		super();
-		nodeId = createNodeId();
-	}
+    private boolean escape;
+    private boolean buffer;
+    private boolean inline;
+    private String nodeId;
 
-	public void setEscape(boolean escape) {
-		this.escape = escape;
-	}
+    public ExpressionNode() {
+        super();
+        nodeId = createNodeId();
+    }
 
-	public boolean isEscape() {
-		return escape;
-	}
+    public void setEscape(boolean escape) {
+        this.escape = escape;
+    }
 
-	public void setBuffer(boolean buffer) {
-		this.buffer = buffer;
-	}
+    public boolean isEscape() {
+        return escape;
+    }
 
-	public boolean isBuffer() {
-		return buffer;
-	}
+    public void setBuffer(boolean buffer) {
+        this.buffer = buffer;
+    }
 
-	public String getNodeId() {
-		return nodeId;
-	}
+    public boolean isBuffer() {
+        return buffer;
+    }
 
-	public boolean isInline() {
-		return inline;
-	}
+    public String getNodeId() {
+        return nodeId;
+    }
 
-	public void setInline(boolean inline) {
-		this.inline = inline;
-	}
-	private String createNodeId(){
-		return UUID.randomUUID().toString().replace("-","");
-	}
+    public boolean isInline() {
+        return inline;
+    }
 
-	@Override
-	public void setValue(String value) {
-		super.setValue(value.trim());
-	}
+    public void setInline(boolean inline) {
+        this.inline = inline;
+    }
+
+    private String createNodeId() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    @Override
+    public void setValue(String value) {
+        super.setValue(value.trim());
+    }
 }

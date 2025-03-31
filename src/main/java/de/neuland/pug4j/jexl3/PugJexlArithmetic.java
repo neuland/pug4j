@@ -28,7 +28,7 @@ public class PugJexlArithmetic extends JexlArithmetic {
                 return toString(left).compareTo(toString(right));
             }
         }
-        return super.compare(left,right,operator);
+        return super.compare(left, right, operator);
     }
 
     /**
@@ -43,13 +43,15 @@ public class PugJexlArithmetic extends JexlArithmetic {
         }
         return super.toBoolean(val);
     }
+
     @Override
     public Object subtract(final Object left, final Object right) {
-        if ((left instanceof String && !isNumeric((String)left) && !isFloatingPointNumber(left)) || (right instanceof String&& !isNumeric((String)right) && !isFloatingPointNumber(right))) {
+        if ((left instanceof String && !isNumeric((String) left) && !isFloatingPointNumber(left)) || (right instanceof String && !isNumeric((String) right) && !isFloatingPointNumber(right))) {
             return "null";
         }
         return super.subtract(left, right);
     }
+
     @Override
     public Object add(Object left, Object right) {
         if (left instanceof String || right instanceof String) {

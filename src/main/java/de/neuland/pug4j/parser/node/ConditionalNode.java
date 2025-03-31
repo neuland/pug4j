@@ -10,27 +10,27 @@ import de.neuland.pug4j.model.PugModel;
 
 public class ConditionalNode extends Node {
 
-	private List<IfConditionNode> conditions = new LinkedList<IfConditionNode>();
+    private List<IfConditionNode> conditions = new LinkedList<IfConditionNode>();
 
-	public boolean checkCondition(PugModel model, String condition, ExpressionHandler expressionHandler) throws ExpressionException {
-		Boolean value = expressionHandler.evaluateBooleanExpression(condition, model);
-		return value != null && value;
-	}
+    public boolean checkCondition(PugModel model, String condition, ExpressionHandler expressionHandler) throws ExpressionException {
+        Boolean value = expressionHandler.evaluateBooleanExpression(condition, model);
+        return value != null && value;
+    }
 
-	public List<IfConditionNode> getConditions() {
-		return Collections.unmodifiableList(conditions);
-	}
+    public List<IfConditionNode> getConditions() {
+        return Collections.unmodifiableList(conditions);
+    }
 
-	public void addCondition(IfConditionNode condition) {
-		this.conditions.add(condition);
-	}
+    public void addCondition(IfConditionNode condition) {
+        this.conditions.add(condition);
+    }
 
     @Override
     public ConditionalNode clone() throws CloneNotSupportedException {
         ConditionalNode clone = (ConditionalNode) super.clone();
 
         clone.conditions = new LinkedList<IfConditionNode>();
-        for(IfConditionNode condition : conditions) {
+        for (IfConditionNode condition : conditions) {
             clone.conditions.add((IfConditionNode) condition.clone());
         }
 

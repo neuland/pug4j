@@ -1,9 +1,9 @@
 
 package de.neuland.pug4j.parser;
 
-    import java.util.ArrayList;
-    import java.util.Collections;
-    import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Split arguments passed as single String into list of strings, preserve quotes when argument is not simple string constant.
@@ -20,11 +20,12 @@ public class ArgumentSplitter {
 
     /**
      * Split arguments passed as single String into list
+     *
      * @param arguments Argument string
      * @return Parsed arguments
      */
     public static List<String> split(String arguments) {
-        if(arguments == null) {
+        if (arguments == null) {
             return Collections.emptyList();
         }
         return new ArgumentSplitter(arguments).splitArguments();
@@ -46,13 +47,9 @@ public class ArgumentSplitter {
 
             if (isQuoted(ch)) {
                 insideQuotas = !insideQuotas;
-            }
-
-            else if (isOpeningBraces(ch)) {
+            } else if (isOpeningBraces(ch)) {
                 bracesBlock++;
-            }
-
-            else if (isClosingBraces(ch)) {
+            } else if (isClosingBraces(ch)) {
                 bracesBlock--;
             }
 

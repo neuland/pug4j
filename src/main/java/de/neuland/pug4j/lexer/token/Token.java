@@ -2,9 +2,9 @@ package de.neuland.pug4j.lexer.token;
 
 import java.util.ArrayList;
 
-public abstract class Token implements Cloneable{
+public abstract class Token implements Cloneable {
 
-	private String value;
+    private String value;
     private ArrayList<String> values;
     private int startLineNumber;
     private int startColumn;
@@ -17,16 +17,19 @@ public abstract class Token implements Cloneable{
     private int indents;
     private boolean selfClosing = false;
     private String type = this.getType();
-    protected Token(){
+
+    protected Token() {
     }
 
-    protected Token(String value){
+    protected Token(String value) {
         this.value = value;
     }
-    protected Token(String value, boolean buffer){
+
+    protected Token(String value, boolean buffer) {
         this.value = value;
         this.buffer = buffer;
     }
+
     protected Token(String value, int startLineNumber) {
         this.value = value;
         this.startLineNumber = startLineNumber;
@@ -50,6 +53,7 @@ public abstract class Token implements Cloneable{
         this.startColumn = startColumn;
         this.buffer = buffer;
     }
+
     protected Token(String value, int startLineNumber, String filename) {
         this.value = value;
         this.startLineNumber = startLineNumber;
@@ -77,11 +81,12 @@ public abstract class Token implements Cloneable{
         this.fileName = filename;
         this.buffer = buffer;
     }
-	public String getValue() {
-		return this.value;
-	}
-	
-	public int getStartLineNumber() {
+
+    public String getValue() {
+        return this.value;
+    }
+
+    public int getStartLineNumber() {
         return startLineNumber;
     }
 
@@ -124,24 +129,24 @@ public abstract class Token implements Cloneable{
     public void setBuffer(boolean buffer) {
         this.buffer = buffer;
     }
-	
-	public boolean isBuffer() {
+
+    public boolean isBuffer() {
         return buffer;
     }
-	
-	public void setMode(String mode) {
+
+    public void setMode(String mode) {
         this.mode = mode;
     }
-	
-	public String getMode() {
+
+    public String getMode() {
         return mode;
     }
-	
-	@Override
-	public String toString() {
-		return value;
-	}
-	
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -153,7 +158,7 @@ public abstract class Token implements Cloneable{
     public void setIndents(int indents) {
         this.indents = indents;
     }
-    
+
     public int getIndents() {
         return indents;
     }
@@ -178,9 +183,10 @@ public abstract class Token implements Cloneable{
         this.values = values;
     }
 
-    public String getType(){
+    public String getType() {
         return this.getClass().getSimpleName();
     }
+
     public Token clone() throws CloneNotSupportedException {
         return (Token) super.clone();
     }

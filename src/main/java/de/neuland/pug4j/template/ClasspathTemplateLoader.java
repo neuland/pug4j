@@ -11,20 +11,21 @@ import java.nio.file.Paths;
 /**
  * Loads a Pug template from Classpath
  * It is useful when Pug templates are in the same JAR or WAR
- * 
- * @author emiguel
  *
+ * @author emiguel
  */
 public class ClasspathTemplateLoader implements TemplateLoader {
 
     private final FileTemplateLoader fileTemplateLoader;
-    private String getResourcePath(String path){
+
+    private String getResourcePath(String path) {
         try {
             return Paths.get(Thread.currentThread().getContextClassLoader().getResource(path).toURI()).toString();
         } catch (URISyntaxException e) {
-            throw new PugTemplateLoaderException("Path '"+ path +"' does not exist.");
+            throw new PugTemplateLoaderException("Path '" + path + "' does not exist.");
         }
     }
+
     public ClasspathTemplateLoader() {
         String path = getResourcePath("");
         fileTemplateLoader = new FileTemplateLoader(path);
@@ -32,13 +33,14 @@ public class ClasspathTemplateLoader implements TemplateLoader {
 
     public ClasspathTemplateLoader(Charset encoding) {
         String path = getResourcePath("");
-        fileTemplateLoader = new FileTemplateLoader(path,encoding);
+        fileTemplateLoader = new FileTemplateLoader(path, encoding);
     }
 
     public ClasspathTemplateLoader(Charset encoding, String extension) {
         String path = getResourcePath("");
-        fileTemplateLoader = new FileTemplateLoader(path,encoding,extension);
+        fileTemplateLoader = new FileTemplateLoader(path, encoding, extension);
     }
+
     public ClasspathTemplateLoader(String templateLoaderPath) {
         String path = getResourcePath(templateLoaderPath);
         fileTemplateLoader = new FileTemplateLoader(path);
@@ -46,17 +48,17 @@ public class ClasspathTemplateLoader implements TemplateLoader {
 
     public ClasspathTemplateLoader(String templateLoaderPath, Charset encoding) {
         String path = getResourcePath(templateLoaderPath);
-        fileTemplateLoader = new FileTemplateLoader(path,encoding);
+        fileTemplateLoader = new FileTemplateLoader(path, encoding);
     }
 
     public ClasspathTemplateLoader(String templateLoaderPath, String extension) {
         String path = getResourcePath(templateLoaderPath);
-        fileTemplateLoader = new FileTemplateLoader(path,extension);
+        fileTemplateLoader = new FileTemplateLoader(path, extension);
     }
 
     public ClasspathTemplateLoader(String templateLoaderPath, Charset encoding, String extension) {
         String path = getResourcePath(templateLoaderPath);
-        fileTemplateLoader = new FileTemplateLoader(path,encoding,extension);
+        fileTemplateLoader = new FileTemplateLoader(path, encoding, extension);
     }
 
     public long getLastModified(String name) {
@@ -78,7 +80,7 @@ public class ClasspathTemplateLoader implements TemplateLoader {
         return fileTemplateLoader.getBase();
     }
 
-    public void setBase(String basePath){
+    public void setBase(String basePath) {
         fileTemplateLoader.setBase(basePath);
     }
 }

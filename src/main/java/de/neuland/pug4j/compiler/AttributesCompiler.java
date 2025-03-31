@@ -32,12 +32,12 @@ public class AttributesCompiler {
     public Map<String, String> getAttributesMap(final PugModel model, final AttrsNode node, final boolean terse) {
         LinkedList<Attr> attributesList = new LinkedList<Attr>(node.getAttributes());
         //if attributes block than add to attributes from tag
-        if(!node.getAttributeBlocks().isEmpty()) {
+        if (!node.getAttributeBlocks().isEmpty()) {
             for (String attributeBlockExpression : node.getAttributeBlocks()) {
                 addAttributesBlockToAttributesList(model, node, attributeBlockExpression, attributesList);
             }
         }
-        Map<String,String> attrs = attrs(model, node, attributesList, terse);
+        Map<String, String> attrs = attrs(model, node, attributesList, terse);
         return attrs;
     }
 
@@ -55,7 +55,7 @@ public class AttributesCompiler {
                 Attr attr = new Attr(String.valueOf(entry.getKey()), entry.getValue(), false);
                 newAttributes.add(attr);
             }
-        }else{
+        } else {
             throw new PugCompilerException(node, configuration.getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
         }
     }
@@ -65,7 +65,7 @@ public class AttributesCompiler {
         for (Map.Entry<String, String> entry : attrs.entrySet()) {
             sb.append(" ");
             sb.append(entry.getKey());
-            if(entry.getValue() != null) {
+            if (entry.getValue() != null) {
                 sb.append("=").append('"');
                 sb.append(entry.getValue());
                 sb.append('"');
@@ -74,18 +74,18 @@ public class AttributesCompiler {
         return sb.toString();
     }
 
-    private Map<String,String> attrs(PugModel model, final AttrsNode node, LinkedList<Attr> attrs, boolean terse) {
+    private Map<String, String> attrs(PugModel model, final AttrsNode node, LinkedList<Attr> attrs, boolean terse) {
         ArrayList<String> classes = new ArrayList<>();
         ArrayList<Boolean> classEscaping = new ArrayList<>();
-        Map<String,String> normalAttributes = new LinkedHashMap<>();
+        Map<String, String> normalAttributes = new LinkedHashMap<>();
 
         for (Attr attribute : attrs) {
-            createAttributeValues(normalAttributes, classes, classEscaping, attribute, model,node, terse);
+            createAttributeValues(normalAttributes, classes, classEscaping, attribute, model, node, terse);
         }
 
         //Put class as the first attribute
-        Map<String,String> finalAttributes = new LinkedHashMap<>();
-        if(!classes.isEmpty()){
+        Map<String, String> finalAttributes = new LinkedHashMap<>();
+        if (!classes.isEmpty()) {
             final String classList = renderClassList(classes, classEscaping);
             finalAttributes.put("class", classList);
         }
@@ -99,51 +99,51 @@ public class AttributesCompiler {
             final String className;
             final Boolean escaped = classEscaping.get(i);
 
-            if(escaped)
+            if (escaped)
                 className = StringEscapeUtils.escapeHtml4(classes.get(i));
             else
                 className = classes.get(i);
 
-            if(i>0)
+            if (i > 0)
                 classList.append(" ");
             classList.append(className);
         }
         return classList.toString();
     }
 
-    private void createAttributeValues(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, final AttrsNode node, boolean terse)  {
+    private void createAttributeValues(Map<String, String> newAttributes, ArrayList<String> classes, ArrayList<Boolean> classEscaping, Attr attribute, PugModel model, final AttrsNode node, boolean terse) {
         final String name = attribute.getName();
         boolean escaped = attribute.isEscaped();
 
         String value = null;
         Object attributeValue = attribute.getValue();
-        if(attributeValue instanceof ExpressionString){
+        if (attributeValue instanceof ExpressionString) {
             ExpressionString expressionString = (ExpressionString) attributeValue;
-            attributeValue = evaluateExpression(expressionString, model,node);
+            attributeValue = evaluateExpression(expressionString, model, node);
         }
 
-        if(skipAttribute(attributeValue)){
+        if (skipAttribute(attributeValue)) {
             return;
         }
 
-        if("class".equals(name)) {
+        if ("class".equals(name)) {
             addClassValueToClassArray(classes, classEscaping, attributeValue, escaped);
             return;
-        } else if("style".equals(name)){
+        } else if ("style".equals(name)) {
             value = renderStyleValue(attributeValue);
         } else {
-            value = renderNormalValue(attributeValue, name,terse);
+            value = renderNormalValue(attributeValue, name, terse);
         }
 
-        if(escaped)
+        if (escaped)
             value = StringEscapeUtils.escapeHtml4(value);
 
-        newAttributes.put(name,value);
+        newAttributes.put(name, value);
     }
 
     private Boolean skipAttribute(final Object attributeValue) {
         boolean skipAttribute = attributeValue == null;
-        if(attributeValue instanceof Boolean){
+        if (attributeValue instanceof Boolean) {
             if (!(Boolean) attributeValue) {
                 skipAttribute = true;
             }
@@ -152,7 +152,7 @@ public class AttributesCompiler {
     }
 
     private String renderNormalValue(final Object attributeValue, final String name, boolean terse) {
-        String value=null;
+        String value = null;
         if (attributeValue instanceof Boolean) {
             Boolean booleanValue = (Boolean) attributeValue;
             if (booleanValue) {
@@ -181,7 +181,7 @@ public class AttributesCompiler {
     private void addClassValueToClassArray(final ArrayList<String> classes, final ArrayList<Boolean> classEscaping, final Object attributeValue, final boolean escaped) {
         //List to String
         String value = null;
-        if (attributeValue instanceof List){
+        if (attributeValue instanceof List) {
             List list = (List) attributeValue;
             for (Object o : list) {
                 classes.add(o.toString());
@@ -201,21 +201,21 @@ public class AttributesCompiler {
                     classEscaping.add(escaped);
                 }
             }
-        }else if (attributeValue instanceof Map) {
-            Map<String,Object> map = (Map<String,Object>) attributeValue;
-            for (Map.Entry<String,Object> entry : map.entrySet()) {
-                if(entry.getValue() instanceof Boolean){
-                    if(((Boolean) entry.getValue())){
+        } else if (attributeValue instanceof Map) {
+            Map<String, Object> map = (Map<String, Object>) attributeValue;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() instanceof Boolean) {
+                    if (((Boolean) entry.getValue())) {
                         classes.add(entry.getKey());
                         classEscaping.add(false);
                     }
                 }
             }
-        }else if(attributeValue instanceof Boolean){
-            if((Boolean) attributeValue) {
+        } else if (attributeValue instanceof Boolean) {
+            if ((Boolean) attributeValue) {
                 value = attributeValue.toString();
             }
-        }else if(attributeValue !=null){
+        } else if (attributeValue != null) {
             value = attributeValue.toString();
         }
         if (!StringUtils.isBlank(value)) {
@@ -226,17 +226,17 @@ public class AttributesCompiler {
     }
 
     private String renderStyleValue(Object value) {
-        if(value instanceof Boolean && !(Boolean) value){
+        if (value instanceof Boolean && !(Boolean) value) {
             return "";
         }
-        if(value instanceof Map){
+        if (value instanceof Map) {
             StringBuilder out = new StringBuilder();
             Set<Map.Entry<String, String>> entries = ((Map<String, String>) value).entrySet();
             for (Map.Entry<String, String> style : entries) {
                 out.append(style.getKey()).append(":").append(style.getValue()).append(";");
             }
             return out.toString();
-        }else{
+        } else {
             return String.valueOf(value);
         }
     }

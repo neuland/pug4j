@@ -16,203 +16,205 @@ import de.neuland.pug4j.parser.node.MixinNode;
 
 public class PugModel implements Map<String, Object> {
 
-	private static final String LOCALS = "locals";
-	public static final String LOCAL_VARS = "pug4j__localVars";
-	public static final String PUG4J_MODEL_PREFIX = "pug4j__";
-	private final Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
-	private final Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
-	private final Map<String, Filter> filter = new HashMap<String, Filter>();
+    private static final String LOCALS = "locals";
+    public static final String LOCAL_VARS = "pug4j__localVars";
+    public static final String PUG4J_MODEL_PREFIX = "pug4j__";
+    private final Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
+    private final Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
+    private final Map<String, Filter> filter = new HashMap<String, Filter>();
 
-	public PugModel(Map<String, Object> defaults) {
-		pushScope();
+    public PugModel(Map<String, Object> defaults) {
+        pushScope();
 
-		if (defaults != null) {
-			putAll(defaults);
-		}
+        if (defaults != null) {
+            putAll(defaults);
+        }
 
-		putLocal(LOCALS, this);
-	}
+        putLocal(LOCALS, this);
+    }
 
-	public void pushScope() {
-		HashMap<String, Object> scope = new HashMap<String, Object>();
-		scope.put(LOCAL_VARS, new HashSet<String>());
-		scopes.add(scope);
-	}
+    public void pushScope() {
+        HashMap<String, Object> scope = new HashMap<String, Object>();
+        scope.put(LOCAL_VARS, new HashSet<String>());
+        scopes.add(scope);
+    }
 
-	public void popScope() {
-		scopes.removeLast();
-	}
+    public void popScope() {
+        scopes.removeLast();
+    }
 
-	public void setMixin(String name, MixinNode node) {
-		mixins.put(name, node);
-	}
+    public void setMixin(String name, MixinNode node) {
+        mixins.put(name, node);
+    }
 
-	public MixinNode getMixin(String name) {
-		return mixins.get(name);
-	}
+    public MixinNode getMixin(String name) {
+        return mixins.get(name);
+    }
 
-	@Override
-	public void clear() {
-		scopes.clear();
-		scopes.add(new HashMap<String, Object>());
-	}
+    @Override
+    public void clear() {
+        scopes.clear();
+        scopes.add(new HashMap<String, Object>());
+    }
 
-	@Override
-	public boolean containsKey(Object key) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			if (scope.containsKey(key)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean containsKey(Object key) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            if (scope.containsKey(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public boolean knowsKey(String key) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			Set<String> localVars = (Set<String>)scope.get(LOCAL_VARS);
-			if (scope.containsKey(key) || localVars.contains(key)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    public boolean knowsKey(String key) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            Set<String> localVars = (Set<String>) scope.get(LOCAL_VARS);
+            if (scope.containsKey(key) || localVars.contains(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public boolean containsValue(Object value) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			if (scope.containsValue(value)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean containsValue(Object value) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            if (scope.containsValue(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public Set<java.util.Map.Entry<String, Object>> entrySet() {
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		for (String key : keySet()) {
-			map.put(key, get(key));
-		}
-		return map.entrySet();
-	}
+    @Override
+    public Set<java.util.Map.Entry<String, Object>> entrySet() {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        for (String key : keySet()) {
+            map.put(key, get(key));
+        }
+        return map.entrySet();
+    }
 
-	@Override
-	// adds the object to the highest scope
-	public Object get(Object key) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			if (scope.containsKey(key)) {
-				return scope.get(key);
-			}
-		}
-		return null;
-	}
-	private Map<String,Object> getScopeWithKey(Object key) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			Set<String> localVars = (Set<String>)scope.get(LOCAL_VARS);
-			if (scope.containsKey(key) || localVars.contains(key)) {
-				return scope;
-			}
-		}
-		return null;
-	}
-	@Override
-	public boolean isEmpty() {
-		return keySet().isEmpty();
-	}
+    @Override
+    // adds the object to the highest scope
+    public Object get(Object key) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            if (scope.containsKey(key)) {
+                return scope.get(key);
+            }
+        }
+        return null;
+    }
 
-	@Override
-	// returns a set of unique keys
-	public Set<String> keySet() {
-		Set<String> keys = new HashSet<String>();
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			keys.addAll(i.next().keySet());
-		}
-		return keys;
-	}
+    private Map<String, Object> getScopeWithKey(Object key) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            Set<String> localVars = (Set<String>) scope.get(LOCAL_VARS);
+            if (scope.containsKey(key) || localVars.contains(key)) {
+                return scope;
+            }
+        }
+        return null;
+    }
 
-	@Override
-	// adds the object to the correct scope
-	public Object put(String key, Object value) {
-		Set<String> localVars = getLocalVars();
-		if(localVars.contains(key)) {
-			return putLocal(key, value);
-		}else{
-			return putGlobal(key, value);
-		}
-	}
+    @Override
+    public boolean isEmpty() {
+        return keySet().isEmpty();
+    }
 
-	private Set<String> getLocalVars() {
-		return (Set<String>) scopes.getLast().get(LOCAL_VARS);
-	}
+    @Override
+    // returns a set of unique keys
+    public Set<String> keySet() {
+        Set<String> keys = new HashSet<String>();
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            keys.addAll(i.next().keySet());
+        }
+        return keys;
+    }
 
-	// adds the object to the current scope
-	public Object putLocal(String key, Object value) {
-		Object currentValue = get(key);
-		Map<String, Object>	scope = scopes.getLast();
-		scope.put(key, value);
-		return currentValue;
-	}
+    @Override
+    // adds the object to the correct scope
+    public Object put(String key, Object value) {
+        Set<String> localVars = getLocalVars();
+        if (localVars.contains(key)) {
+            return putLocal(key, value);
+        } else {
+            return putGlobal(key, value);
+        }
+    }
 
-	// adds the object to the scope where the variable was last defined
-	public Object putGlobal(String key, Object value) {
-		Object currentValue = get(key);
-		Map<String, Object> scope = getScopeWithKey(key);
-		if (scope == null)
-			scope = scopes.getLast();
-		scope.put(key, value);
-		return currentValue;
-	}
+    private Set<String> getLocalVars() {
+        return (Set<String>) scopes.getLast().get(LOCAL_VARS);
+    }
 
-	@Override
-	// addes all map entries to the current scope map
-	public void putAll(Map<? extends String, ? extends Object> m) {
-		scopes.getLast().putAll(m);
-	}
+    // adds the object to the current scope
+    public Object putLocal(String key, Object value) {
+        Object currentValue = get(key);
+        Map<String, Object> scope = scopes.getLast();
+        scope.put(key, value);
+        return currentValue;
+    }
 
-	@Override
-	// removes the scopes first object with the given key
-	public Object remove(Object key) {
-		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
-			Map<String, Object> scope = i.next();
-			if (scope.containsKey(key)) {
-				Object object = scope.get(key);
-				scope.remove(key);
-				return object;
-			}
-		}
-		return null;
-	}
+    // adds the object to the scope where the variable was last defined
+    public Object putGlobal(String key, Object value) {
+        Object currentValue = get(key);
+        Map<String, Object> scope = getScopeWithKey(key);
+        if (scope == null)
+            scope = scopes.getLast();
+        scope.put(key, value);
+        return currentValue;
+    }
 
-	@Override
-	// returns the size of all unique keys
-	public int size() {
-		return keySet().size();
-	}
+    @Override
+    // addes all map entries to the current scope map
+    public void putAll(Map<? extends String, ? extends Object> m) {
+        scopes.getLast().putAll(m);
+    }
 
-	@Override
-	// returns the size of all unique keys
-	public Collection<Object> values() {
-		List<Object> values = new ArrayList<Object>();
-		for (String key : keySet()) {
-			values.add(get(key));
-		}
-		return values;
-	}
+    @Override
+    // removes the scopes first object with the given key
+    public Object remove(Object key) {
+        for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
+            Map<String, Object> scope = i.next();
+            if (scope.containsKey(key)) {
+                Object object = scope.get(key);
+                scope.remove(key);
+                return object;
+            }
+        }
+        return null;
+    }
 
-	public Filter getFilter(String name) {
-		return filter.get(name);
-	}
+    @Override
+    // returns the size of all unique keys
+    public int size() {
+        return keySet().size();
+    }
 
-	public void addFilter(String name, Filter filter) {
-		this.filter.put(name, filter);
-	}
+    @Override
+    // returns the size of all unique keys
+    public Collection<Object> values() {
+        List<Object> values = new ArrayList<Object>();
+        for (String key : keySet()) {
+            values.add(get(key));
+        }
+        return values;
+    }
 
-	public void putLocalVariableName(String name) {
-		getLocalVars().add(name);
-	}
+    public Filter getFilter(String name) {
+        return filter.get(name);
+    }
+
+    public void addFilter(String name, Filter filter) {
+        this.filter.put(name, filter);
+    }
+
+    public void putLocalVariableName(String name) {
+        getLocalVars().add(name);
+    }
 }
