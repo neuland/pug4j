@@ -1,17 +1,18 @@
 package de.neuland.pug4j.parser.node;
 
 import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 
 import java.util.LinkedList;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 public class TagNode extends AttrsNode {
+    private static final String[] selfClosingTags = {"area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"};
     private static final String[] inlineTags = {"a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map", "samp", "small", "span", "strong", "sub", "sup"};
-    private static final String[] whitespaceSensitiveTags = {"pre","textarea"};
+    private static final String[] whitespaceSensitiveTags = {"pre", "textarea"};
     private boolean interpolated = false;
 
     public TagNode() {
@@ -37,17 +38,17 @@ public class TagNode extends AttrsNode {
         if (node instanceof BlockNode && ((BlockNode) node).isNamedBlock()) {
             return false;
         }
-        if (node instanceof FilterNode && node.hasBlock() && node.getBlock().getNodes().size()>0 ) {
+        if (node instanceof FilterNode && node.hasBlock() && !node.getBlock().getNodes().isEmpty()) {
             return everyIsInline(node.getBlock().getNodes());
         }
         boolean inline = false;
-        if(node instanceof ExpressionNode){
+        if (node instanceof ExpressionNode) {
             inline = ((ExpressionNode) node).isInline();
         }
-        if(node instanceof TagNode){
+        if (node instanceof TagNode) {
             inline = ((TagNode) node).isInline();
         }
-        return (isTextNode(node) && (node.getValue()==null || !node.getValue().contains("\n"))) || inline;
+        return (isTextNode(node) && (node.getValue() == null || !node.getValue().contains("\n"))) || inline;
     }
 
     private boolean everyIsInline(LinkedList<Node> nodes) {
@@ -69,17 +70,6 @@ public class TagNode extends AttrsNode {
         return everyIsInline(nodes);
     }
 
-    public void openTag(IndentWriter writer, PugModel model, PugConfiguration configuration, boolean selfClosing, final boolean terse) {
-        writer.append("<")
-            .append(bufferName(configuration, model))
-            .append(visitAttributes(model, configuration,terse));
-
-        if (selfClosing) {
-            writer.append("/");
-        }
-        writer.append(">");
-    }
-
     public String bufferName(PugConfiguration configuration, PugModel model) {
         if (isInterpolated()) {
             try {
@@ -90,6 +80,10 @@ public class TagNode extends AttrsNode {
         } else {
             return name;
         }
+    }
+
+    public boolean isSelfClosingTag() {
+        return ArrayUtils.contains(selfClosingTags, name);
     }
 
     public boolean isInterpolated() {

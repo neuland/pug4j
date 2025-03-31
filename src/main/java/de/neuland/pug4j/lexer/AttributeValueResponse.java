@@ -1,9 +1,9 @@
 package de.neuland.pug4j.lexer;
 
 public class AttributeValueResponse {
-    String value;
-    boolean mustEscape;
-    String remainingSource;
+    private final String value;
+    private final boolean mustEscape;
+    private final String remainingSource;
 
     public AttributeValueResponse(String value, boolean mustEscape, String remainingSource) {
         this.value = value;

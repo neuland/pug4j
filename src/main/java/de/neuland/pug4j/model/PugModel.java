@@ -19,7 +19,7 @@ public class PugModel implements Map<String, Object> {
 	private static final String LOCALS = "locals";
 	public static final String LOCAL_VARS = "pug4j__localVars";
 	public static final String PUG4J_MODEL_PREFIX = "pug4j__";
-	private Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
+	private final Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
 	private final Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
 	private final Map<String, Filter> filter = new HashMap<String, Filter>();
 
@@ -68,7 +68,7 @@ public class PugModel implements Map<String, Object> {
 		return false;
 	}
 
-	public boolean knowsKey(Object key) {
+	public boolean knowsKey(String key) {
 		for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext();) {
 			Map<String, Object> scope = i.next();
 			Set<String> localVars = (Set<String>)scope.get(LOCAL_VARS);

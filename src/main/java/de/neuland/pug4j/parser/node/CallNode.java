@@ -3,7 +3,6 @@ package de.neuland.pug4j.parser.node;
 import java.util.*;
 
 import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.ArgumentSplitter;
@@ -29,11 +28,12 @@ public class CallNode extends AttrsNode {
 		return result;
 	}
 
-	public void writeVariables(PugModel model, MixinNode mixin, PugConfiguration configuration) {
+	public LinkedHashMap<String, Object> getMixinVariables(PugModel model, MixinNode mixin, PugConfiguration configuration) {
+		LinkedHashMap<String,Object> mixinVariables = new LinkedHashMap<>();
 		List<String> names = mixin.getArguments();
 		List<String> values = arguments;
 		if (names == null) {
-			return;
+			return mixinVariables;
 		}
 
 		for (int i = 0; i < names.size(); i++) {
@@ -51,7 +51,7 @@ public class CallNode extends AttrsNode {
 				}
 			}
 			if (key != null) {
-				model.putLocal(key, value);
+				mixinVariables.put(key, value);
 			}
 		}
 		if(mixin.getRest()!=null) {
@@ -70,36 +70,9 @@ public class CallNode extends AttrsNode {
 				}
 				restArguments.add(value);
 			}
-			model.putLocal(mixin.getRest(), restArguments);
+			mixinVariables.put(mixin.getRest(), restArguments);
 		}
-	}
-
-	public void writeAttributes(PugModel model, MixinNode mixin, PugConfiguration configuration, boolean terse) {
-		LinkedList<Attr> newAttributes = new LinkedList<Attr>(attributes);
-		if (!attributeBlocks.isEmpty()) {
-			for (String attributeBlock : attributeBlocks) {
-			   Object o = null;
-			   try {
-				   o = configuration.getExpressionHandler().evaluateExpression(attributeBlock, model);
-			   } catch (ExpressionException e) {
-				   throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
-			   }
-			   if(o instanceof Map) {
-                   for (Map.Entry<String, String> entry : ((Map<String, String>) o).entrySet()) {
-                       Attr attr = new Attr(entry.getKey(), entry.getValue(), false);
-                       newAttributes.add(attr);
-                   }
-               }
-		   }
-  		}
-
-		if (!newAttributes.isEmpty()) {
-			Map<String,String> attrs = attrs(model, configuration, newAttributes,terse);
-			model.putLocal("attributes", attrs);
-  		}else{
-			model.putLocal("attributes", new LinkedHashMap<>());
-		}
-
+		return mixinVariables;
 	}
 
 	public List<String> getArguments() {

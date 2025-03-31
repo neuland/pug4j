@@ -23,8 +23,8 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 	public static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
 	public static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
 	private JexlEngine jexl;
-	private JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
-	private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlEngine.class),
+	private final JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
+	private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlExpressionHandler.class),
 		(op, obj) -> {
 			if (obj instanceof Map) {
 				return JexlUberspect.MAP;
@@ -34,7 +34,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 			} else if (op == JexlOperator.ARRAY_SET) {
 				return JexlUberspect.MAP;
 			} else {
-				return op == null && obj instanceof Map ? JexlUberspect.MAP : JexlUberspect.POJO;
+				return JexlUberspect.POJO;
 			}
 		},
 		JexlPermissions.UNRESTRICTED
@@ -83,8 +83,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 			}
 			JexlScript e = jexl.createScript(expression);
             MapContext jexlContext = new MapContext(model);
-			Object evaluate = e.execute(jexlContext);
-			return evaluate;
+            return e.execute(jexlContext);
 		} catch (Exception e) {
 			throw new ExpressionException(expression, e);
 		}

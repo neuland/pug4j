@@ -6,10 +6,10 @@ import java.io.Writer;
 import org.apache.commons.lang3.StringUtils;
 
 public class IndentWriter {
+    public static final String INDENT = "  ";
     private int indent = 0;
     private boolean useIndent = false;
-    private Writer writer;
-    private String pp = "  ";
+    private final Writer writer;
     private boolean escape;
 
     public IndentWriter(Writer writer) {
@@ -47,13 +47,13 @@ public class IndentWriter {
 
 	public void newline() {
 		if (isPp()) {
-			write("\n" + StringUtils.repeat("  ", indent));
+			write("\n" + StringUtils.repeat(INDENT, indent));
 		}
 	}
     public void prettyIndent(int offset,boolean newline){
         if (isPp()) {
             String newlineChar = newline ? "\n" : "";
-            write(newlineChar + StringUtils.repeat(this.pp, indent + offset -1));
+            write(newlineChar + StringUtils.repeat(INDENT, indent + offset -1));
         }
     }
 
@@ -70,6 +70,6 @@ public class IndentWriter {
     }
 
     public boolean isPp(){
-        return this.pp.length()!=0 && useIndent;
+        return useIndent;
     }
 }

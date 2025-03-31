@@ -48,16 +48,16 @@ public class Parser {
         getContexts().push(this);
     }
 
-    private PugParserException error(String code, String message, Token token){
-        return new PugParserException(this.filename,token.getStartLineNumber(),templateLoader,message,code);
+    private PugParserException error(String code, String message, Token token) {
+        return new PugParserException(this.filename, token.getStartLineNumber(), templateLoader, message, code);
     }
 
-    private BlockNode emptyBlock(){
+    private BlockNode emptyBlock() {
         return this.emptyBlock(0);
     }
 
-    private BlockNode emptyBlock(int line){
-        return this.initBlock(line,new LinkedList<>());
+    private BlockNode emptyBlock(int line) {
+        return this.initBlock(line, new LinkedList<>());
     }
 
     public Node parse() {
@@ -65,14 +65,14 @@ public class Parser {
         while (!(peek() instanceof Eos)) {
             if (peek() instanceof Newline) {
                 advance();
-            } else if(peek() instanceof TextHtml){
+            } else if (peek() instanceof TextHtml) {
                 block.getNodes().addAll(parseTextHtml());
             } else {
                 Node expr = parseExpr();
                 if (expr != null) {
-                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()){
+                    if (expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()) {
                         block.getNodes().addAll(expr.getNodes());
-                    }else {
+                    } else {
                         block.push(expr);
                     }
                 }
@@ -129,7 +129,7 @@ public class Parser {
             return parseText(true);
         }
         if (token instanceof TextHtml) {
-            return initBlock(this.peek().getStartLineNumber(),parseTextHtml());
+            return initBlock(this.peek().getStartLineNumber(), parseTextHtml());
         }
         if (token instanceof Dot) {
             return parseDot();
@@ -161,12 +161,12 @@ public class Parser {
         if (token instanceof CssClass || token instanceof CssId) {
             return parseCssClassOrId();
         }
-        throw error("INVALID_TOKEN","unexpected token \"" + peek().getType() + "\"",peek());
+        throw error("INVALID_TOKEN", "unexpected token \"" + peek().getType() + "\"", peek());
     }
 
     private BlockNode initBlock(int startLineNumber, LinkedList<Node> nodes) {
-        if(nodes==null){
-            throw new PugParserException(this.filename,this.line(),templateLoader,"`nodes` is not an array");
+        if (nodes == null) {
+            throw new PugParserException(this.filename, this.line(), templateLoader, "`nodes` is not an array");
         }
         BlockNode blockNode = new BlockNode();
         blockNode.setNodes(nodes);
@@ -182,16 +182,16 @@ public class Parser {
         Token body = this.peek();
         StringBuilder text = new StringBuilder();
 
-        if(body instanceof StartPipelessText){
+        if (body instanceof StartPipelessText) {
             advance();
-            while (!(peek() instanceof EndPipelessText)){
+            while (!(peek() instanceof EndPipelessText)) {
                 tok = advance();
-                if(tok instanceof Text){
+                if (tok instanceof Text) {
                     text.append(tok.getValue());
-                }else if(tok instanceof Newline){
+                } else if (tok instanceof Newline) {
                     text.append("\n");
-                }else{
-                    throw error("INVALID_TOKEN","Unexpected token type: "+tok.getType(),tok);
+                } else {
+                    throw error("INVALID_TOKEN", "Unexpected token type: " + tok.getType(), tok);
                 }
             }
             advance();
@@ -259,15 +259,15 @@ public class Parser {
                 }
             }
             List<String> newArgs = new ArrayList<>();
-            HashMap<String,String> defaultValues = new HashMap<>();
+            HashMap<String, String> defaultValues = new HashMap<>();
             for (String arg : args) {
                 String key;
                 Matcher matcher = Pattern.compile("^([a-zA-Z][a-zA-Z0-9]*)=(.*)$").matcher(arg);
-                if(matcher.find(0) && matcher.groupCount() > 1){
-                    key=matcher.group(1);
-                    defaultValues.put(key,matcher.group(2));
-                }else{
-                    key=arg;
+                if (matcher.find(0) && matcher.groupCount() > 1) {
+                    key = matcher.group(1);
+                    defaultValues.put(key, matcher.group(2));
+                } else {
+                    key = arg;
                 }
                 newArgs.add(key);
             }
@@ -279,33 +279,31 @@ public class Parser {
             this.inMixin--;
             return node;
         } else {
-            throw error("MIXIN_WITHOUT_BODY","Mixin " + mixinToken.getValue() + " declared without body",mixinToken);
+            throw error("MIXIN_WITHOUT_BODY", "Mixin " + mixinToken.getValue() + " declared without body", mixinToken);
         }
     }
 
     private Node parseCall() {
         Call callToken = (Call) expect(Call.class);
-        MixinNode mixin = new MixinNode();
-        mixin.setBlock(emptyBlock(callToken.getStartLineNumber()));
-        mixin.setName(callToken.getValue());
-        mixin.setLineNumber(callToken.getStartLineNumber());
-        mixin.setColumn(callToken.getStartColumn());
-        mixin.setFileName(filename);
-        mixin.setCall(true);
+        CallNode callNode = new CallNode();
+        callNode.setBlock(emptyBlock(callToken.getStartLineNumber()));
+        callNode.setName(callToken.getValue());
+        callNode.setLineNumber(callToken.getStartLineNumber());
+        callNode.setColumn(callToken.getStartColumn());
+        callNode.setFileName(filename);
+        callNode.setCall(true);
 
         if (StringUtils.isNotBlank(callToken.getArguments())) {
-            mixin.setArguments(callToken.getArguments());
+            callNode.setArguments(callToken.getArguments());
         }
 
 
-        this.tag(mixin);
-        if (mixin.hasCodeNode()) {
-            mixin.getBlock().push(mixin.getCodeNode());
-            mixin.setCodeNode(null);
-        }
-        if (mixin.hasBlock() && mixin.getBlock().getNodes().isEmpty())
-            mixin.setBlock(null);
-        return mixin;
+        this.tag(callNode);
+
+        if (callNode.hasBlock() && callNode.getBlock().getNodes().isEmpty())
+            callNode.setBlock(null);
+
+        return callNode;
     }
 
     private Node parseCssClassOrId() {
@@ -336,7 +334,6 @@ public class Parser {
         blockNode.setColumn(blockToken.getStartColumn());
         blockNode.setFileName(this.filename);
         blockNode.setMode(mode);
-        blockNode.setParser(this);
 
         BlockNode prev = this.blocks.get(name);
         if (prev != null) {
@@ -362,7 +359,7 @@ public class Parser {
     private Node parseMixinBlock() {
         Token tok = expect(MixinBlock.class);
         if (this.inMixin == 0) {
-            throw error("BLOCK_OUTSIDE_MIXIN","Anonymous blocks are not allowed unless they are part of a mixin.",tok);
+            throw error("BLOCK_OUTSIDE_MIXIN", "Anonymous blocks are not allowed unless they are part of a mixin.", tok);
         }
 
         MixinBlockNode mixinBlockNode = new MixinBlockNode();
@@ -373,18 +370,18 @@ public class Parser {
     }
 
     private Node parseInclude() {
-        Include includeToken = (Include)expect(Include.class);
+        Include includeToken = (Include) expect(Include.class);
 
         LinkedList<IncludeFilterNode> filters = new LinkedList<>();
-        while(peek() instanceof Filter){
+        while (peek() instanceof Filter) {
             filters.add(parseIncludeFilter());
         }
 
         Path pathToken = (Path) expect(Path.class);
 
         String templateName = pathToken.getValue().trim();
-        String path = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
-        if(path==null){
+        String path = pathHelper.resolvePath(filename, templateName, templateLoader.getBase());
+        if (path == null) {
             throw new PugParserException(
                     this.filename,
                     lexer.getLineno(),
@@ -415,7 +412,7 @@ public class Parser {
                 return node;
             }
         } catch (IOException e) {
-            throw error("PATH_EXCEPTION","the included file [" + templateName + "] could not be opened\n" + e.getMessage(),pathToken);
+            throw error("PATH_EXCEPTION", "the included file [" + templateName + "] could not be opened\n" + e.getMessage(), pathToken);
         }
 
         // non-jade
@@ -430,7 +427,7 @@ public class Parser {
                 node.setValue(IOUtils.toString(reader));
                 return node;
             } catch (IOException e) {
-                throw error("PATH_EXCEPTION","the included file [" + templateName + "] could not be opened\n" + e.getMessage(),pathToken);
+                throw error("PATH_EXCEPTION", "the included file [" + templateName + "] could not be opened\n" + e.getMessage(), pathToken);
             }
         }
 
@@ -473,8 +470,8 @@ public class Parser {
     private Parser createParser(String templateName) {
         templateName = ensurePugExtension(templateName);
         try {
-            String resolvedPath = pathHelper.resolvePath(filename, templateName,templateLoader.getBase());
-            if(resolvedPath==null){
+            String resolvedPath = pathHelper.resolvePath(filename, templateName, templateLoader.getBase());
+            if (resolvedPath == null) {
                 throw new PugParserException(
                         this.filename,
                         lexer.getLineno(),
@@ -520,7 +517,7 @@ public class Parser {
         tagNode.setFileName(filename);
         tagNode.setName(name);
         tagNode.setInterpolated(true);
-        return this.tag(tagNode,true);
+        return this.tag(tagNode, true);
     }
 
     private BlockNode block() {
@@ -530,14 +527,14 @@ public class Parser {
         while (!(peek() instanceof Outdent)) {
             if (peek() instanceof Newline) {
                 advance();
-            } else if(peek() instanceof TextHtml){
+            } else if (peek() instanceof TextHtml) {
                 block.getNodes().addAll(parseTextHtml());
             } else {
                 Node expr = parseExpr();
                 if (expr != null) {
-                    if(expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()){
+                    if (expr instanceof BlockNode && !((BlockNode) expr).isYield() && !((BlockNode) expr).isNamedBlock()) {
                         block.getNodes().addAll(expr.getNodes());
-                    }else {
+                    } else {
                         block.push(expr);
                     }
                 }
@@ -552,12 +549,12 @@ public class Parser {
     }
 
     private Node parseText(boolean block) {
-        LinkedList<Node>  tags = new LinkedList<>();
+        LinkedList<Node> tags = new LinkedList<>();
         int lineno = peek().getStartLineNumber();
         Token nextToken = peek();
 
-        while(true){
-            if(nextToken instanceof Text){
+        while (true) {
+            if (nextToken instanceof Text) {
                 Token token = advance();
                 TextNode textNode = new TextNode();
                 textNode.setValue(token.getValue());
@@ -565,7 +562,7 @@ public class Parser {
                 textNode.setColumn(token.getStartColumn());
                 textNode.setFileName(this.filename);
                 tags.add(textNode);
-            }else if(nextToken instanceof InterpolatedCode){
+            } else if (nextToken instanceof InterpolatedCode) {
                 InterpolatedCode token = (InterpolatedCode) advance();
                 ExpressionNode expressionNode = new ExpressionNode();
                 expressionNode.setValue(token.getValue());
@@ -576,12 +573,12 @@ public class Parser {
                 expressionNode.setColumn(token.getStartColumn());
                 expressionNode.setFileName(this.filename);
                 tags.add(expressionNode);
-            }else if(nextToken instanceof Newline){
-                if(!block)
+            } else if (nextToken instanceof Newline) {
+                if (!block)
                     break;
                 Token token = advance();
                 Token nextType = peek();
-                if(nextType instanceof Text || nextType instanceof InterpolatedCode){
+                if (nextType instanceof Text || nextType instanceof InterpolatedCode) {
                     TextNode textNode = new TextNode();
                     textNode.setValue("\n");
                     textNode.setLineNumber(token.getStartLineNumber());
@@ -590,61 +587,61 @@ public class Parser {
                     tags.add(textNode);
                 }
 
-            }else if(nextToken instanceof StartPugInterpolation){
+            } else if (nextToken instanceof StartPugInterpolation) {
                 advance();
                 tags.add(parseExpr());
                 expect(EndPugInterpolation.class);
-            }else{
+            } else {
                 break;
             }
             nextToken = peek();
         }
-        if(tags.size()==1)
+        if (tags.size() == 1)
             return tags.get(0);
         else
-            return initBlock(lineno,tags);
+            return initBlock(lineno, tags);
     }
 
-    private LinkedList<Node> parseTextHtml(){
-        LinkedList<Node>  nodes= new LinkedList<>();
+    private LinkedList<Node> parseTextHtml() {
+        LinkedList<Node> nodes = new LinkedList<>();
         Node currentNode = null;
-        while(true){
-            if(peek() instanceof TextHtml){
+        while (true) {
+            if (peek() instanceof TextHtml) {
                 Token text = advance();
-                if(currentNode==null){
+                if (currentNode == null) {
                     TextNode textNode = new TextNode();
                     textNode.setValue(text.getValue());
                     textNode.setFileName(this.filename);
                     textNode.setLineNumber(text.getStartLineNumber());
                     textNode.setColumn(text.getStartColumn());
                     textNode.setHtml(true);
-                    currentNode=textNode;
+                    currentNode = textNode;
                     nodes.add(currentNode);
-                }else{
+                } else {
                     currentNode.setValue(currentNode.getValue() + "\n" + text.getValue());
                 }
-            }else if(peek() instanceof Indent){
+            } else if (peek() instanceof Indent) {
                 BlockNode block = block();
                 LinkedList<Node> blockNodes = block.getNodes();
                 for (Node node : blockNodes) {
-                    if(node instanceof TextNode && ((TextNode) node).isHtml()){
-                        if(currentNode==null){
-                            currentNode=node;
+                    if (node instanceof TextNode && ((TextNode) node).isHtml()) {
+                        if (currentNode == null) {
+                            currentNode = node;
                             nodes.add(currentNode);
-                        }else{
+                        } else {
                             currentNode.setValue(currentNode.getValue() + "\n" + node.getValue());
                         }
-                    }else{
+                    } else {
                         currentNode = null;
                         nodes.add(node);
                     }
                 }
-            }else if(peek() instanceof Expression){
+            } else if (peek() instanceof Expression) {
                 currentNode = null;
                 nodes.add(parseCode(true));
-            }else if(peek() instanceof Newline){
+            } else if (peek() instanceof Newline) {
                 advance();
-            }else{
+            } else {
                 break;
             }
         }
@@ -683,9 +680,9 @@ public class Parser {
         node.setFileName(filename);
 
         //handle block
-        if(peek()instanceof Indent){
+        if (peek() instanceof Indent) {
             node.setBlock(block());
-        }else{
+        } else {
             node.setBlock(emptyBlock());
         }
 
@@ -702,13 +699,14 @@ public class Parser {
         tagNode.setColumn(token.getStartColumn());
         tagNode.setFileName(filename);
         tagNode.setValue(name);
-        return this.tag(tagNode,true);
-    }
-    private void tag(AttrsNode tagNode) {
-        tag(tagNode,false);
+        return this.tag(tagNode, true);
     }
 
-    private Node tag(AttrsNode tagNode,boolean selfClosingAllowed) {
+    private void tag(AttrsNode tagNode) {
+        tag(tagNode, false);
+    }
+
+    private Node tag(AttrsNode tagNode, boolean selfClosingAllowed) {
         // ast-filter look-ahead
         boolean seenAttrs = false;
         while (true) {
@@ -724,7 +722,7 @@ public class Parser {
                     throw new PugParserException(filename, line(), templateLoader, this.filename + ", line " + this.peek().getStartLineNumber() + ":\nYou should not have jade tags with multiple attributes.");
                 }
                 seenAttrs = true;
-                attrs(tagNode);
+                parseAttributes(tagNode);
             } else if (incomingToken instanceof AttributesBlock) {
                 Token tok = this.advance();
                 tagNode.addAttributes(tok.getValue());
@@ -742,10 +740,10 @@ public class Parser {
         // (text | code | ':')?
         if (peek() instanceof Text || peek() instanceof InterpolatedCode) {
             Node node = parseText();
-            if(node instanceof BlockNode){
+            if (node instanceof BlockNode) {
                 BlockNode block = (BlockNode) node;
                 tagNode.getBlock().getNodes().addAll(block.getNodes());
-            }else {
+            } else {
                 tagNode.getBlock().push(node);
             }
         } else if (peek() instanceof Expression) {
@@ -753,15 +751,15 @@ public class Parser {
         } else if (peek() instanceof Colon) {
             advance();
             Node node = parseExpr();
-            if(node instanceof BlockNode) {
+            if (node instanceof BlockNode) {
                 tagNode.setBlock(node);
-            }else{
+            } else {
                 LinkedList<Node> nodes = new LinkedList<>();
                 nodes.add(node);
                 tagNode.setBlock(initBlock(tagNode.getLineNumber(), nodes));
             }
-        }else if(peek() instanceof Slash){
-            if(selfClosingAllowed){
+        } else if (peek() instanceof Slash) {
+            if (selfClosingAllowed) {
                 advance();
                 tagNode.setSelfClosing(true);
             }
@@ -787,11 +785,11 @@ public class Parser {
 
     }
 
-    private void attrs(AttrsNode attrsNode){
+    private void parseAttributes(AttrsNode attrsNode) {
         expect(StartAttributes.class);
 
         Token token = advance();
-        while(token instanceof Attribute){
+        while (token instanceof Attribute) {
 
             Attribute attr = (Attribute) token;
             String name = attr.getName();
@@ -806,30 +804,30 @@ public class Parser {
 
     private BlockNode parseTextBlock() {
         Token token = accept(StartPipelessText.class);
-        if(token == null)
+        if (token == null)
             return null;
 
         BlockNode blockNode = emptyBlock(token.getStartLineNumber());
-        while(!(peek() instanceof EndPipelessText)){
+        while (!(peek() instanceof EndPipelessText)) {
             token = advance();
-            if(token instanceof Text){
+            if (token instanceof Text) {
                 TextNode textNode = new TextNode();
                 textNode.setValue(token.getValue());
                 textNode.setLineNumber(token.getStartLineNumber());
                 textNode.setColumn(token.getStartColumn());
                 textNode.setFileName(this.filename);
                 blockNode.getNodes().add(textNode);
-            }else if(token instanceof Newline){
+            } else if (token instanceof Newline) {
                 TextNode textNode = new TextNode();
                 textNode.setValue("\n");
                 textNode.setLineNumber(token.getStartLineNumber());
                 textNode.setColumn(token.getStartColumn());
                 textNode.setFileName(this.filename);
                 blockNode.getNodes().add(textNode);
-            }else if(token instanceof StartPugInterpolation){
+            } else if (token instanceof StartPugInterpolation) {
                 blockNode.getNodes().add(parseExpr());
                 expect(EndPugInterpolation.class);
-            }else if(token instanceof InterpolatedCode){
+            } else if (token instanceof InterpolatedCode) {
                 ExpressionNode expressionNode = new ExpressionNode();
                 expressionNode.setValue(token.getValue());
                 expressionNode.setBuffer(token.isBuffer());
@@ -839,8 +837,8 @@ public class Parser {
                 expressionNode.setColumn(token.getStartColumn());
                 expressionNode.setFileName(this.filename);
                 blockNode.getNodes().add(expressionNode);
-            }else{
-                throw error("INVALID_TOKEN","Unexpected token type: " + token.getType(),token);
+            } else {
+                throw error("INVALID_TOKEN", "Unexpected token type: " + token.getType(), token);
             }
         }
         advance();
@@ -857,40 +855,40 @@ public class Parser {
         IfConditionNode main = new IfConditionNode(conditionalToken.getValue(), conditionalToken.getStartLineNumber());
         main.setInverse(conditionalToken.isInverseCondition());
         main.setFileName(filename);
-        if(peek() instanceof Indent){
+        if (peek() instanceof Indent) {
             main.setBlock(block());
-        }else{
+        } else {
             main.setBlock(emptyBlock());
         }
         conditional.addCondition(main);
 
         while (true) {
-            if(peek() instanceof Newline){
+            if (peek() instanceof Newline) {
                 expect(Newline.class);
-            }else if (peek() instanceof ElseIf) {
+            } else if (peek() instanceof ElseIf) {
                 ElseIf token = (ElseIf) expect(ElseIf.class);
                 IfConditionNode elseIf = new IfConditionNode(token.getValue(), token.getStartLineNumber());
                 elseIf.setFileName(filename);
-                if(peek() instanceof Indent){
+                if (peek() instanceof Indent) {
                     elseIf.setBlock(block());
-                }else{
+                } else {
                     elseIf.setBlock(emptyBlock());
                 }
                 conditional.addCondition(elseIf);
-            }else if(peek() instanceof Else){
+            } else if (peek() instanceof Else) {
                 Else token = (Else) expect(Else.class);
                 IfConditionNode elseNode = new IfConditionNode(null, token.getStartLineNumber());
                 elseNode.setFileName(filename);
                 elseNode.setDefault(true);
-                if(peek() instanceof Indent){
+                if (peek() instanceof Indent) {
                     elseNode.setBlock(block());
-                }else{
+                } else {
                     elseNode.setBlock(emptyBlock());
                 }
                 conditional.addCondition(elseNode);
 
                 break;
-            }else{
+            } else {
                 break;
             }
         }
@@ -900,11 +898,11 @@ public class Parser {
 
     private BlockNode parseBlockExpansion() {
         Token token = accept(Colon.class);
-        if (token!=null) {
+        if (token != null) {
             Node node = this.parseExpr();
-            if(node instanceof BlockNode){
+            if (node instanceof BlockNode) {
                 return (BlockNode) node;
-            }else{
+            } else {
                 LinkedList<Node> nodes = new LinkedList<>();
                 nodes.add(node);
                 return initBlock(node.getLineNumber(), nodes);
@@ -923,7 +921,7 @@ public class Parser {
         node.setColumn(token.getStartColumn());
         node.setFileName(this.filename);
 
-        Node block = emptyBlock(token.getStartLineNumber()+1);
+        Node block = emptyBlock(token.getStartLineNumber() + 1);
         expect(Indent.class);
         while (!(peek() instanceof Outdent)) {
             if (peek() instanceof Comment) {
@@ -935,7 +933,7 @@ public class Parser {
             } else if (peek() instanceof Default) {
                 block.push(parseDefault());
             } else {
-                throw error("INVALID_TOKEN", "Unexpected token \"" + this.peek() + "\", expected \"when\", \"default\" or \"newline\"",peek());
+                throw error("INVALID_TOKEN", "Unexpected token \"" + this.peek() + "\", expected \"when\", \"default\" or \"newline\"", peek());
             }
         }
         expect(Outdent.class);
@@ -983,13 +981,13 @@ public class Parser {
         codeNode.setLineNumber(expressionToken.getStartLineNumber());
         codeNode.setColumn(expressionToken.getStartColumn());
         codeNode.setFileName(filename);
-        if(noBlock)
+        if (noBlock)
             return codeNode;
         boolean block;
         block = peek() instanceof Indent;
         if (block) {
-            if(token.isBuffer()){
-                throw error("BLOCK_IN_BUFFERED_CODE", "Buffered code cannot have a block attached to it",peek());
+            if (token.isBuffer()) {
+                throw error("BLOCK_IN_BUFFERED_CODE", "Buffered code cannot have a block attached to it", peek());
             }
             codeNode.setBlock(block());
         }
@@ -1006,15 +1004,15 @@ public class Parser {
         return doctypeNode;
     }
 
-    private IncludeFilterNode parseIncludeFilter(){
+    private IncludeFilterNode parseIncludeFilter() {
         Filter token = (Filter) expect(Filter.class);
         IncludeFilterNode includeFilter = new IncludeFilterNode();
         includeFilter.setValue(token.getValue());
         includeFilter.setLineNumber(token.getStartLineNumber());
         includeFilter.setColumn(token.getStartColumn());
         includeFilter.setFileName(this.filename);
-        if(peek() instanceof StartAttributes){
-            attrs(includeFilter);
+        if (peek() instanceof StartAttributes) {
+            parseAttributes(includeFilter);
         }
 
         return includeFilter;
@@ -1029,11 +1027,11 @@ public class Parser {
         node.setFileName(filename);
         node.setColumn(filterToken.getStartColumn());
 
-        if(peek() instanceof StartAttributes){
-            attrs(node);
+        if (peek() instanceof StartAttributes) {
+            parseAttributes(node);
         }
         BlockNode blockNode;
-        if(peek() instanceof Text){
+        if (peek() instanceof Text) {
             Token textToken = advance();
             LinkedList<Node> nodes = new LinkedList<>();
             TextNode textNode = new TextNode();
@@ -1043,16 +1041,15 @@ public class Parser {
             textNode.setFileName(this.filename);
             nodes.add(textNode);
             blockNode = initBlock(textToken.getStartLineNumber(), nodes);
-        }else if(peek() instanceof Filter){
+        } else if (peek() instanceof Filter) {
             LinkedList<Node> nodes = new LinkedList<>();
             nodes.add(parseFilter());
-            blockNode = initBlock(filterToken.getStartLineNumber(),nodes);
-        }else{
+            blockNode = initBlock(filterToken.getStartLineNumber(), nodes);
+        } else {
             BlockNode textBlock = parseTextBlock();
-            if(textBlock!=null) {
+            if (textBlock != null) {
                 blockNode = textBlock;
-            }
-            else {
+            } else {
                 blockNode = emptyBlock(filterToken.getStartLineNumber());
             }
         }
@@ -1091,9 +1088,10 @@ public class Parser {
         if (t.getClass().equals(expectedTokenClass)) {
             return advance();
         } else {
-            throw error("INVALID_TOKEN","expected \"" + expectedTokenClass.toString() + "\", but got "+peek().getType()+"\"",peek());
+            throw error("INVALID_TOKEN", "expected \"" + expectedTokenClass.toString() + "\", but got " + peek().getType() + "\"", peek());
         }
     }
+
     public LinkedHashMap<String, BlockNode> getBlocks() {
         return blocks;
     }
@@ -1110,7 +1108,7 @@ public class Parser {
         this.contexts = contexts;
     }
 
-    public void setMixins(Map<String,MixinNode> mixins) {
+    public void setMixins(Map<String, MixinNode> mixins) {
         this.mixins = mixins;
     }
 }

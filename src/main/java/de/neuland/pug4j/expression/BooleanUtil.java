@@ -10,7 +10,7 @@ public class BooleanUtil {
 		if (in == null) {
 			return Boolean.FALSE;
 		} else if (in instanceof List) {
-			return ((List<?>) in).size() != 0;
+			return !((List<?>) in).isEmpty();
 		} else if (in instanceof Boolean) {
 			return (Boolean) in;
 		} else if (in instanceof int[]) {

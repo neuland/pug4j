@@ -1,12 +1,10 @@
 package de.neuland.pug4j.parser.node;
 
-import de.neuland.pug4j.parser.Parser;
 
 public class BlockNode extends Node {
 
 	private boolean yield = false;
 	private String mode;
-	private Parser parser;
 	private boolean namedBlock;
 
 	public void setYield(boolean yield) {
@@ -45,14 +43,6 @@ public class BlockNode extends Node {
 
 	public void setMode(String mode) {
 		this.mode = mode;
-	}
-
-	public void setParser(Parser parser) {
-		this.parser = parser;
-	}
-
-	public Parser getParser() {
-		return parser;
 	}
 
 	public boolean isNamedBlock() {

@@ -8,7 +8,7 @@ public abstract class CachingFilter implements Filter {
 
 	private static final int MAX_ENTRIES = 1000;
 
-	private static Map<String, String> cache = new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
+	private static final Map<String, String> cache = new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
 		private static final long serialVersionUID = 618942552777647107L;
 
 		public boolean removeEldestEntry(Map.Entry<String, String> eldest) {

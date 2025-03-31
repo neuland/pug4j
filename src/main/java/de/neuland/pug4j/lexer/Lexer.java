@@ -61,6 +61,15 @@ public class Lexer {
     private static final Pattern PATTERN_SPACES = Pattern.compile("^\\n( *)");
     private static final Pattern PATTERN_COMMENT = Pattern.compile("^\\/\\/(-)?([^\\n]*)");
     private static final int INFINITY = Integer.MAX_VALUE;
+    public static final Pattern PATTERN_NO_CASE_EXPRESSION = Pattern.compile("^case\\b");
+    public static final Pattern PATTERN_MALFORMED_INCLUDE = Pattern.compile("^include\\b");
+    public static final Pattern PATTERN_MALFORMED_EXTENDS = Pattern.compile("^extends?\\b");
+    public static final Pattern PATTERN_STRING_INTERPOLATION = Pattern.compile("(\\\\)?([#!])\\{((?:.|\\n)*)$");
+    public static final Pattern PATTERN_INVALID_CLASSNAME = Pattern.compile("^\\.[_a-z0-9\\-]+", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PATTERN_CLASSNAME_STARTS_WITH_DOT = Pattern.compile("^\\.");
+    public static final Pattern PATTERN_EXTRACT_INVALID_CLASSNAME = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
+    public static final Pattern PATTERN_EXTRACT_INVALID_ID = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
+    public static final Pattern PATTERN_DOCTYPE = Pattern.compile("^doctype *([^\\n]*)");
     private final Scanner scanner;
     private int lineno;
     private int colno;
@@ -361,7 +370,7 @@ public class Lexer {
             }
 
             String newInput = scanner.getInput().substring(matcher.group(0).length());
-            if(newInput.length()>0 && newInput.charAt(0) == ':'){
+            if(!newInput.isEmpty() && newInput.charAt(0) == ':'){
                 scanner.consume(matcher.group(0).length());
                 token = tok(token);
                 if(matcher.groupCount()>0) {
@@ -403,7 +412,7 @@ public class Lexer {
     }
 
     private boolean eos() {
-        if (scanner.getInput().length() > 0) {
+        if (!scanner.getInput().isEmpty()) {
             return false;
         }
         if(this.interpolated){
@@ -584,12 +593,13 @@ public class Lexer {
                     token = tok(unlessToken);
                     break;
                 case "else":
-                    if(js!=null && js.length()>0){
+                    if(js!=null && !js.isEmpty()){
                         throw error("ELSE_CONDITION","`else` cannot have a condition, perhaps you meant `else if`");
                     }
                     token = tok(new Else(null, lineno));
                     break;
             }
+            assert js != null;
             this.incrementColumn(matcher.end()-js.length());
             this.incrementColumn(js.length());
             if(token!=null) {
@@ -603,7 +613,7 @@ public class Lexer {
     }
 
     private boolean doctype(){
-        Token token = scanEndOfLine(Pattern.compile("^doctype *([^\\n]*)"),new Doctype());
+        Token token = scanEndOfLine(PATTERN_DOCTYPE,new Doctype());
         if(token!=null){
             pushToken(tokEnd(token));
             return true;
@@ -619,7 +629,7 @@ public class Lexer {
             return true;
         }
         if (scan(PATTERN_INVALID_ID)){
-            Matcher matcher = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput());
+            Matcher matcher = PATTERN_EXTRACT_INVALID_ID.matcher(scanner.getInput());
             if(matcher.find()) {
                 throw error("INVALID_ID", "\"" + matcher.group(0) + "\" is not a valid ID.");
             }
@@ -634,11 +644,11 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if(Pattern.compile("^\\.[_a-z0-9\\-]+",Pattern.CASE_INSENSITIVE).matcher(scanner.getInput()).find(0)){
+        if(PATTERN_INVALID_CLASSNAME.matcher(scanner.getInput()).find(0)){
             throw error("INVALID_CLASS_NAME","Class names must contain at least one letter or underscore.");
         }
-        if(Pattern.compile("^\\.").matcher(scanner.getInput()).find(0)){
-            Matcher matcher = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*").matcher(scanner.getInput().substring(1));
+        if(PATTERN_CLASSNAME_STARTS_WITH_DOT.matcher(scanner.getInput()).find(0)){
+            Matcher matcher = PATTERN_EXTRACT_INVALID_CLASSNAME.matcher(scanner.getInput().substring(1));
             if(matcher.find(0))
                 throw error("INVALID_CLASS_NAME","\"" + matcher.group(0) + "\" is not a valid class name.  Class names can only contain \"_\", \"-\", a-z and 0-9, and must contain at least one of \"_\", or a-z");
         }
@@ -663,19 +673,19 @@ public class Lexer {
     }
 
     private void addText(Token token, String value, String prefix,int escaped) {
-        if (prefix != null && "".equals(value + prefix))
+        if (prefix != null && (value + prefix).isEmpty())
             return;
         int indexOfEnd = this.interpolated ? value.indexOf(']') : -1;
         int indexOfStart = this.interpolationAllowed ? value.indexOf("#[") : -1;
         int indexOfEscaped = this.interpolationAllowed ? value.indexOf("\\#[") : -1;
-        Matcher matchOfStringInterp = Pattern.compile("(\\\\)?([#!])\\{((?:.|\\n)*)$").matcher(value);
+        Matcher matchOfStringInterp = PATTERN_STRING_INTERPOLATION.matcher(value);
         int indexOfStringInterp = this.interpolationAllowed && matchOfStringInterp.find(0) ? matchOfStringInterp.start() : INFINITY;
 
         if (indexOfEnd == -1) indexOfEnd = INFINITY;
         if (indexOfStart == -1) indexOfStart = INFINITY;
         if (indexOfEscaped == -1) indexOfEscaped = INFINITY;
 
-        if (indexOfEscaped != INFINITY && indexOfEscaped < indexOfEnd && indexOfEscaped < indexOfStart && indexOfEscaped < indexOfStringInterp) {
+        if (indexOfEscaped < indexOfEnd && indexOfEscaped < indexOfStart && indexOfEscaped < indexOfStringInterp) {
             if(prefix!=null) {
                 prefix = prefix + value.substring(0, indexOfEscaped) + "#[";
             }else {
@@ -685,7 +695,7 @@ public class Lexer {
             return;
         }
 
-        if (indexOfStart != INFINITY && indexOfStart < indexOfEnd && indexOfStart < indexOfEscaped && indexOfStart < indexOfStringInterp) {
+        if (indexOfStart < indexOfEnd && indexOfStart < indexOfEscaped && indexOfStart < indexOfStringInterp) {
             Token newToken = tok(token);
             if(prefix == null) {
                 newToken.setValue(StringUtils.substring(value, 0, indexOfStart));
@@ -715,13 +725,13 @@ public class Lexer {
             return;
         }
 
-        if (indexOfEnd != INFINITY && indexOfEnd < indexOfStart && indexOfEnd < indexOfEscaped && indexOfEnd < indexOfStringInterp) {
+        if (indexOfEnd < indexOfStart && indexOfEnd < indexOfEscaped && indexOfEnd < indexOfStringInterp) {
             if(prefix == null){
-                if ((StringUtils.substring(value, 0, indexOfEnd)).length() > 0) {
+                if (!(StringUtils.substring(value, 0, indexOfEnd)).isEmpty()) {
                     this.addText(token, value.substring(0, indexOfEnd), prefix);
                 }
             }else {
-                if ((prefix + StringUtils.substring(value, 0, indexOfEnd)).length() > 0) {
+                if (!(prefix + StringUtils.substring(value, 0, indexOfEnd)).isEmpty()) {
                     this.addText(token, value.substring(0, indexOfEnd), prefix);
                 }
             }
@@ -741,15 +751,13 @@ public class Lexer {
                 return;
             }
 
-            String before = StringUtils.substring(value, 0, 0 + indexOfStringInterp);
-            if (prefix != null || before != null) {
-                if(prefix!=null)
-                    before = prefix + before;
-                Token tok = this.tok(token);
-                tok.setValue(before);
-                this.incrementColumn(before.length() + escaped);
-                pushToken(this.tokEnd(tok));
-            }
+            String before = StringUtils.substring(value, 0, indexOfStringInterp);
+            if (prefix != null)
+                before = prefix + before;
+            Token tok = this.tok(token);
+            tok.setValue(before);
+            this.incrementColumn(before.length() + escaped);
+            pushToken(this.tokEnd(tok));
 
             String rest = matchOfStringInterp.group(3);
             InterpolatedCode interpolatedCodeToken = (InterpolatedCode) this.tok(new InterpolatedCode());
@@ -840,7 +848,7 @@ public class Lexer {
             return true;
         }
 
-        if (this.scan(Pattern.compile("^extends?\\b"))) {
+        if (this.scan(PATTERN_MALFORMED_EXTENDS)) {
             throw error("MALFORMED_EXTENDS", "malformed extends");
         }
         return false;
@@ -966,7 +974,7 @@ public class Lexer {
             return true;
         }
 
-        if (this.scan(Pattern.compile("^include\\b"))) {
+        if (this.scan(PATTERN_MALFORMED_INCLUDE)) {
              throw error("MALFORMED_INCLUDE", "malformed include");
         }
         return false;
@@ -974,7 +982,7 @@ public class Lexer {
 
     private boolean path(){
         Token token = scanEndOfLine(PATTERN_PATH,new Path());
-        if (token != null && token.getValue().trim().equals(token.getValue().trim())) {
+        if (token != null) {
             token.setValue(token.getValue().trim());
             pushToken(tokEnd(token));
             return true;
@@ -991,7 +999,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if (this.scan(Pattern.compile("^case\\b"))) {
+        if (this.scan(PATTERN_NO_CASE_EXPRESSION)) {
             throw error("NO_CASE_EXPRESSION", "missing expression for case");
         }
 
@@ -1103,14 +1111,13 @@ public class Lexer {
         return false;
     }
 
-    private boolean assertNestingCorrect(String exp) {
+    private void assertNestingCorrect(String exp) {
         //this verifies that code is properly nested, but allows
         //invalid JavaScript such as the contents of `attributes`
         CharacterParser.State res = characterParser.parse(exp);
         if (res.isNesting()) {
             throw error("INCORRECT_NESTING","Nesting must match on expression `" + exp + "`");
         }
-        return true;
     }
 
     private boolean attrs() {
@@ -1124,7 +1131,7 @@ public class Lexer {
             assertNestingCorrect(str);
             scanner.consume(index + 1);
 
-            while (str!=null && str.length()>0) {
+            while (!str.isEmpty()) {
                 str = attribute(str);
             }
 
@@ -1149,7 +1156,6 @@ public class Lexer {
 
     private String attribute(String str) {
         Character quote = null;
-        Pattern quoteRe = PATTERN_QUOTE;
         StringBuilder key = new StringBuilder();
         int i;
 
@@ -1171,7 +1177,7 @@ public class Lexer {
         Attribute tok = (Attribute) this.tok(new Attribute());
 
         // quote?
-        if(quoteRe.matcher(String.valueOf(str.charAt(i))).find(0)){
+        if(PATTERN_QUOTE.matcher(String.valueOf(str.charAt(i))).find(0)){
             quote = str.charAt(i);
             this.incrementColumn(1);
             i++;
@@ -1292,7 +1298,7 @@ public class Lexer {
 
         if(str.charAt(i) != '='){
             // check for anti-pattern `div("foo"bar)`
-            if (i == 0 && str.length()>0 && !PATTERN_WHITESPACE.matcher(String.valueOf(str.charAt(0))).find(0) && str.charAt(0) != ','){
+            if (i == 0 && !PATTERN_WHITESPACE.matcher(String.valueOf(str.charAt(0))).find(0) && str.charAt(0) != ','){
                 throw error("INVALID_KEY_CHARACTER","Unexpected character " + str.charAt(i) + " expected `=`");
             } else {
                 return new AttributeValueResponse(null,false,str);
@@ -1368,7 +1374,7 @@ public class Lexer {
         this.lineno = line;
         this.colno = col;
 
-        if ("".equals(val)) {
+        if (val.isEmpty()) {
             return new AttributeValueResponse("",false,str.substring(i));
         } else {
             return new AttributeValueResponse(val, escapeAttr, str.substring(i));
@@ -1405,13 +1411,13 @@ public class Lexer {
             matcher = scanner.getMatcherForPattern(re);
 
             // spaces
-            if (matcher.find(0) && matcher.group(1).length() == 0) {
+            if (matcher.find(0) && matcher.group(1).isEmpty()) {
                 re = PATTERN_SPACES;
                 matcher = scanner.getMatcherForPattern(re);
             }
 
             // established
-            if (matcher.find(0) && matcher.group(1).length() > 0)
+            if (matcher.find(0) && !matcher.group(1).isEmpty())
                 this.indentRe = re;
         }
         return matcher;
@@ -1425,7 +1431,7 @@ public class Lexer {
             incrementLine(1);
             consume(indents + 1);
 
-            if(scanner.getInput().length() > 0  && (scanner.getInput().charAt(0) == ' ' || scanner.getInput().charAt(0) == '\t')){
+            if(!scanner.getInput().isEmpty() && (scanner.getInput().charAt(0) == ' ' || scanner.getInput().charAt(0) == '\t')){
                 throw error("INVALID_INDENTATION","Invalid indentation, you can use tabs or spaces but not both");
             }
 
@@ -1437,9 +1443,9 @@ public class Lexer {
             }
 
             // outdent
-            if (indentStack.size() > 0 && indents < indentStack.get(0)) {
+            if (!indentStack.isEmpty() && indents < indentStack.get(0)) {
                 int outdent_count = 0;
-                while (indentStack.size() > 0 && indentStack.get(0) > indents) {
+                while (!indentStack.isEmpty() && indentStack.get(0) > indents) {
                     if(indentStack.size() > 1 && indentStack.get(1) < indents){
                         throw error("INCONSISTENT_INDENTATION","Inconsistent indentation. Expecting either " + indentStack.get(1) + " or " + indentStack.get(0) + " spaces/tabs.");
                     }
@@ -1449,7 +1455,7 @@ public class Lexer {
                 while(outdent_count--!=0){
                     colno=1;
                     tok = tok(new Outdent());
-                    if(indentStack.size()>0)
+                    if(!indentStack.isEmpty())
                         colno = indentStack.get(0) + 1;
                     else {
                         colno = 1;
@@ -1457,7 +1463,7 @@ public class Lexer {
                     pushToken(tokEnd(tok));
                 }
             // indent
-            } else if (indents > 0 && (indentStack.size() == 0 || indents != indentStack.get(0))) {
+            } else if (indents > 0 && (indentStack.isEmpty() || indents != indentStack.get(0))) {
                 tok = tok(new Indent(String.valueOf(indents), lineno));
                 this.colno = 1 + indents;
                 tok.setIndents(indents);
@@ -1467,7 +1473,7 @@ public class Lexer {
             } else {
                 tok = tok(new Newline());
                 Integer indentStack0 = 0;
-                if(indentStack.size()>0) {
+                if(!indentStack.isEmpty()) {
                     indentStack0 = indentStack.get(0);
                 }
                 if(indentStack0==null)
@@ -1481,9 +1487,8 @@ public class Lexer {
         return false;
     }
 
-    private Token pushToken(Token token){
+    private void pushToken(Token token){
         tokens.add(token); // Append to an Array
-        return token;
     }
 
     private Token tok(Token token){
@@ -1498,24 +1503,24 @@ public class Lexer {
         }
     }
 
-    private boolean pipelessText() {
-        return pipelessText(null);
+    private void pipelessText() {
+        pipelessText(null);
     }
 
     private boolean pipelessText(Integer indents) {
         while (blank());
         Matcher matcher = scanIndentation();
 
-        if (matcher.find(0) && matcher.group(1).length() > 0) {
+        if (matcher.find(0) && !matcher.group(1).isEmpty()) {
 
             if(indents==null && matcher.groupCount()>0)
                 indents = matcher.group(1).length();
             if(indents==null)
                 indents=0;
 
-            if (indents > 0 && (this.indentStack.size() == 0 || indents > this.indentStack.get(0))) {
+            if (indents > 0 && (this.indentStack.isEmpty() || indents > this.indentStack.get(0))) {
                 pushToken(tokEnd(tok(new StartPipelessText())));
-                LinkedList<String> tokenList = new LinkedList();
+                LinkedList<String> tokenList = new LinkedList<>();
                 ArrayList<Boolean> token_indent = new ArrayList<>();
                 boolean isMatch;
 
@@ -1535,7 +1540,7 @@ public class Lexer {
 
                     isMatch = lineIndents >= indents;
                     token_indent.add(isMatch);
-                    isMatch = isMatch || line.trim().length()==0;
+                    isMatch = isMatch || line.trim().isEmpty();
                     if (isMatch) {
                         // consume test along with `\n` prefix if match
                         stringPtr += line.length() + 1;
@@ -1544,7 +1549,7 @@ public class Lexer {
                             substring = line.substring(indents);
                         }
                         tokenList.add(substring);
-                    }else if(this.indentStack.size() > 0 && lineIndents > this.indentStack.get(0)){
+                    }else if(!this.indentStack.isEmpty() && lineIndents > this.indentStack.get(0)){
                         // line is indented less than the first line but is still indented
                         // need to retry lexing the text block
                         this.tokens.pollLast();
@@ -1554,7 +1559,7 @@ public class Lexer {
 
                 this.consume(stringPtr);
 
-                while (scanner.getInput().length() == 0 && tokenList.get(tokenList.size() - 1).equals(""))
+                while (scanner.getInput().isEmpty() && tokenList.get(tokenList.size() - 1).isEmpty())
                     tokenList.remove(tokenList.size() - 1);
 
                 for (int i = 0; i<tokenList.size(); i++) {
@@ -1608,7 +1613,7 @@ public class Lexer {
 
     public LinkedList<Token> getTokens(){
         LinkedList<Token> list = new LinkedList<>();
-        while(!ended || tokens.size()>0){
+        while(!ended || !tokens.isEmpty()){
             Token advance = advance();
             if(advance!=null)
                 list.add(advance);
@@ -1620,8 +1625,8 @@ public class Lexer {
         return scanner.getInput();
     }
 
-    public boolean assertExpression(String value){
-        return assertExpression(value,false);
+    public void assertExpression(String value){
+        assertExpression(value, false);
     }
 
     public boolean assertExpression(String value,boolean noThrow){
