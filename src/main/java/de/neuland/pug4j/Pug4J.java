@@ -25,10 +25,9 @@ public class Pug4J {
     }
 
     public static String render(String filename, Map<String, Object> model, boolean pretty) throws IOException, PugCompilerException {
-        PugConfiguration pugConfiguration = new PugConfiguration();
-        pugConfiguration.setPrettyPrint(pretty);
-        PugTemplate template = getTemplate(filename, pugConfiguration);
-        return templateToString(template, model, pugConfiguration);
+        final StringWriter writer = new StringWriter();
+        render(filename,model,writer,pretty);
+        return writer.toString();
     }
 
     public static void render(String filename, Map<String, Object> model, Writer writer) throws IOException, PugCompilerException {
@@ -37,8 +36,10 @@ public class Pug4J {
 
     public static void render(String filename, Map<String, Object> model, Writer writer, boolean pretty) throws IOException,
             PugCompilerException {
-        PugTemplate template = getTemplate(filename);
-        render(template, model, writer, pretty);
+        final PugConfiguration pugConfiguration = new PugConfiguration();
+        pugConfiguration.setPrettyPrint(pretty);
+        PugTemplate template = getTemplate(filename,pugConfiguration);
+        template.process(new PugModel(model), writer, pugConfiguration);
     }
 
     public static String render(PugTemplate template, Map<String, Object> model) throws PugCompilerException {
@@ -66,9 +67,11 @@ public class Pug4J {
     }
 
     public static String render(URL url, Map<String, Object> model, boolean pretty) throws IOException, PugCompilerException {
+        PugConfiguration pugConfiguration = new PugConfiguration();
+        pugConfiguration.setPrettyPrint(pretty);
         BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-        PugTemplate template = getTemplate(reader, url.getPath());
-        return render(template, model, pretty);
+        PugTemplate template = getTemplate(reader, url.getPath(),pugConfiguration);
+        return templateToString(template, model, pugConfiguration);
     }
 
     public static String render(Reader reader, String filename, Map<String, Object> model) throws IOException, PugCompilerException {
@@ -76,8 +79,10 @@ public class Pug4J {
     }
 
     public static String render(Reader reader, String filename, Map<String, Object> model, boolean pretty) throws IOException, PugCompilerException {
-        PugTemplate template = getTemplate(reader, filename);
-        return render(template, model, pretty);
+        PugConfiguration pugConfiguration = new PugConfiguration();
+        pugConfiguration.setPrettyPrint(pretty);
+        PugTemplate template = getTemplate(reader, filename, pugConfiguration);
+        return templateToString(template, model, pugConfiguration);
     }
 
     public static PugTemplate getTemplate(String filename) throws IOException {
@@ -108,9 +113,8 @@ public class Pug4J {
         return createTemplate(filePath, pugConfiguration);
     }
 
-    private static PugTemplate getTemplate(Reader reader, String name) throws IOException {
+    private static PugTemplate getTemplate(Reader reader, String name, PugConfiguration pugConfiguration) throws IOException {
         final ReaderTemplateLoader readerTemplateLoader = new ReaderTemplateLoader(reader, name);
-        PugConfiguration pugConfiguration = new PugConfiguration();
         pugConfiguration.setTemplateLoader(readerTemplateLoader);
         return createTemplate(name, pugConfiguration);
     }
@@ -118,8 +122,7 @@ public class Pug4J {
     private static PugTemplate createTemplate(String filename, PugConfiguration pugConfiguration) throws IOException {
         Parser parser = new Parser(filename, pugConfiguration.getTemplateLoader(), pugConfiguration.getExpressionHandler());
         Node root = parser.parse();
-        PugTemplate template = new PugTemplate(root);
-        return template;
+        return new PugTemplate(root,pugConfiguration.getMode());
     }
 
     private static String templateToString(PugTemplate template, Map<String, Object> model, PugConfiguration pugConfiguration) throws PugCompilerException {
