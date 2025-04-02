@@ -24,7 +24,7 @@ public class PugTemplate {
     }
 
     public PugTemplate(final Node rootNode, final Mode mode) {
-        setMode(mode);
+        setDoctype(mode.name().toLowerCase());
         setRootNode(rootNode);
     }
 
@@ -37,7 +37,7 @@ public class PugTemplate {
         return rootNode;
     }
 
-    //@TODO: Deprecated: Remove in 3.0.0
+    //@TODO: Deprecated: Remove in 3.0.0, use constructor
     public void setRootNode(Node rootNode) {
         final Node peek = rootNode.getNodes().peek();
         if (peek instanceof DoctypeNode) {
@@ -55,6 +55,7 @@ public class PugTemplate {
         return xml;
     }
 
+    //@TODO: Deprecated: Remove in 3.0.0, use constructor
     public void setDoctype(String name) {
         this.terse = "html".equals(name);
         this.xml = "xml".equals(name);

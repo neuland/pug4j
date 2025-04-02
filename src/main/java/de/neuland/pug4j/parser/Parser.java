@@ -49,7 +49,7 @@ public class Parser {
     }
 
     private PugParserException error(String code, String message, Token token) {
-        return new PugParserException(this.filename, token.getStartLineNumber(), templateLoader, message, code);
+        return new PugParserException(this.filename, token.getStartLineNumber(), token.getStartColumn(), templateLoader, message, code);
     }
 
     private BlockNode emptyBlock() {
@@ -166,7 +166,7 @@ public class Parser {
 
     private BlockNode initBlock(int startLineNumber, LinkedList<Node> nodes) {
         if (nodes == null) {
-            throw new PugParserException(this.filename, this.line(), templateLoader, "`nodes` is not an array");
+            throw new PugParserException(this.filename, this.line(), lexer.getColno(), templateLoader, "`nodes` is not an array");
         }
         BlockNode blockNode = new BlockNode();
         blockNode.setNodes(nodes);
@@ -385,9 +385,9 @@ public class Parser {
             throw new PugParserException(
                     this.filename,
                     lexer.getLineno(),
+                    lexer.getColno(),
                     templateLoader,
-                    "The template [" + templateName + "] could not be opened. Maybe outside template path."
-            );
+                    "The template [" + templateName + "] could not be opened. Maybe outside template path.");
         }
 
 
@@ -475,18 +475,18 @@ public class Parser {
                 throw new PugParserException(
                         this.filename,
                         lexer.getLineno(),
+                        lexer.getColno(),
                         templateLoader,
-                        "The template [" + templateName + "] could not be opened. Maybe outside template path."
-                );
+                        "The template [" + templateName + "] could not be opened. Maybe outside template path.");
             }
             return new Parser(resolvedPath, templateLoader, expressionHandler);
         } catch (IOException e) {
             throw new PugParserException(
                     this.filename,
                     lexer.getLineno(),
+                    lexer.getColno(),
                     templateLoader,
-                    "The template [" + templateName + "] could not be opened. \n" + e.getMessage()
-            );
+                    "The template [" + templateName + "] could not be opened. \n" + e.getMessage());
         }
     }
 
@@ -719,7 +719,7 @@ public class Parser {
                 tagNode.setAttribute("class", tok.getValue(), false);
             } else if (incomingToken instanceof StartAttributes) {
                 if (seenAttrs) {
-                    throw new PugParserException(filename, line(), templateLoader, this.filename + ", line " + this.peek().getStartLineNumber() + ":\nYou should not have jade tags with multiple attributes.");
+                    throw new PugParserException(filename, line(), lexer.getColno(), templateLoader, this.filename + ", line " + this.peek().getStartLineNumber() + ":\nYou should not have jade tags with multiple attributes.");
                 }
                 seenAttrs = true;
                 parseAttributes(tagNode);
