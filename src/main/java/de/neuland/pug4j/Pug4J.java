@@ -2,7 +2,7 @@ package de.neuland.pug4j;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
@@ -96,7 +96,7 @@ public class Pug4J {
 
         String prefix = FilenameUtils.getFullPath(filename);
         String filePath = FilenameUtils.getName(filename);
-        FileTemplateLoader loader = new FileTemplateLoader(prefix, Charset.forName("UTF-8"));
+        FileTemplateLoader loader = new FileTemplateLoader(prefix, StandardCharsets.UTF_8);
         pugConfiguration.setTemplateLoader(loader);
         return createTemplate(filePath, pugConfiguration);
     }
@@ -107,7 +107,7 @@ public class Pug4J {
         }
         String prefix = FilenameUtils.getFullPath(filename);
         String filePath = FilenameUtils.getName(filename);
-        FileTemplateLoader loader = new FileTemplateLoader(prefix, Charset.forName("UTF-8"), extension);
+        FileTemplateLoader loader = new FileTemplateLoader(prefix, StandardCharsets.UTF_8, extension);
         PugConfiguration pugConfiguration = new PugConfiguration();
         pugConfiguration.setTemplateLoader(loader);
         return createTemplate(filePath, pugConfiguration);
