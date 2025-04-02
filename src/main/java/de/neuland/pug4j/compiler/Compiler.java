@@ -23,7 +23,6 @@ public class Compiler {
     private final PugTemplate template;
     private final PugConfiguration configuration;
     private String bufferedExpressionString = "";
-    private TagCompiler tagCompiler;
     private final AttributesCompiler attributesCompiler;
 
     public Compiler(PugTemplate pugTemplate, PugConfiguration configuration) {

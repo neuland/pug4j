@@ -16,10 +16,6 @@ public class IndentWriter {
         this.writer = writer;
     }
 
-    public IndentWriter add(String string) {
-        return append(string);
-    }
-
     public IndentWriter append(String string) {
         write(string);
         return this;
