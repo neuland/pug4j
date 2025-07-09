@@ -7,6 +7,7 @@ import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
 
+import java.io.StringWriter;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,6 +55,53 @@ public class Pug4JTest {
         assertEquals("<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",html);
     }
     @Test
+    public void testDefaultWithWriter() throws Exception{
+        final Path path = Paths.get("src/test/resources/compiler/extends.pug");
+        final StringWriter writer = new StringWriter();
+        Pug4J.render(path.toAbsolutePath().toString(), new HashMap<String, Object>(), writer);
+        final String html = writer.toString();
+        assertEquals("<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",html);
+    }
+    @Test
+    public void testTemplateDefaultWithWriter() throws Exception{
+        final Path path = Paths.get("src/test/resources/compiler/extends.pug");
+        PugTemplate template = Pug4J.getTemplate(path.toAbsolutePath().toString());
+        final StringWriter writer = new StringWriter();
+        Pug4J.render(template, new HashMap<String, Object>(), writer);
+        String html = writer.toString();
+        assertEquals("<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",html);
+    }
+    @Test
+    public void testTemplateDefaultWithWriterPretty() throws Exception{
+        final Path path = Paths.get("src/test/resources/compiler/extends.pug");
+        PugTemplate template = Pug4J.getTemplate(path.toAbsolutePath().toString());
+        final StringWriter writer = new StringWriter();
+        Pug4J.render(template, new HashMap<String, Object>(), writer,true);
+        String html = writer.toString();
+        assertEquals("\n" +
+                "<h1>hello world</h1>\n" +
+                "<p>default foo</p>\n" +
+                "<p>special bar</p>\n" +
+                "<div class=\"prepend\">\n" +
+                "  hello world\n" +
+                "</div>\n" +
+                "<div class=\"append\">\n" +
+                "  hello world\n" +
+                "</div>\n" +
+                "<ul>\n" +
+                "  <li>1</li>\n" +
+                "  <li>2</li>\n" +
+                "  <li>3</li>\n" +
+                "  <li>4</li>\n" +
+                "</ul>\n" +
+                "<ul>\n" +
+                "  <li>a</li>\n" +
+                "  <li>b</li>\n" +
+                "  <li>c</li>\n" +
+                "  <li>d</li>\n" +
+                "</ul>",html);
+    }
+    @Test
     public void testConfigurationDefault() throws Exception{
         final Path path = Paths.get("src/test/resources/compiler/extends.pug");
         PugConfiguration config = new PugConfiguration();
@@ -87,7 +135,7 @@ public class Pug4JTest {
     @Test(expected = PugParserException.class) //Jade is not supported anymore
     public void testRenderJadeWithTemplateOutsideTemplateLoaderPath() throws Exception{
         final Path path = Paths.get("src/test/resources/compiler/subdir/extends.jade");
-        final String html = Pug4J.render(path.toAbsolutePath().toString(), new HashMap<String, Object>());
+        Pug4J.render(path.toAbsolutePath().toString(), new HashMap<String, Object>());
     }
     @Test(expected = PugLexerException.class)
     public void testpug006() throws Exception{
