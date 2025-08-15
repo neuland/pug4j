@@ -279,14 +279,36 @@ The original pug implementation uses JavaScript for expression handling in `if`,
     each author in ["artur", "stefan", "michael","christoph"]
       h2= author
 
-### Jexl Expressionhandler (default)
-Pug4j uses [JEXL](https://commons.apache.org/proper/commons-jexl/) for parsing and executing these expressions.
+### Expression Handlers
+
+Pug4j supports multiple expression handlers for evaluating expressions in templates. You can choose the one that best fits your needs.
+
+#### Configuring Expression Handlers
+
+Pug4j provides a factory for creating expression handlers:
+
+```java
+// Use the default handler (JEXL)
+PugConfiguration config = new PugConfiguration();
+
+// Use the GraalJS handler
+config.setExpressionHandler(ExpressionHandlerFactory.createGraalJsHandler());
+
+// Or specify by type
+config.setExpressionHandler(ExpressionHandlerFactory.createHandler("jexl"));
+config.setExpressionHandler(ExpressionHandlerFactory.createHandler("graaljs"));
+```
+
+#### JEXL Expression Handler (default)
+
+Pug4j uses [JEXL](https://commons.apache.org/proper/commons-jexl/) for parsing and executing expressions by default.
 JEXL syntax and behavior is very similar to ECMAScript/JavaScript and so closer to the original pug.js implementation. JEXL runs also much faster than GraalVM.
-If your template don't relies too much on Javascript-Logic and gets almost everything from the model, this is a good choice.
+If your template doesn't rely too much on Javascript-Logic and gets almost everything from the model, this is a good choice.
 
 We are using a slightly modified JEXL version which to have better control of the exception handling. JEXL now runs in a semi-strict mode, where non existing values and properties silently evaluate to `null`/`false` where as invalid method calls lead to a `PugCompilerException`.
+
 <a name="reserved-words"></a>
-#### Reserved Words
+##### Reserved Words
 
 JEXL comes with the three builtin functions `new`, `size` and `empty`. For properties with this name the `.` notation does not work, but you can access them with `[]`.
 
@@ -299,14 +321,33 @@ book["size"] // works
 You can read more about this in the [JEXL documentation](https://commons.apache.org/proper/commons-jexl/reference/syntax.html#Language_Elements).
 
 <a name="graalvm"></a>
-### GraalVM Expressionhandler (NEW! since 2.0.0 / experimental!)
-If you want to use pure javascript expression handling, you can try out the new GraalJS Expression Handler. It supports native javascript expressions but is slower (really slow!) than the Jexl Expression Handler. You can configure it like this:
+#### GraalVM Expression Handler
+
+If you want to use pure javascript expression handling, you can use the GraalJS Expression Handler. It supports native javascript expressions but is slower than the JEXL Expression Handler.
 
 ```java
 PugConfiguration config = new PugConfiguration();
-
-config.setExpressionHandler(new GraalJsExpressionHandler());
+config.setExpressionHandler(ExpressionHandlerFactory.createGraalJsHandler());
 ```
+
+#### Creating Custom Expression Handlers
+
+You can create your own expression handler by implementing the `ExpressionHandler` interface and registering it with the factory:
+
+```java
+// Create your custom handler
+public class MyExpressionHandler implements ExpressionHandler {
+    // Implement the required methods
+}
+
+// Register it with the factory
+ExpressionHandlerFactory.registerHandler("myhandler", () -> new MyExpressionHandler());
+
+// Use it in your configuration
+config.setExpressionHandler(ExpressionHandlerFactory.createHandler("myhandler"));
+```
+
+For more advanced integration, you can implement the `ExpressionHandlerProvider` interface and register it using Java's ServiceLoader mechanism.
 
 
 <a name="framework-integrations"></a>
