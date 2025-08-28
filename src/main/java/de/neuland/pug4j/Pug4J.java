@@ -102,11 +102,16 @@ public class Pug4J {
     }
 
     public static PugTemplate getTemplate(String filename, String extension) throws IOException {
+        if (filename == null) {
+            throw new IllegalArgumentException("Filename can not be null");
+        }
+
         String prefix = FilenameUtils.getFullPath(filename);
+        String filePath = FilenameUtils.getName(filename);
         FileTemplateLoader loader = new FileTemplateLoader(prefix, StandardCharsets.UTF_8, extension);
         PugConfiguration pugConfiguration = new PugConfiguration();
         pugConfiguration.setTemplateLoader(loader);
-        return getTemplate(filename, pugConfiguration);
+        return createTemplate(filePath, pugConfiguration);
     }
 
     private static PugTemplate getTemplate(Reader reader, String name, PugConfiguration pugConfiguration) throws IOException {
