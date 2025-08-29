@@ -69,7 +69,7 @@ public class Pug4J {
     public static String render(URL url, Map<String, Object> model, boolean pretty) throws IOException, PugCompilerException {
         PugConfiguration pugConfiguration = new PugConfiguration();
         pugConfiguration.setPrettyPrint(pretty);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
         PugTemplate template = getTemplate(reader, url.getPath(),pugConfiguration);
         return templateToString(template, model, pugConfiguration);
     }

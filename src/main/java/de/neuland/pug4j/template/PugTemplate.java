@@ -33,6 +33,11 @@ public class PugTemplate {
         compiler.compile(model, writer);
     }
 
+    // Deprecated in 2.x: kept for backward compatibility. Will be removed in 3.0.0. Use the overload with PugConfiguration instead.
+    public void process(PugModel model, Writer writer) throws PugCompilerException {
+        process(model, writer, new PugConfiguration());
+    }
+
     public Node getRootNode() {
         return rootNode;
     }
