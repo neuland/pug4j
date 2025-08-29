@@ -16,6 +16,7 @@ public abstract class AbstractExpressionHandler implements ExpressionHandler {
             model.putLocalVariableName(var);
         }
     }
+
     @Override
     public void setCache(boolean cache) {
 

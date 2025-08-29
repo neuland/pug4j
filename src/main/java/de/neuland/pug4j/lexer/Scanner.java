@@ -14,10 +14,11 @@ public class Scanner {
     public static final String UTF8_BOM = "\uFEFF";
 
     public Scanner(Reader reader) {
-    	initFromReader(reader);
+        initFromReader(reader);
     }
+
     public Scanner(String input) {
-    	this.input = input;
+        this.input = input;
     }
 
     public void consume(int length) {
@@ -30,7 +31,7 @@ public class Scanner {
             StringBuilder sb = new StringBuilder();
             String s = "";
             int data = in.read();
-            while(data != -1){
+            while (data != -1) {
                 char theChar = (char) data;
                 sb.append(theChar);
                 data = in.read();

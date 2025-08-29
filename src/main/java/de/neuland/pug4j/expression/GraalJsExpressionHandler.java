@@ -30,11 +30,11 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             .targetTypeMapping(Value.class, Object.class, Value::hasMembers, (v) -> v.as(Map.class))
             .build();
     final Engine engine = Engine.newBuilder().option("engine.WarnInterpreterOnly", "false").allowExperimentalOptions(true).build();
-    final ThreadLocal<Map<String,Value>> cacheThreadLocal = ThreadLocal.withInitial(new Supplier<Map<String,Value>>() {
+    final ThreadLocal<Map<String, Value>> cacheThreadLocal = ThreadLocal.withInitial(new Supplier<Map<String, Value>>() {
 
         @Override
-        public Map<String,Value> get() {
-            return new ConcurrentHashMap<String,Value>();
+        public Map<String, Value> get() {
+            return new ConcurrentHashMap<String, Value>();
         }
     });
     final ThreadLocal<Context> contextThreadLocal = ThreadLocal.withInitial(new Supplier<Context>() {
@@ -63,52 +63,51 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     @Override
     public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
         Context context = contextThreadLocal.get();
-        Map<String,Value> cache = cacheThreadLocal.get();
+        Map<String, Value> cache = cacheThreadLocal.get();
         context.enter();
-        try{
+        try {
             saveLocalVariableName(expression, model);
             Value jsContextBindings = context.getBindings("js");
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
-                if(!PugModel.LOCAL_VARS.equals(key)) {
+                if (!PugModel.LOCAL_VARS.equals(key)) {
                     jsContextBindings.putMember(key, objectEntry.getValue());
                 }
             }
 
             Source js;
             Value eval = cache.get(expression);
-            if(eval==null){
-                if(expression.startsWith("{")){
+            if (eval == null) {
+                if (expression.startsWith("{")) {
                     js = Source.create("js", "(" + expression + ")");
-                }else{
+                } else {
                     js = Source.create("js", expression);
                 }
                 eval = context.parse(js);
-                cache.put(expression,eval);
+                cache.put(expression, eval);
             }
             eval = eval.execute();
             Set<String> memberKeys = jsContextBindings.getMemberKeys();
             for (String memberKey : memberKeys) {
-                if (model.knowsKey(memberKey)){
+                if (model.knowsKey(memberKey)) {
                     if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
                         Value member = jsContextBindings.getMember(memberKey);
                         model.put(memberKey, member.as(Object.class));
                         try {
                             jsContextBindings.removeMember(memberKey);
-                        }catch(UnsupportedOperationException e){
+                        } catch (UnsupportedOperationException e) {
                             jsContextBindings.putMember(memberKey, null);
                         }
                     }
                 }
             }
             return eval.as(Object.class);
-        }
-        catch (Exception ex){
-            if(ex.getMessage()!=null && ex.getMessage().startsWith("ReferenceError:")){
+        } catch (Exception ex) {
+            if (ex.getMessage() != null && ex.getMessage().startsWith("ReferenceError:")) {
                 return null;
             }
             throw new ExpressionException(expression, ex);
-        }finally {
+        } finally {
             context.leave();
         }
     }
@@ -123,15 +122,15 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public void assertExpression(String expression) throws ExpressionException {
         Context context = contextThreadLocal.get();
         Source js;
-        if(expression.startsWith("{")){
+        if (expression.startsWith("{")) {
             js = Source.create("js", "(" + expression + ")");
-        }else{
+        } else {
             js = Source.create("js", expression);
         }
         try {
             Value parse = context.eval(js);
-        }catch(PolyglotException e){
-            if(e.getMessage().startsWith("SyntaxError:")){
+        } catch (PolyglotException e) {
+            if (e.getMessage().startsWith("SyntaxError:")) {
                 throw new ExpressionException(e.getMessage());
             }
         }
@@ -146,7 +145,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     public void clearCache() {
 
     }
-    public Context getContext(){
+
+    public Context getContext() {
         return contextThreadLocal.get();
     }
 }

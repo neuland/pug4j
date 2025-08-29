@@ -9,6 +9,7 @@ public class MapBuilder implements org.apache.commons.jexl3.JexlArithmetic.MapBu
     public MapBuilder(int size) {
         this.map = new LinkedHashMap<>(size);
     }
+
     public MapBuilder(int size, boolean extended) {
         this.map = new LinkedHashMap<>(size);
     }

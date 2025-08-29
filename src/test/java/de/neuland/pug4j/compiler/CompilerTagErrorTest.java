@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
@@ -43,12 +44,14 @@ public class CompilerTagErrorTest {
 
     private void run(String testName, boolean pretty, PugModel model) throws IOException, URISyntaxException {
         Parser parser = null;
+        PugConfiguration pugConfiguration = new PugConfiguration();
+        pugConfiguration.setPrettyPrint(pretty);
         FileTemplateLoader loader = new FileTemplateLoader(TestFileHelper.getCompilerErrorsResourcePath(""),
                     "jade");
-        parser = new Parser(testName, loader, new JexlExpressionHandler());
+        parser = new Parser(testName, loader, pugConfiguration.getExpressionHandler());
         Node root = parser.parse();
         PugTemplate pugTemplate = new PugTemplate(root);
-        Compiler compiler = new Compiler(pugTemplate);
+        Compiler compiler = new Compiler(pugTemplate,pugConfiguration);
         String expected = readFile(testName + ".html");
         model.addFilter("markdown", new MarkdownFilter());
         model.addFilter("plain", new PlainFilter());

@@ -3,102 +3,87 @@ package de.neuland.pug4j.parser.node;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import de.neuland.pug4j.PugConfiguration;
 import org.apache.commons.collections4.IteratorUtils;
 
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.template.PugTemplate;
 
 public class EachNode extends Node {
 
-	private String key;
-	private String code;
-	private Node elseNode;
+    private String key;
+    private String code;
+    private Node elseNode;
 
-	@Override
-	public void execute(IndentWriter writer, PugModel model, PugTemplate template) throws PugCompilerException {
-		Object result;
-		try {
-			result = template.getExpressionHandler().evaluateExpression(getCode(), model);
-		} catch (ExpressionException e) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), e);
-		}
-		if (result == null) {
-			throw new PugCompilerException(this, template.getTemplateLoader(), "[" + code + "] has to be iterable but was null");
-		}
-		model.pushScope();
-		run(writer, model, result, template);
-		model.popScope();
-	}
+    @SuppressWarnings("unchecked")
+    public void run(IndentWriter writer, PugModel model, Object result, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+        if (result instanceof Iterable<?>) {
+            runIterator(((Iterable<?>) result).iterator(), model, writer, configuration, nodeConsumer);
+        } else if (result.getClass().isArray()) {
+            Iterator<?> iterator = IteratorUtils.arrayIterator(result);
+            runIterator(iterator, model, writer, configuration, nodeConsumer);
+        } else if (result instanceof Map) {
+            runMap((Map<Object, Object>) result, model, writer, configuration, nodeConsumer);
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	private void run(IndentWriter writer, PugModel model, Object result, PugTemplate template) {
-		if (result instanceof Iterable<?>) {
-			runIterator(((Iterable<?>) result).iterator(), model, writer, template);
-		} else if (result.getClass().isArray()) {
-			Iterator<?> iterator = IteratorUtils.arrayIterator(result);
-			runIterator(iterator, model, writer, template);
-		} else if (result instanceof Map) {
-			runMap((Map<Object, Object>) result, model, writer, template);
-		}
-	}
+    private void runIterator(Iterator<?> iterator, PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+        int index = 0;
 
-	private void runIterator(Iterator<?> iterator, PugModel model, IndentWriter writer, PugTemplate template) {
-		int index = 0;
+        if (!iterator.hasNext()) {
+            executeElseNode(model, writer, configuration, nodeConsumer);
+            return;
+        }
 
-		if (!iterator.hasNext()) {
-			executeElseNode(model, writer, template);
-			return;
-		}
+        while (iterator.hasNext()) {
+            model.putLocal(getValue(), iterator.next());
+            model.putLocal(getKey(), index);
+            nodeConsumer.accept(getBlock());
+            index++;
+        }
+    }
 
-		while (iterator.hasNext()) {
-			model.putLocal(getValue(), iterator.next());
-			model.putLocal(getKey(), index);
-			getBlock().execute(writer, model, template);
-			index++;
-		}
-	}
+    private void runMap(Map<Object, Object> result, PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+        Set<Object> keys = result.keySet();
+        if (keys.isEmpty()) {
+            executeElseNode(model, writer, configuration, nodeConsumer);
+            return;
+        }
+        for (Object key : keys) {
+            model.putLocal(getValue(), result.get(key));
+            model.putLocal(getKey(), key);
+            nodeConsumer.accept(getBlock());
+        }
+    }
 
-	private void runMap(Map<Object, Object> result, PugModel model, IndentWriter writer, PugTemplate template) {
-		Set<Object> keys = result.keySet();
-		if (keys.isEmpty()) {
-			executeElseNode(model, writer, template);
-			return;
-		}
-		for (Object key : keys) {
-			model.putLocal(getValue(), result.get(key));
-			model.putLocal(getKey(), key);
-			getBlock().execute(writer, model, template);
-		}
-	}
+    private void executeElseNode(PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+        if (elseNode != null) {
+            nodeConsumer.accept(elseNode);
+        }
+    }
 
-	private void executeElseNode(PugModel model, IndentWriter writer, PugTemplate template) {
-		if (elseNode != null) {
-			elseNode.execute(writer, model, template);
-		}
-	}
+    public String getCode() {
+        return code;
+    }
 
-	public String getCode() {
-		return code;
-	}
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+    public String getKey() {
+        return key == null ? "$index" : key;
+    }
 
-	public String getKey() {
-		return key == null ? "$index" : key;
-	}
+    public void setKey(String key) {
+        this.key = key;
+    }
 
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public void setElseNode(Node elseNode) {
-		this.elseNode = elseNode;
-	}
+    public void setElseNode(Node elseNode) {
+        this.elseNode = elseNode;
+    }
 
 }

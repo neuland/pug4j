@@ -1,7 +1,7 @@
 package de.neuland.pug4j.lexer;
 
 
-public class CharacterParserException  extends RuntimeException {
+public class CharacterParserException extends RuntimeException {
     private Integer index;
     private String code;
 

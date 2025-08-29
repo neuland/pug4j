@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class CharacterParser {
 
-    private Pattern pattern = Pattern.compile("^\\w+\\b");
+    private final Pattern pattern = Pattern.compile("^\\w+\\b");
 
     //    function parse(src, state, options) {
 //      options = options || {};
@@ -23,7 +23,7 @@ public class CharacterParser {
 //      }
 //      return state;
 //    }
-    public static class SyntaxError extends Exception{
+    public static class SyntaxError extends Exception {
         /**
          * Constructs a new exception with the specified detail message.  The
          * cause is not initialized, and may subsequently be initialized by
@@ -36,41 +36,44 @@ public class CharacterParser {
             super(message);
         }
     }
+
     public State parse(String src) {
         CharacterParserOptions options = new CharacterParserOptions();
         options.setEnd(src.length());
-        return this.parse(src,this.defaultState(),options);
-    }
-    public State parse(String src,State state) {
-        CharacterParserOptions options = new CharacterParserOptions();
-        options.setEnd(src.length());
-        return this.parse(src,state,options);
+        return this.parse(src, this.defaultState(), options);
     }
 
-    public State parse(String src, State state, CharacterParserOptions options){
-      if(options == null) {
-          options = new CharacterParserOptions();
-          options.setEnd(src.length());
-      }
-      if(state == null)
-        state = this.defaultState();
-      int start = options.getStart();
-      int end = options.getEnd();
-      int index = start;
-      while (index < end) {
-        try {
-            this.parseChar(src.charAt(index++), state);
-        }catch(StringIndexOutOfBoundsException ex){
-            CharacterParserException characterParserException = new CharacterParserException("Character must be a string of length 1");
-            //err.name = 'InvalidArgumentError';
-            characterParserException.setCode("CHARACTER_PARSER:CHAR_LENGTH_NOT_ONE");
-            characterParserException.setIndex(index);
-            throw characterParserException;
-        }
-      }
-      return state;
+    public State parse(String src, State state) {
+        CharacterParserOptions options = new CharacterParserOptions();
+        options.setEnd(src.length());
+        return this.parse(src, state, options);
     }
-//    function parseMax(src, options) {
+
+    public State parse(String src, State state, CharacterParserOptions options) {
+        if (options == null) {
+            options = new CharacterParserOptions();
+            options.setEnd(src.length());
+        }
+        if (state == null)
+            state = this.defaultState();
+        int start = options.getStart();
+        int end = options.getEnd();
+        int index = start;
+        while (index < end) {
+            try {
+                this.parseChar(src.charAt(index++), state);
+            } catch (StringIndexOutOfBoundsException ex) {
+                CharacterParserException characterParserException = new CharacterParserException("Character must be a string of length 1");
+                //err.name = 'InvalidArgumentError';
+                characterParserException.setCode("CHARACTER_PARSER:CHAR_LENGTH_NOT_ONE");
+                characterParserException.setIndex(index);
+                throw characterParserException;
+            }
+        }
+        return state;
+    }
+
+    //    function parseMax(src, options) {
 //      options = options || {};
 //      var start = options.start || 0;
 //      var index = start;
@@ -92,22 +95,24 @@ public class CharacterParser {
         CharacterParserOptions options = new CharacterParserOptions();
         return this.parseMax(src, options);
     }
+
     public Match parseMax(String src, CharacterParserOptions options) throws SyntaxError {
-        if(options == null)
+        if (options == null)
             options = new CharacterParserOptions();
-      int start = options.getStart();
-      int index = start;
-      State state = this.defaultState();
-      while (state.getRoundDepth() >= 0 && state.getCurlyDepth() >= 0 && state.getSquareDepth() >= 0) {
-        if (index >= src.length()) {
-          throw new SyntaxError("The end of the string was reached with no closing bracket found.");
+        int start = options.getStart();
+        int index = start;
+        State state = this.defaultState();
+        while (state.getRoundDepth() >= 0 && state.getCurlyDepth() >= 0 && state.getSquareDepth() >= 0) {
+            if (index >= src.length()) {
+                throw new SyntaxError("The end of the string was reached with no closing bracket found.");
+            }
+            this.parseChar(src.charAt(index++), state);
         }
-        this.parseChar(src.charAt(index++), state);
-      }
-      int end = index - 1;
-      return new Match(start,end,src.substring(start,end));
+        int end = index - 1;
+        return new Match(start, end, src.substring(start, end));
     }
-//    var bracketToProp = {
+
+    //    var bracketToProp = {
 //      ')': 'roundDepth',
 //      '}': 'curlyDepth',
 //      ']': 'squareDepth'
@@ -135,18 +140,20 @@ public class CharacterParser {
 //        src: src.substring(start, end)
 //      };
 //    }
-    private int getStateProp(State state, char bracket){
-        if(')' == bracket)
+    private int getStateProp(State state, char bracket) {
+        if (')' == bracket)
             return state.getRoundDepth();
-        if('}' == bracket)
+        if ('}' == bracket)
             return state.getCurlyDepth();
-        if(']' == bracket)
+        if (']' == bracket)
             return state.getSquareDepth();
         return -1;
     }
-    public Match parseMaxBracket(String src,char bracket) throws SyntaxError {
-        return this.parseMaxBracket(src,bracket,new CharacterParserOptions());
+
+    public Match parseMaxBracket(String src, char bracket) throws SyntaxError {
+        return this.parseMaxBracket(src, bracket, new CharacterParserOptions());
     }
+
     public Match parseMaxBracket(String src, char bracket, CharacterParserOptions options) throws SyntaxError {
         if (options == null)
             options = new CharacterParserOptions();
@@ -156,7 +163,7 @@ public class CharacterParser {
         if (bracket != ')' && bracket != '}' && bracket != ']') {
             throw new SyntaxError("Bracket specified (" + String.valueOf(bracket) + ") is not one of \")\", \"]\", or \"}\"");
         }
-        while (getStateProp(state,bracket) >= 0) {
+        while (getStateProp(state, bracket) >= 0) {
             if (index >= src.length()) {
                 throw new SyntaxError("The end of the string was reached with no closing bracket \"" + bracket + "\" found.");
             }
@@ -166,7 +173,7 @@ public class CharacterParser {
         return new Match(start, end, src.substring(start, end));
     }
 
-//    function parseUntil(src, delimiter, options) {
+    //    function parseUntil(src, delimiter, options) {
 //      options = options || {};
 //      var includeLineComment = options.includeLineComment || false;
 //      var start = options.start || 0;
@@ -183,10 +190,11 @@ public class CharacterParser {
 //        src: src.substring(start, end)
 //      };
 //    }
-    public Match parseUntil(String src,String delimiter) {
-        return this.parseUntil(src,delimiter,new CharacterParserOptions());
+    public Match parseUntil(String src, String delimiter) {
+        return this.parseUntil(src, delimiter, new CharacterParserOptions());
     }
-    public Match parseUntil(String src, String delimiter, CharacterParserOptions options){
+
+    public Match parseUntil(String src, String delimiter, CharacterParserOptions options) {
         if (options == null)
             options = new CharacterParserOptions();
 
@@ -195,13 +203,12 @@ public class CharacterParser {
         int index = start;
         State state = this.defaultState();
         while (index < src.length()) {
-            if((options.isIgnoreNesting() || !state.isNesting(options)) && startsWith(src, delimiter, index)){
-                int end = index;
-                return new Match(start, end, src.substring(start, end));
+            if ((options.isIgnoreNesting() || !state.isNesting(options)) && startsWith(src, delimiter, index)) {
+                return new Match(start, index, src.substring(start, index));
             }
             try {
                 this.parseChar(src.charAt(index), state);
-            }catch (StringIndexOutOfBoundsException ex){
+            } catch (StringIndexOutOfBoundsException ex) {
                 CharacterParserException characterParserException = new CharacterParserException("Character must be a string of length 1");
                 //err.name = 'InvalidArgumentError';
                 characterParserException.setCode("CHARACTER_PARSER:CHAR_LENGTH_NOT_ONE");
@@ -216,7 +223,7 @@ public class CharacterParser {
         throw characterParserException;
     }
 
-//    function parseChar(character, state) {
+    //    function parseChar(character, state) {
 //      if (character.length !== 1) throw new Error('Character must be a string of length 1');
 //      state = state || exports.defaultState();
 //      state.src = state.src || '';
@@ -292,100 +299,96 @@ public class CharacterParser {
 //      state.lastChar = character; // store last character for ending block comments
 //      return state;
 //    }
-        public State parseChar(char character,State state){
+    public State parseChar(char character, State state) {
 //            if (character. !== 1) throw new CharacterParserException("Character must be a string of length 1");
-            if(state == null)
-                state = this.defaultState();
+        if (state == null)
+            state = this.defaultState();
 
-            state.setSrc(state.getSrc() + character);
-            boolean wasComment = state.isBlockComment() || state.isLineComment();
-            Character lastChar = !state.getHistory().isEmpty() ? state.getHistory().charAt(0) : null;
+        state.setSrc(state.getSrc() + character);
+        boolean wasComment = state.isBlockComment() || state.isLineComment();
+        Character lastChar = !state.getHistory().isEmpty() ? state.getHistory().charAt(0) : null;
 
-            if (state.isRegexpStart()) {
-                if ('/' == character || '*'==character) {
-                    state.setRegexp(false);
-                }
-                state.setRegexpStart(false);
+        if (state.isRegexpStart()) {
+            if ('/' == character || '*' == character) {
+                state.setRegexp(false);
             }
-            if (state.isLineComment()) {
-                if ('\n' == character) {
-                    state.setLineComment(false);
-                }
-            } else if (state.isBlockComment()) {
-                if ('*' == state.getLastChar() && '/'==character) {
-                    state.setBlockComment(false);
-                }
-            } else if (state.isSingleQuote()) {
-                if ('\''==character && !state.isEscaped()) {
-                    state.setSingleQuote(false);
-                } else if ('\\'==character && !state.isEscaped()) {
-                    state.setEscaped(true);
-                } else {
-                    state.setEscaped(false);
-                }
-            } else if (state.isDoubleQuote()) {
-                if ('"'==character && !state.isEscaped()) {
-                    state.setDoubleQuote(false);
-                } else if ('\\'==character && !state.isEscaped()) {
-                    state.setEscaped(true);
-                } else {
-                    state.setEscaped(false);
-                }
-            } else if (state.isTemplateQuote()) {
-                if ('`'==character && !state.isEscaped()) {
-                    state.setTemplateQuote(false);
-                } else if ('\\'==character && !state.isEscaped()) {
-                    state.setEscaped(true);
-                } else {
-                    state.setEscaped(false);
-                }
-            }else if (state.isRegexp()) {
-                if ('/'==character && !state.isEscaped()) {
-                    state.setRegexp(false);
-                } else if ('\\'==character && !state.isEscaped()) {
-                    state.setRegexp(true);
-                } else {
-                    state.setEscaped(false);
-                }
-            } else if (lastChar!=null && '/' == lastChar && '/'==character) {
-                state.setHistory(state.getHistory().substring(1));
-                state.setLineComment(true);
-            } else if (lastChar!=null && '/'==lastChar && '*'==character) {
-                state.setHistory(state.getHistory().substring(1));
-                state.setBlockComment(true);
-            } else if ('/'==character && !state.getHistory().isEmpty() &&isRegexp(state.getHistory())) {
-                state.setRegexp(true);
-                state.setRegexpStart(true);
-            } else if ('\''==character) {
-                state.setSingleQuote(true);
-            } else if (character == '"') {
-                state.setDoubleQuote(true);
-            } else if (character == '`') {
-                state.setTemplateQuote(true);
-            } else if (character == '(') {
-                state.setRoundDepth(state.getRoundDepth()+1);
-            } else if (character == ')') {
-                state.setRoundDepth(state.getRoundDepth()-1);
-            } else if (character == '{') {
-                state.setCurlyDepth(state.getCurlyDepth()+1);
-            } else if (character == '}') {
-                state.setCurlyDepth(state.getCurlyDepth()-1);
-            } else if (character == '[') {
-                state.setSquareDepth(state.getSquareDepth()+1);
-            } else if (character == ']') {
-                state.setSquareDepth(state.getSquareDepth()-1);
-            }
-            if (!state.isBlockComment() && !state.isLineComment() && !wasComment) state.setHistory(character + state.getHistory());
-            state.setLastChar(character); // store last character for ending block comments
-            return state;
-
+            state.setRegexpStart(false);
         }
-//    exports.defaultState = function () { return new State() };
-    public State defaultState(){
+        if (state.isLineComment()) {
+            if ('\n' == character) {
+                state.setLineComment(false);
+            }
+        } else if (state.isBlockComment()) {
+            if ('*' == state.getLastChar() && '/' == character) {
+                state.setBlockComment(false);
+            }
+        } else if (state.isSingleQuote()) {
+            if ('\'' == character && !state.isEscaped()) {
+                state.setSingleQuote(false);
+            } else {
+                state.setEscaped('\\' == character && !state.isEscaped());
+            }
+        } else if (state.isDoubleQuote()) {
+            if ('"' == character && !state.isEscaped()) {
+                state.setDoubleQuote(false);
+            } else {
+                state.setEscaped('\\' == character && !state.isEscaped());
+            }
+        } else if (state.isTemplateQuote()) {
+            if ('`' == character && !state.isEscaped()) {
+                state.setTemplateQuote(false);
+            } else {
+                state.setEscaped('\\' == character && !state.isEscaped());
+            }
+        } else if (state.isRegexp()) {
+            if ('/' == character && !state.isEscaped()) {
+                state.setRegexp(false);
+            } else if ('\\' == character && !state.isEscaped()) {
+                state.setRegexp(true);
+            } else {
+                state.setEscaped(false);
+            }
+        } else if (lastChar != null && '/' == lastChar && '/' == character) {
+            state.setHistory(state.getHistory().substring(1));
+            state.setLineComment(true);
+        } else if (lastChar != null && '/' == lastChar && '*' == character) {
+            state.setHistory(state.getHistory().substring(1));
+            state.setBlockComment(true);
+        } else if ('/' == character && !state.getHistory().isEmpty() && isRegexp(state.getHistory())) {
+            state.setRegexp(true);
+            state.setRegexpStart(true);
+        } else if ('\'' == character) {
+            state.setSingleQuote(true);
+        } else if (character == '"') {
+            state.setDoubleQuote(true);
+        } else if (character == '`') {
+            state.setTemplateQuote(true);
+        } else if (character == '(') {
+            state.setRoundDepth(state.getRoundDepth() + 1);
+        } else if (character == ')') {
+            state.setRoundDepth(state.getRoundDepth() - 1);
+        } else if (character == '{') {
+            state.setCurlyDepth(state.getCurlyDepth() + 1);
+        } else if (character == '}') {
+            state.setCurlyDepth(state.getCurlyDepth() - 1);
+        } else if (character == '[') {
+            state.setSquareDepth(state.getSquareDepth() + 1);
+        } else if (character == ']') {
+            state.setSquareDepth(state.getSquareDepth() - 1);
+        }
+        if (!state.isBlockComment() && !state.isLineComment() && !wasComment)
+            state.setHistory(character + state.getHistory());
+        state.setLastChar(character); // store last character for ending block comments
+        return state;
+
+    }
+
+    //    exports.defaultState = function () { return new State() };
+    public State defaultState() {
         return new State();
     }
 
-    public static class State{
+    public static class State {
         private boolean lineComment = false;
         private boolean blockComment = false;
 
@@ -404,16 +407,20 @@ public class CharacterParser {
         private String history = "";
         private Character lastChar = null;
         private String src = "";
-        public boolean isString(){
+
+        public boolean isString() {
             return this.singleQuote || this.doubleQuote || this.templateQuote;
         }
-        public boolean isComment(){
+
+        public boolean isComment() {
             return this.lineComment || this.blockComment;
         }
-        public boolean isNesting(CharacterParserOptions options){
+
+        public boolean isNesting(CharacterParserOptions options) {
             return this.isString() || this.isComment() || this.regexp || this.roundDepth > 0 || this.curlyDepth > 0 || this.squareDepth > 0;
         }
-        public boolean isNesting(){
+
+        public boolean isNesting() {
             return this.isString() || this.isComment() || this.regexp || this.roundDepth > 0 || this.curlyDepth > 0 || this.squareDepth > 0;
         }
 
@@ -529,8 +536,9 @@ public class CharacterParser {
             this.src = src;
         }
     }
-    private boolean startsWith(String str, String start, int i){
-        return start.equals(str.substring(i,i+start.length()));
+
+    private boolean startsWith(String str, String start, int i) {
+        return start.equals(str.substring(i, i + start.length()));
     }
 //    exports.isPunctuator = isPunctuator
 //    function isPunctuator(c) {
@@ -568,9 +576,9 @@ public class CharacterParser {
 //      }
 //    }
 
-    public boolean isPunctuator(Character character){
-        Integer code = Character.codePointAt(character.toString(),0);
-          switch (code) {
+    public boolean isPunctuator(Character character) {
+        int code = Character.codePointAt(character.toString(), 0);
+        switch (code) {
             case 46:   // . dot
             case 40:   // ( open bracket
             case 41:   // ) close bracket
@@ -595,23 +603,24 @@ public class CharacterParser {
             case 124:  // |
             case 33:   // !
             case 61:   // =
-              return true;
+                return true;
             default:
-              return false;
-          }
-    }
-    public boolean isKeyword(String id) {
-      return ("if".equals(id)) || ("in".equals(id)) || ("do".equals(id)) || ("var".equals(id)) || ("for".equals(id)) || ("new".equals(id)) ||
-             ("try".equals(id)) || ("let".equals(id)) || ("this".equals(id)) || ("else".equals(id)) || ("case".equals(id)) ||
-             ("void".equals(id)) || ("with".equals(id)) || ("enum".equals(id)) || ("while".equals(id)) || ("break".equals(id)) || ("catch".equals(id)) ||
-             ("throw".equals(id)) || ("const".equals(id)) || ("yield".equals(id)) || ("class".equals(id)) || ("super".equals(id)) ||
-             ("return".equals(id)) || ("typeof".equals(id)) || ("delete".equals(id)) || ("switch".equals(id)) || ("export".equals(id)) ||
-             ("import".equals(id)) || ("default".equals(id)) || ("finally".equals(id)) || ("extends".equals(id)) || ("function".equals(id)) ||
-             ("continue".equals(id)) || ("debugger".equals(id)) || ("package".equals(id)) || ("private".equals(id)) || ("interface".equals(id)) ||
-             ("instanceof".equals(id)) || ("implements".equals(id)) || ("protected".equals(id)) || ("public".equals(id)) || ("static".equals(id));
+                return false;
+        }
     }
 
-//    function isRegexp(history) {
+    public boolean isKeyword(String id) {
+        return ("if".equals(id)) || ("in".equals(id)) || ("do".equals(id)) || ("var".equals(id)) || ("for".equals(id)) || ("new".equals(id)) ||
+                ("try".equals(id)) || ("let".equals(id)) || ("this".equals(id)) || ("else".equals(id)) || ("case".equals(id)) ||
+                ("void".equals(id)) || ("with".equals(id)) || ("enum".equals(id)) || ("while".equals(id)) || ("break".equals(id)) || ("catch".equals(id)) ||
+                ("throw".equals(id)) || ("const".equals(id)) || ("yield".equals(id)) || ("class".equals(id)) || ("super".equals(id)) ||
+                ("return".equals(id)) || ("typeof".equals(id)) || ("delete".equals(id)) || ("switch".equals(id)) || ("export".equals(id)) ||
+                ("import".equals(id)) || ("default".equals(id)) || ("finally".equals(id)) || ("extends".equals(id)) || ("function".equals(id)) ||
+                ("continue".equals(id)) || ("debugger".equals(id)) || ("package".equals(id)) || ("private".equals(id)) || ("interface".equals(id)) ||
+                ("instanceof".equals(id)) || ("implements".equals(id)) || ("protected".equals(id)) || ("public".equals(id)) || ("static".equals(id));
+    }
+
+    //    function isRegexp(history) {
 //      //could be start of regexp or divide sign
 //
 //      history = history.replace(/^\s*/, '');
@@ -627,30 +636,30 @@ public class CharacterParser {
 //
 //      return false;
 //    }
-    public boolean isRegexp(String history){
-      //could be start of regexp or divide sign
+    public boolean isRegexp(String history) {
+        //could be start of regexp or divide sign
 
-      history = history.replace("^\\s*", "");
+        history = history.replace("^\\s*", "");
 
-      //unless its an `if`, `while`, `for` or `with` it's a divide, so we assume it's a divide
-      if (history.charAt(0) == ')') return false;
-      //unless it's a function expression, it's a regexp, so we assume it's a regexp
-      if (history.charAt(0) == '}') return true;
-      //any punctuation means it's a regexp
-      if (isPunctuator(history.charAt(0))) return true;
-      //if the last thing was a keyword then it must be a regexp (e.g. `typeof /foo/`)
+        //unless its an `if`, `while`, `for` or `with` it's a divide, so we assume it's a divide
+        if (history.charAt(0) == ')')
+            return false;
+        //unless it's a function expression, it's a regexp, so we assume it's a regexp
+        if (history.charAt(0) == '}')
+            return true;
+        //any punctuation means it's a regexp
+        if (isPunctuator(history.charAt(0)))
+            return true;
+        //if the last thing was a keyword then it must be a regexp (e.g. `typeof /foo/`)
 
         Matcher matcher = pattern.matcher(history);
-        if (matcher.matches() && isKeyword(new StringBuilder(matcher.group(0)).reverse().toString())){
-            return true;
-        }
-        return false;
+        return matcher.matches() && isKeyword(new StringBuilder(matcher.group(0)).reverse().toString());
     }
 
     public class Match {
-        private int start;
-        private int end;
-        private String src;
+        private final int start;
+        private final int end;
+        private final String src;
 
         public Match(int start, int end, String src) {
             this.start = start;

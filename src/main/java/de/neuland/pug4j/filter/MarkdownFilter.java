@@ -7,12 +7,12 @@ import java.util.Map;
 
 public class MarkdownFilter extends CachingFilter {
 
-    Parser parser = Parser.builder().build();
-    HtmlRenderer renderer = HtmlRenderer.builder().build();
+    private final Parser parser = Parser.builder().build();
+    private final HtmlRenderer renderer = HtmlRenderer.builder().build();
 
-	@Override
-	protected String convert(String source, Map<String, Object> attributes) {
-		return renderer.render(parser.parse(source)).trim();
-	}
+    @Override
+    protected String convert(String source, Map<String, Object> attributes) {
+        return renderer.render(parser.parse(source)).trim();
+    }
 
 }
