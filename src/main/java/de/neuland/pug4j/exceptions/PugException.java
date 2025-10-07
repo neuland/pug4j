@@ -97,9 +97,8 @@ public abstract class PugException extends RuntimeException {
 
     public List<String> getTemplateLines() {
         List<String> result = new ArrayList<String>();
-        try {
-            Reader reader = templateLoader.getReader(filename);
-            BufferedReader in = new BufferedReader(reader);
+        try (Reader reader = templateLoader.getReader(filename);
+             BufferedReader in = new BufferedReader(reader)) {
             String line;
             while ((line = in.readLine()) != null) {
                 result.add(line);

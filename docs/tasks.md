@@ -12,10 +12,10 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [ ] Add structured error messages with context information
 
 ### Resource Management
-- [ ] Fix resource leaks in Pug4J.java:72 - use try-with-resources for BufferedReader
-- [ ] Fix resource leaks in PugException.java:101-110 - ensure readers are closed properly
-- [ ] Convert all manual resource closing to try-with-resources pattern
-- [ ] Audit all file/stream operations for proper resource cleanup
+- [x] Fix resource leaks in Pug4J.java:72 - use try-with-resources for BufferedReader
+- [x] Fix resource leaks in PugException.java:101-110 - ensure readers are closed properly
+- [x] Convert all manual resource closing to try-with-resources pattern
+- [x] Audit all file/stream operations for proper resource cleanup
 - [ ] Add resource leak detection tests
 
 ### Thread Safety

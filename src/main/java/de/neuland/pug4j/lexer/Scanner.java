@@ -26,8 +26,7 @@ public class Scanner {
     }
 
     private void initFromReader(Reader reader) {
-        try {
-            BufferedReader in = new BufferedReader(reader);
+        try (BufferedReader in = new BufferedReader(reader)) {
             StringBuilder sb = new StringBuilder();
             String s = "";
             int data = in.read();
@@ -42,8 +41,6 @@ public class Scanner {
                 input = input.replaceAll("\\r\\n|\\r", "\n");
             }
             originalInput = input;
-            in.close();
-            reader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
