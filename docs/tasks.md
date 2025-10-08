@@ -19,7 +19,7 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [ ] Add resource leak detection tests
 
 ### Thread Safety
-- [ ] Fix CachingFilter.java:11-17 - replace static LinkedHashMap with ConcurrentHashMap or synchronize access
+- [x] Fix CachingFilter.java:11-17 - replace static LinkedHashMap with ConcurrentHashMap or synchronize access
 - [ ] Document thread-safety guarantees of PugConfiguration
 - [ ] Add synchronized access or make immutable for shared collections in PugConfiguration
 - [ ] Review and document thread-safety of all public APIs
