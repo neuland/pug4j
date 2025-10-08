@@ -61,7 +61,7 @@
         <project.scm.id>git@github.com</project.scm.id>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <graalvm.version>21.3.12</graalvm.version>
+        <graalvm.version>21.3.13</graalvm.version>
         <java.version>8</java.version>
     </properties>
 
