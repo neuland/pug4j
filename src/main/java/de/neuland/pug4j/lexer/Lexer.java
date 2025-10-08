@@ -258,8 +258,23 @@ public class Lexer {
     }
 
     private CharacterParser.Match bracketExpression(int skip) {
+        return bracketExpression(skip, true);
+    }
+
+    /**
+     * Parse a bracket expression starting at the given skip position.
+     *
+     * @param skip the number of characters to skip before starting
+     * @param throwOnError if true, throws exceptions on errors; if false, returns null
+     * @return the matched bracket expression, or null if throwOnError is false and parsing fails
+     */
+    private CharacterParser.Match bracketExpression(int skip, boolean throwOnError) {
         char start = scanner.getInput().charAt(skip);
-        assertIf(start == '(' || start == '{' || start == '[', "The start character should be \"(\", \"{\" or \"[\"");
+        if (throwOnError) {
+            assertIf(start == '(' || start == '{' || start == '[', "The start character should be \"(\", \"{\" or \"[\"");
+        } else if (!(start == '(' || start == '{' || start == '[')) {
+            return null;
+        }
         Map<Character, Character> closingBrackets = new HashMap<>();
         closingBrackets.put('(', ')');
         closingBrackets.put('{', '}');
@@ -271,25 +286,29 @@ public class Lexer {
         try {
             range = characterParser.parseUntil(scanner.getInput(), String.valueOf(end), options);
         } catch (CharacterParserException exception) {
-            if (exception.getIndex() != null) {
-                int index = exception.getIndex();
-                int tmp = scanner.getInput().substring(skip).indexOf("\n");
-                int nextNewline = tmp + skip;
-                int ptr = 0;
-                while (index > nextNewline && tmp != -1) {
-                    this.incrementLine(1);
-                    index += nextNewline + 1;
-                    ptr += nextNewline + 1;
-                    tmp = nextNewline = scanner.getInput().substring(ptr).indexOf("\n");
+            if (throwOnError) {
+                if (exception.getIndex() != null) {
+                    int index = exception.getIndex();
+                    int tmp = scanner.getInput().substring(skip).indexOf("\n");
+                    int nextNewline = tmp + skip;
+                    int ptr = 0;
+                    while (index > nextNewline && tmp != -1) {
+                        this.incrementLine(1);
+                        index += nextNewline + 1;
+                        ptr += nextNewline + 1;
+                        tmp = nextNewline = scanner.getInput().substring(ptr).indexOf("\n");
+                    }
+                    this.incrementColumn(index);
                 }
-                this.incrementColumn(index);
+                if ("CHARACTER_PARSER:END_OF_STRING_REACHED".equals(exception.getCode())) {
+                    throw error("NO_END_BRACKET", "The end of the string reached with no closing bracket " + end + " found.");
+                } else if ("CHARACTER_PARSER:MISMATCHED_BRACKET".equals(exception.getCode())) {
+                    throw error("BRACKET_MISMATCH", exception.getMessage());
+                }
+                throw exception;
+            } else {
+                return null;
             }
-            if ("CHARACTER_PARSER:END_OF_STRING_REACHED".equals(exception.getCode())) {
-                throw error("NO_END_BRACKET", "The end of the string reached with no closing bracket " + end + " found.");
-            } else if ("CHARACTER_PARSER:MISMATCHED_BRACKET".equals(exception.getCode())) {
-                throw error("BRACKET_MISMATCH", exception.getMessage());
-            }
-            throw exception;
         }
         return range;
     }
@@ -472,21 +491,20 @@ public class Lexer {
     private boolean interpolation() {
         Matcher matcher = scanner.getMatcherForPattern(PATTERN_INTERPOLATION);
         if (matcher.find(0)) {
-            try {
-                CharacterParser.Match match = this.bracketExpression(1);
-                this.scanner.consume(match.getEnd() + 1);
-                Token tok = tok(new Interpolation(match.getSrc(), lineno));
-                incrementColumn(2); // '#{'
-                assertExpression(match.getSrc());
-                String[] splitted = StringUtils.split(match.getSrc(), '\n');
-                int lines = splitted.length - 1;
-                incrementLine(lines);
-                incrementColumn(splitted[lines].length() + 1); // + 1 → '}'
-                pushToken(tokEnd(tok));
-                return true;
-            } catch (Exception ex) {
-                return false; //not an interpolation expression, just an unmatched open interpolation
+            CharacterParser.Match match = this.bracketExpression(1, false);
+            if (match == null) {
+                return false; // not an interpolation expression, just an unmatched open interpolation
             }
+            this.scanner.consume(match.getEnd() + 1);
+            Token tok = tok(new Interpolation(match.getSrc(), lineno));
+            incrementColumn(2); // '#{'
+            assertExpression(match.getSrc());
+            String[] splitted = StringUtils.split(match.getSrc(), '\n');
+            int lines = splitted.length - 1;
+            incrementLine(lines);
+            incrementColumn(splitted[lines].length() + 1); // + 1 → '}'
+            pushToken(tokEnd(tok));
+            return true;
         }
         return false;
     }

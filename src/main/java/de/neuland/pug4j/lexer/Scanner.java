@@ -1,14 +1,18 @@
 package de.neuland.pug4j.lexer;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Scanner {
 
+    private static final Logger logger = LoggerFactory.getLogger(Scanner.class);
     private String input;
     private String originalInput;
     public static final String UTF8_BOM = "\uFEFF";
@@ -41,8 +45,9 @@ public class Scanner {
                 input = input.replaceAll("\\r\\n|\\r", "\n");
             }
             originalInput = input;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error("Failed to initialize scanner from reader", e);
+            throw new RuntimeException("Failed to read template input", e);
         }
     }
 

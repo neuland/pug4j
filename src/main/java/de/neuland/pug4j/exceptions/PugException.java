@@ -11,9 +11,12 @@ import java.util.Map;
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class PugException extends RuntimeException {
 
+    private static final Logger logger = LoggerFactory.getLogger(PugException.class);
     private static final long serialVersionUID = -8189536050437574552L;
     private String filename;
     private int lineNumber;
@@ -105,6 +108,7 @@ public abstract class PugException extends RuntimeException {
             }
             return result;
         } catch (Exception e) {
+            logger.warn("Failed to read template lines from file: {}", filename, e);
             return result;
         }
     }
@@ -134,7 +138,7 @@ public abstract class PugException extends RuntimeException {
             URL url = PugException.class.getResource("/error.jade");
             return Pug4J.render(url, model, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to render error template for exception: {}", getName(), e);
             return null;
         }
     }
