@@ -84,7 +84,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
             JexlScript e = jexl.createScript(expression);
             MapContext jexlContext = new MapContext(model);
             return e.execute(jexlContext);
-        } catch (Exception e) {
+        } catch (JexlException e) {
             throw new ExpressionException(expression, e);
         }
     }
@@ -117,7 +117,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
     public void assertExpression(String expression) throws ExpressionException {
         try {
             jexl.createExpression(expression);
-        } catch (Exception e) {
+        } catch (JexlException e) {
             throw new ExpressionException(expression, e);
         }
     }

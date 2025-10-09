@@ -1,6 +1,7 @@
 package de.neuland.pug4j.exceptions;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -107,7 +108,7 @@ public abstract class PugException extends RuntimeException {
                 result.add(line);
             }
             return result;
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warn("Failed to read template lines from file: {}", filename, e);
             return result;
         }
@@ -137,7 +138,7 @@ public abstract class PugException extends RuntimeException {
         try {
             URL url = PugException.class.getResource("/error.jade");
             return Pug4J.render(url, model, true);
-        } catch (Exception e) {
+        } catch (IOException | PugException e) {
             logger.error("Failed to render error template for exception: {}", getName(), e);
             return null;
         }

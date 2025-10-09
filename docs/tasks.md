@@ -8,7 +8,7 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [x] Replace all `printStackTrace()` calls with proper SLF4J logging (PugException.java:138, Scanner.java:48, IndentWriter.java:36)
 - [x] Remove use of exceptions for control flow in Lexer.java:487-489
 - [x] Add proper error propagation instead of silent error swallowing
-- [ ] Replace generic `Exception` catches with specific exception types
+- [x] Replace generic `Exception` catches with specific exception types
 - [ ] Add structured error messages with context information
 
 ### Resource Management

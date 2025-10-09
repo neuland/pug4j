@@ -495,7 +495,7 @@ public class CompilerTest {
         try {
             return FileUtils.readFileToString(new File(TestFileHelper
                     .getCompilerResourcePath(fileName)),"UTF-8");
-        } catch (Exception e) {
+        } catch (IOException | URISyntaxException e) {
             // e.printStackTrace();
         }
         return "";

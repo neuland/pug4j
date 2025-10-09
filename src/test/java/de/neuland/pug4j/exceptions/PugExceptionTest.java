@@ -5,6 +5,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
@@ -42,7 +45,7 @@ public class PugExceptionTest {
 	public void testMessage() {
 		try {
 			throw new PugLexerException("invalid indentation; expecting 2 spaces", "index.jade", 10,20, new FileTemplateLoader(TestFileHelper.getLexerResourcePath("")));
-		}catch(Exception e){
+		}catch(PugLexerException | FileNotFoundException | URISyntaxException e){
 			assertEquals("invalid indentation; expecting 2 spaces",e.getMessage());
 			assertEquals("class de.neuland.pug4j.exceptions.PugLexerException: index.jade:10:20\n" +
 					"\n" +
@@ -62,7 +65,7 @@ public class PugExceptionTest {
 	private String readFile(String fileName) {
 		try {
 			return FileUtils.readFileToString(new File(fileName),"UTF-8");
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return "";
