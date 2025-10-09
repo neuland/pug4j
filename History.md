@@ -1,4 +1,21 @@
 # History
+## 2.4.0 / 2025-10-XX
+* Refactored Compiler to use Visitor pattern instead of instanceof chain for improved maintainability
+* Fixed thread safety issue in CachingFilter
+* Improved error handling and logging throughout the codebase
+* Enhanced exception handling with specific exception types instead of generic catches
+* Added column information to exception messages for better debugging
+* Fixed resource management issues
+* Code cleanup and refactoring:
+  * Moved execute methods to Compiler class for better organization
+  * Removed duplicated and unused code
+  * Replaced legacy charset references with StandardCharsets
+  * Removed duplicate PugConfiguration instantiations
+  * Removed deprecated concurrentlinkedhashmap-lru dependency, now exclusively using Caffeine Cache
+  * Added proper enter/leave context handling in GraalJS
+* Added UTF-8 enforcement with backward compatible deprecated method
+* Updated dependencies
+
 ## 2.3.1 / 2025-01-10
 * Fixed issue #32 Reduce number of ignored NumberFormatExceptions in PugJexlArithmetic#add operation (thanks to Selaron)
 * Fixed issue #33 Attributes Block is not rendered completely in HTML
