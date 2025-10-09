@@ -3,6 +3,8 @@ package de.neuland.pug4j.parser.node;
 import java.util.*;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.ArgumentSplitter;
@@ -94,5 +96,10 @@ public class CallNode extends AttrsNode {
 
     public void setCall(boolean call) {
         this.call = call;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }

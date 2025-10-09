@@ -18,7 +18,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 
-public class Compiler {
+public class Compiler implements NodeVisitor {
 
     private final PugTemplate template;
     private final PugConfiguration configuration;
@@ -45,54 +45,16 @@ public class Compiler {
     }
 
     private void visit(final IndentWriter writer, final PugModel model, final Node node) {
-        if (node instanceof TagNode) {
-            visitTag(writer, model, (TagNode) node);
-        } else if (node instanceof BlockNode) {
-            visitBlockNode(writer, model, (BlockNode) node);
-        } else if (node instanceof BlockCommentNode) {
-            visitBlockCommentNode(writer, model, (BlockCommentNode) node);
-        } else if (node instanceof MixinNode) {//Needs to be before CallNode
-            visitMixinNode(writer, model, (MixinNode) node);
-        } else if (node instanceof CallNode) {
-            visitCallNode(writer, model, (CallNode) node);
-        } else if (node instanceof CaseNode) {
-            visitCaseNode(writer, model, (CaseNode) node);
-        } else if (node instanceof CaseNode.When) {
-            visitCaseNodeWhen(writer, model, (CaseNode.When) node);
-        } else if (node instanceof CommentNode) {
-            visitCommentNode(writer, model, (CommentNode) node);
-        } else if (node instanceof ConditionalNode) {
-            visitConditionalNode(writer, model, (ConditionalNode) node);
-        } else if (node instanceof DoctypeNode) {
-            visitDoctypeNode(writer, model, (DoctypeNode) node);
-        } else if (node instanceof EachNode) {
-            visitEachNode(writer, model, (EachNode) node);
-        } else if (node instanceof ExpressionNode) {
-            visitExpressionNode(writer, model, (ExpressionNode) node);
-        } else if (node instanceof FilterNode) {
-            visitFilterNode(writer, model, (FilterNode) node);
-        } else if (node instanceof IfConditionNode) {
-            visitIfConditionNode(writer, model, (IfConditionNode) node);
-        } else if (node instanceof IncludeFilterNode) {
-            visitIncludeFilterNode(writer, model, (IncludeFilterNode) node);
-        } else if (node instanceof LiteralNode) {
-            visitLiteralNode(writer, model, (LiteralNode) node);
-        } else if (node instanceof MixinBlockNode) {
-            visitMixinBlockNode(writer, model, (MixinBlockNode) node);
-        } else if (node instanceof TextNode) {
-            visitTextNode(writer, model, (TextNode) node);
-        } else if (node instanceof WhileNode) {
-            visitWhileNode(writer, model, (WhileNode) node);
-        }
-
+        node.accept(this, writer, model);
     }
 
-    private void visitCaseNodeWhen(final IndentWriter writer, final PugModel model, final CaseNode.When node) {
+    @Override
+    public void visit(CaseNode.When node, IndentWriter writer, PugModel model) {
         visit(writer, model, node.getBlock());
     }
 
-
-    private void visitTag(final IndentWriter writer, final PugModel model, final TagNode node) {
+    @Override
+    public void visit(TagNode node, IndentWriter writer, PugModel model) {
         writer.increment();
 
         if (node.isWhitespaceSensitive()) {
@@ -150,7 +112,8 @@ public class Compiler {
         writer.decrement();
     }
 
-    private void visitBlockNode(final IndentWriter writer, final PugModel model, final BlockNode node) {
+    @Override
+    public void visit(BlockNode node, IndentWriter writer, PugModel model) {
         // Pretty print multi-line text
         if (writer.isPp() && node.getNodes().size() > 1 && !writer.isEscape() && node.isTextNode(node.getNodes().get(0)) && node.isTextNode(node.getNodes().get(1)))
             writer.prettyIndent(1, true);
@@ -181,7 +144,8 @@ public class Compiler {
         }
     }
 
-    private void visitBlockCommentNode(final IndentWriter writer, final PugModel model, final BlockCommentNode node) {
+    @Override
+    public void visit(BlockCommentNode node, IndentWriter writer, PugModel model) {
         if (!node.isBuffered()) {
             return;
         }
@@ -196,7 +160,8 @@ public class Compiler {
         writer.append("-->");
     }
 
-    private void visitCallNode(final IndentWriter writer, final PugModel model, final CallNode node) {
+    @Override
+    public void visit(CallNode node, IndentWriter writer, PugModel model) {
         boolean dynamic = node.getName().charAt(0) == '#';
 
         String newname = (dynamic ? node.getName().substring(2, node.getName().length() - 1) : '"' + node.getName() + '"');
@@ -243,7 +208,8 @@ public class Compiler {
         }
     }
 
-    private void visitCaseNode(final IndentWriter writer, final PugModel model, final CaseNode node) {
+    @Override
+    public void visit(CaseNode node, IndentWriter writer, PugModel model) {
         try {
             boolean skip = false;
             for (Node when : node.getBlock().getNodes()) {
@@ -261,7 +227,8 @@ public class Compiler {
         }
     }
 
-    private void visitCommentNode(final IndentWriter writer, final PugModel model, final CommentNode node) {
+    @Override
+    public void visit(CommentNode node, IndentWriter writer, PugModel model) {
         if (!node.isBuffered()) {
             return;
         }
@@ -273,7 +240,8 @@ public class Compiler {
         writer.append("-->");
     }
 
-    private void visitConditionalNode(final IndentWriter writer, final PugModel model, final ConditionalNode node) {
+    @Override
+    public void visit(ConditionalNode node, IndentWriter writer, PugModel model) {
         for (IfConditionNode conditionNode : node.getConditions()) {
             try {
                 if (conditionNode.isDefault() || node.checkCondition(model, conditionNode.getValue(), configuration.getExpressionHandler()) ^ conditionNode.isInverse()) {
@@ -286,11 +254,13 @@ public class Compiler {
         }
     }
 
-    private void visitDoctypeNode(final IndentWriter writer, final PugModel model, final DoctypeNode node) {
+    @Override
+    public void visit(DoctypeNode node, IndentWriter writer, PugModel model) {
         writer.append(node.getDoctypeLine());
     }
 
-    private void visitEachNode(final IndentWriter writer, final PugModel model, final EachNode node) {
+    @Override
+    public void visit(EachNode node, IndentWriter writer, PugModel model) {
         Object result;
         try {
             result = configuration.getExpressionHandler().evaluateExpression(node.getCode(), model);
@@ -306,7 +276,8 @@ public class Compiler {
         model.popScope();
     }
 
-    private void visitExpressionNode(final IndentWriter writer, final PugModel model, final ExpressionNode node) {
+    @Override
+    public void visit(ExpressionNode node, IndentWriter writer, PugModel model) {
 
         String value = node.getValue();
         if (node.hasBlock() || value.trim().startsWith("}")) {
@@ -373,7 +344,8 @@ public class Compiler {
 
     }
 
-    private void visitFilterNode(final IndentWriter writer, final PugModel model, final FilterNode node) {
+    @Override
+    public void visit(FilterNode node, IndentWriter writer, PugModel model) {
         ArrayList<String> values = new ArrayList<String>();
         LinkedList<Node> nodes = node.getBlock().getNodes();
         LinkedList<FilterNode> nestedFilterNodes = new LinkedList<>();
@@ -418,19 +390,23 @@ public class Compiler {
         writer.append(result);
     }
 
-    private void visitIfConditionNode(final IndentWriter writer, final PugModel model, final IfConditionNode node) {
+    @Override
+    public void visit(IfConditionNode node, IndentWriter writer, PugModel model) {
         visit(writer, model, node.getBlock());
     }
 
-    private void visitIncludeFilterNode(final IndentWriter writer, final PugModel model, final IncludeFilterNode node) {
+    @Override
+    public void visit(IncludeFilterNode node, IndentWriter writer, PugModel model) {
         //nothing happens
     }
 
-    private void visitLiteralNode(final IndentWriter writer, final PugModel model, final LiteralNode node) {
+    @Override
+    public void visit(LiteralNode node, IndentWriter writer, PugModel model) {
         writer.append(node.getValue());
     }
 
-    private void visitMixinBlockNode(final IndentWriter writer, final PugModel model, final MixinBlockNode node) {
+    @Override
+    public void visit(MixinBlockNode node, IndentWriter writer, PugModel model) {
         LinkedList<Node> nodes = node.getNodes();
         if (nodes.size() == 1) {
             Node node1 = nodes.get(0);
@@ -439,19 +415,22 @@ public class Compiler {
         }
     }
 
-    private void visitMixinNode(final IndentWriter writer, final PugModel model, final MixinNode node) {
+    @Override
+    public void visit(MixinNode node, IndentWriter writer, PugModel model) {
         if (node.isCall()) {
-            visitCallNode(writer, model, node);
+            visit((CallNode) node, writer, model);
         } else {
             model.setMixin(node.getName(), node);
         }
     }
 
-    private void visitTextNode(final IndentWriter writer, final PugModel model, final TextNode node) {
+    @Override
+    public void visit(TextNode node, IndentWriter writer, PugModel model) {
         writer.append(node.getValue());
     }
 
-    private void visitWhileNode(final IndentWriter writer, final PugModel model, final WhileNode node) {
+    @Override
+    public void visit(WhileNode node, IndentWriter writer, PugModel model) {
         try {
             model.pushScope();
             while (configuration.getExpressionHandler().evaluateBooleanExpression(node.getValue(), model)) {

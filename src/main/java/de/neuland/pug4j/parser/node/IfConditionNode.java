@@ -1,5 +1,9 @@
 package de.neuland.pug4j.parser.node;
 
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
+import de.neuland.pug4j.model.PugModel;
+
 public class IfConditionNode extends Node {
 
     private boolean defaultNode = false;
@@ -24,5 +28,10 @@ public class IfConditionNode extends Node {
 
     public void setInverse(boolean isInverse) {
         this.isInverse = isInverse;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }

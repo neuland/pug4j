@@ -1,6 +1,9 @@
 package de.neuland.pug4j.parser.node;
 
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.lexer.token.Doctypes;
+import de.neuland.pug4j.model.PugModel;
 import org.apache.commons.lang3.StringUtils;
 
 public class DoctypeNode extends Node {
@@ -15,5 +18,10 @@ public class DoctypeNode extends Node {
             doctypeLine = "<!DOCTYPE " + name + ">";
         }
         return doctypeLine;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }

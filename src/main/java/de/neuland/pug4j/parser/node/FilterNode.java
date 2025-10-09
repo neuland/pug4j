@@ -3,6 +3,8 @@ package de.neuland.pug4j.parser.node;
 import java.util.*;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
@@ -32,5 +34,10 @@ public class FilterNode extends AttrsNode {
 
     public LinkedList<IncludeFilterNode> getFilters() {
         return filters;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }
