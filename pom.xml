@@ -7,11 +7,6 @@
     <packaging>jar</packaging>
     <name>pug4j</name>
     <description>Java implementation of the pug templating language</description>
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
     <url>https://github.com/neuland/pug4j</url>
 
     <issueManagement>
@@ -55,6 +50,27 @@
             <id>chbloemer</id>
         </developer>
     </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>central</id>
+            <url>https://central.sonatype.com</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central-portal-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -114,7 +130,7 @@
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
                         <useReleaseProfile>false</useReleaseProfile>
-                        <arguments>${arguments} -Psonatype-oss-release</arguments>
+                        <arguments>${arguments} -Prelease-sign-artifacts</arguments>
                     </configuration>
                 </plugin>
             </plugins>
@@ -226,6 +242,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.21.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.9.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
             </plugin>
         </plugins>
     </build>
