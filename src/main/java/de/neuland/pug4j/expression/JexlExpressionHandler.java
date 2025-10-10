@@ -18,10 +18,10 @@ import java.util.regex.Pattern;
 public class JexlExpressionHandler extends AbstractExpressionHandler {
 
     private static final int MAX_ENTRIES = 5000;
-    public static Pattern plusplus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])\\+\\+\\s*;{0,1}\\s*$");
-    public static Pattern isplusplus = Pattern.compile("\\+\\+\\s*;{0,1}\\s*$");
-    public static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
-    public static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
+    private static Pattern plusplus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])\\+\\+\\s*;{0,1}\\s*$");
+    private static Pattern isplusplus = Pattern.compile("\\+\\+\\s*;{0,1}\\s*$");
+    private static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
+    private static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
     private JexlEngine jexl;
     private final JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
     private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlExpressionHandler.class),
