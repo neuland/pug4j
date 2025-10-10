@@ -1,5 +1,5 @@
 # History
-## 2.4.0 / 2025-10-XX
+## 2.4.0 / 2025-10-10
 * Refactored Compiler to use Visitor pattern instead of instanceof chain for improved maintainability
 * Fixed thread safety issue in CachingFilter
 * Improved error handling and logging throughout the codebase
