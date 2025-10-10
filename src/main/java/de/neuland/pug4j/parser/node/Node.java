@@ -8,7 +8,7 @@ import java.util.LinkedList;
 
 public abstract class Node implements Cloneable {
 
-    protected LinkedList<Node> nodes = new LinkedList<Node>();
+    protected LinkedList<Node> nodes = new LinkedList<>();
     protected int lineNumber;
     protected int column;
     protected String name;
@@ -96,7 +96,7 @@ public abstract class Node implements Cloneable {
             clone.block = this.block.clone();
         }
 
-        clone.nodes = new LinkedList<Node>();
+        clone.nodes = new LinkedList<>();
         for (Node node : this.nodes) {
             clone.nodes.add(node.clone());
         }

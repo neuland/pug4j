@@ -35,19 +35,18 @@ public class PugConfiguration {
     private boolean caching = true;
     private Mode mode = Pug4J.Mode.HTML;
 
-    private Map<String, Filter> filters = new HashMap<String, Filter>();
-    private Map<String, Object> sharedVariables = new HashMap<String, Object>();
+    private Map<String, Filter> filters = new HashMap<>();
+    private Map<String, Object> sharedVariables = new HashMap<>();
     private TemplateLoader templateLoader = new FileTemplateLoader();
     private ExpressionHandler expressionHandler = new JexlExpressionHandler();
-    protected static final long MAX_ENTRIES = 1000l;
+    protected static final long MAX_ENTRIES = 1000L;
+    private Cache<String, PugTemplate> cache = Caffeine.newBuilder().maximumSize(MAX_ENTRIES).build();
 
     public PugConfiguration() {
         setFilter(FILTER_CDATA, new CDATAFilter());
         setFilter(FILTER_SCRIPT, new JsFilter());
         setFilter(FILTER_STYLE, new CssFilter());
     }
-
-    private Cache<String, PugTemplate> cache = Caffeine.newBuilder().maximumSize(MAX_ENTRIES).build();
 
     public PugTemplate getTemplate(String name) throws IOException, PugException {
 

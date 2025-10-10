@@ -12,7 +12,7 @@ import de.neuland.pug4j.model.PugModel;
 
 public class ConditionalNode extends Node {
 
-    private List<IfConditionNode> conditions = new LinkedList<IfConditionNode>();
+    private List<IfConditionNode> conditions = new LinkedList<>();
 
     public boolean checkCondition(PugModel model, String condition, ExpressionHandler expressionHandler) throws ExpressionException {
         Boolean value = expressionHandler.evaluateBooleanExpression(condition, model);
@@ -31,7 +31,7 @@ public class ConditionalNode extends Node {
     public ConditionalNode clone() throws CloneNotSupportedException {
         ConditionalNode clone = (ConditionalNode) super.clone();
 
-        clone.conditions = new LinkedList<IfConditionNode>();
+        clone.conditions = new LinkedList<>();
         for (IfConditionNode condition : conditions) {
             clone.conditions.add((IfConditionNode) condition.clone());
         }

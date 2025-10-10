@@ -100,7 +100,7 @@ public abstract class PugException extends RuntimeException {
     }
 
     public List<String> getTemplateLines() {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         try (Reader reader = templateLoader.getReader(filename);
              BufferedReader in = new BufferedReader(reader)) {
             String line;
@@ -124,7 +124,7 @@ public abstract class PugException extends RuntimeException {
     }
 
     public String toHtmlString(String generatedHtml) {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("filename", filename);
         model.put("linenumber", lineNumber);
         model.put("column", colNumber);

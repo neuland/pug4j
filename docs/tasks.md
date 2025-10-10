@@ -98,8 +98,8 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 ## Medium-Low Priority (Code Consistency)
 
 ### Coding Standards
-- [ ] Fix inconsistent long literal suffix (PugConfiguration.java:42 - use 1000L not 1000l)
-- [ ] Standardize field initialization patterns across classes
+- [x] Fix inconsistent long literal suffix (PugConfiguration.java:42 - use 1000L not 1000l)
+- [x] Standardize field initialization patterns across classes
 - [ ] Make Pattern fields in JexlExpressionHandler.java:21-24 private
 - [ ] Apply consistent naming conventions throughout
 - [ ] Ensure consistent exception handling patterns

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Doctypes {
-    private static Map<String, String> doctypes = new HashMap<String, String>();
+    private static Map<String, String> doctypes = new HashMap<>();
 
     static {
         doctypes.put("default", "<!DOCTYPE html>"); // Fallback

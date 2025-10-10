@@ -16,7 +16,7 @@ public class ArgumentSplitter {
     private static final char ARGUMENT_DELIMITER = ',';
 
     private final String arguments;
-    private List<String> argList = new ArrayList<String>();
+    private List<String> argList = new ArrayList<>();
 
     /**
      * Split arguments passed as single String into list

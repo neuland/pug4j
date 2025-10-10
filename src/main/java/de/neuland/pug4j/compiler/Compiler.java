@@ -332,7 +332,7 @@ public class Compiler implements NodeVisitor {
                 List resultArray = (List) result;
                 expressionValue = StringUtils.joinWith(",", resultArray.toArray());
             } else if (result instanceof Map) {
-                expressionValue = new LinkedHashMap<String, Object>((Map) result).toString();
+                expressionValue = new LinkedHashMap<>((Map) result).toString();
             } else {
                 expressionValue = result.toString();
             }
@@ -346,7 +346,7 @@ public class Compiler implements NodeVisitor {
 
     @Override
     public void visit(FilterNode node, IndentWriter writer, PugModel model) {
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<>();
         LinkedList<Node> nodes = node.getBlock().getNodes();
         LinkedList<FilterNode> nestedFilterNodes = new LinkedList<>();
 

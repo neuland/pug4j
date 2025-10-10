@@ -7,8 +7,9 @@ import de.neuland.pug4j.model.PugModel;
 import java.util.HashMap;
 
 public class MixinNode extends CallNode {
+
     private String rest;
-    private HashMap<String, String> defaultValues = new HashMap<String, String>();
+    private HashMap<String, String> defaultValues = new HashMap<>();
 
     public void setRest(String rest) {
         this.rest = rest;

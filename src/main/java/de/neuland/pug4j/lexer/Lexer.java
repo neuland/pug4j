@@ -85,7 +85,7 @@ public class Lexer {
     private int colno;
     private final LinkedList<Token> tokens;
     private final LinkedList<Integer> indentStack;
-    private Pattern indentRe = null;
+    private Pattern indentRe;
     private boolean pipeless = false;
     private boolean interpolationAllowed = true;
     private final String filename;

@@ -4,9 +4,9 @@ import java.util.*;
 
 public abstract class AttrsNode extends Node {
 
-    protected LinkedList<Attr> attributes = new LinkedList<Attr>();
-    protected LinkedList<String> attributeBlocks = new LinkedList<String>();
-    protected List<String> attributeNames = new LinkedList<String>();
+    protected LinkedList<Attr> attributes = new LinkedList<>();
+    protected LinkedList<String> attributeBlocks = new LinkedList<>();
+    protected List<String> attributeNames = new LinkedList<>();
 
     protected boolean selfClosing = false;
     private boolean textOnly;
@@ -27,11 +27,11 @@ public abstract class AttrsNode extends Node {
 
         // shallow copy
         if (this.attributes != null) {
-            clone.attributes = new LinkedList<Attr>(this.attributes);
+            clone.attributes = new LinkedList<>(this.attributes);
 
         }
         if (this.attributes != null) {
-            clone.attributeBlocks = new LinkedList<String>(this.attributeBlocks);
+            clone.attributeBlocks = new LinkedList<>(this.attributeBlocks);
         }
         return clone;
     }

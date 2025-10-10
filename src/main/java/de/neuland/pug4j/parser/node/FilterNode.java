@@ -14,7 +14,7 @@ public class FilterNode extends AttrsNode {
     private LinkedList<IncludeFilterNode> filters = new LinkedList<>();
 
     public Map<String, Object> convertToFilterAttributes(PugConfiguration configuration, PugModel model, LinkedList<Attr> attributes) {
-        Map<String, Object> evaluatedAttributes = new HashMap<String, Object>();
+        Map<String, Object> evaluatedAttributes = new HashMap<>();
         for (Attr attribute : attributes) {
             if (attribute.getValue() instanceof ExpressionString) {
                 try {

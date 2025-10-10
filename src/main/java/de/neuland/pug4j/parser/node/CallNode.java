@@ -11,11 +11,11 @@ import de.neuland.pug4j.parser.ArgumentSplitter;
 
 public class CallNode extends AttrsNode {
 
-    protected List<String> arguments = new ArrayList<String>();
-    boolean call = false;
+    protected List<String> arguments = new ArrayList<>();
+    private boolean call = false;
 
     public List<MixinBlockNode> getInjectionPoints(Node block) {
-        List<MixinBlockNode> result = new ArrayList<MixinBlockNode>();
+        List<MixinBlockNode> result = new ArrayList<>();
         for (Node node : block.getNodes()) {
             if (node instanceof MixinBlockNode && !node.hasNodes()) {
                 result.add((MixinBlockNode) node);
@@ -57,7 +57,7 @@ public class CallNode extends AttrsNode {
             }
         }
         if (mixin.getRest() != null) {
-            ArrayList<Object> restArguments = new ArrayList<Object>();
+            ArrayList<Object> restArguments = new ArrayList<>();
             for (int i = names.size(); i < arguments.size(); i++) {
                 Object value = null;
                 if (i < values.size()) {
