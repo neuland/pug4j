@@ -11,8 +11,20 @@ public class PathHelper {
     public static final Logger LOGGER = LoggerFactory.getLogger(PathHelper.class);
 
     public String resolvePath(String parentTemplateName, String templateName, String basePath) {
+        // Handle nulls defensively without changing existing behaviors
+        if (templateName == null || templateName.trim().isEmpty()) {
+            return null;
+        }
+        if (parentTemplateName == null) {
+            parentTemplateName = "";
+        }
+        if (basePath == null) {
+            basePath = "";
+        }
+
         parentTemplateName = FilenameUtils.separatorsToUnix(parentTemplateName);
         templateName = FilenameUtils.separatorsToUnix(templateName);
+        basePath = FilenameUtils.separatorsToUnix(basePath);
 
         if (FilenameUtils.getPrefixLength(basePath) != 0)
             throw new PugTemplateLoaderException("basePath " + basePath + " must be relative");
