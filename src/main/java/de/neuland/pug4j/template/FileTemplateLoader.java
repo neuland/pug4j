@@ -16,7 +16,7 @@ public class FileTemplateLoader implements TemplateLoader {
 
     private final String separator = FileSystems.getDefault().getSeparator();
     private Charset encoding = StandardCharsets.UTF_8;
-    private String templateLoaderPath = "";
+    private Path templateLoaderPath = null;
     private String extension = "pug";
     private String basePath = "";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -34,15 +34,7 @@ public class FileTemplateLoader implements TemplateLoader {
     }
 
     public FileTemplateLoader(String templateLoaderPath) {
-        templateLoaderPath = FilenameUtils.separatorsToSystem(templateLoaderPath);
-        if (!Files.isDirectory(Paths.get(templateLoaderPath))) {
-            throw new PugTemplateLoaderException("Directory '" + templateLoaderPath + "' does not exist.");
-        }
-
-        if (!templateLoaderPath.endsWith(separator)) {
-            templateLoaderPath += separator;
-        }
-        this.templateLoaderPath = templateLoaderPath;
+        this(Paths.get(FilenameUtils.separatorsToSystem(templateLoaderPath)));
     }
 
     public FileTemplateLoader(String templateLoaderPath, Charset encoding) {
@@ -56,6 +48,28 @@ public class FileTemplateLoader implements TemplateLoader {
     }
 
     public FileTemplateLoader(String templateLoaderPath, Charset encoding, String extension) {
+        this(templateLoaderPath, extension);
+        this.encoding = encoding;
+    }
+
+    public FileTemplateLoader(Path templateLoaderPath) {
+        if (templateLoaderPath == null || !Files.isDirectory(templateLoaderPath)) {
+            throw new PugTemplateLoaderException("Directory '" + templateLoaderPath + "' does not exist.");
+        }
+        this.templateLoaderPath = templateLoaderPath.toAbsolutePath();
+    }
+
+    public FileTemplateLoader(Path templateLoaderPath, Charset encoding) {
+        this(templateLoaderPath);
+        this.encoding = encoding;
+    }
+
+    public FileTemplateLoader(Path templateLoaderPath, String extension) {
+        this(templateLoaderPath);
+        this.extension = extension;
+    }
+
+    public FileTemplateLoader(Path templateLoaderPath, Charset encoding, String extension) {
         this(templateLoaderPath, extension);
         this.encoding = encoding;
     }
@@ -86,17 +100,18 @@ public class FileTemplateLoader implements TemplateLoader {
     private Path getFilepath(String name) {
         name = FilenameUtils.separatorsToSystem(name);
         name = ensurePugExtension(name);
-        String filePath;
-        if (!StringUtils.isBlank(templateLoaderPath)) {
+        if (templateLoaderPath != null) {
             if (name.startsWith(separator)) {
-                filePath = FilenameUtils.normalize(templateLoaderPath + basePath + name.substring(1));
+                // absolute-rooted within loader: apply basePath and strip leading separator
+                String rel = name.substring(1);
+                Path p = templateLoaderPath.resolve(basePath).resolve(rel).normalize();
+                return p;
             } else {
-                filePath = FilenameUtils.normalize(templateLoaderPath + name);
+                return templateLoaderPath.resolve(name).normalize();
             }
         } else {
-            filePath = name;
+            return Paths.get(name);
         }
-        return Paths.get(filePath);
     }
 
     public String getExtension() {
