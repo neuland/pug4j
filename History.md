@@ -13,6 +13,7 @@
   * Removed duplicate PugConfiguration instantiations
   * Removed deprecated concurrentlinkedhashmap-lru dependency, now exclusively using Caffeine Cache
   * Added proper enter/leave context handling in GraalJS
+* Performance optimization: Optimized Pattern compilation strategy in Lexer by extracting 10 inline Pattern.compile() calls to static final fields
 * Added UTF-8 enforcement with backward compatible deprecated method
 * Updated dependencies
 

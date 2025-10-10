@@ -70,6 +70,16 @@ public class Lexer {
     public static final Pattern PATTERN_EXTRACT_INVALID_CLASSNAME = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
     public static final Pattern PATTERN_EXTRACT_INVALID_ID = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
     public static final Pattern PATTERN_DOCTYPE = Pattern.compile("^doctype *([^\\n]*)");
+    private static final Pattern PATTERN_WHITESPACE_GROUP = Pattern.compile("^([ ]+)([^ ]*)");
+    private static final Pattern PATTERN_NEWLINE_OR_END = Pattern.compile("^[ \\t]*(\\n|$)");
+    private static final Pattern PATTERN_OPTIONAL_WHITESPACE = Pattern.compile("^[ \\t]*");
+    private static final Pattern PATTERN_HTML_TAG = Pattern.compile("^(<[^\\n]*)");
+    private static final Pattern PATTERN_NON_WHITESPACE = Pattern.compile("^[^ \\n]+");
+    private static final Pattern PATTERN_WHEN_COLON = Pattern.compile(":([^:\\n]+)");
+    private static final Pattern PATTERN_WHEN_KEYWORD = Pattern.compile("^when\\b");
+    private static final Pattern PATTERN_DEFAULT_KEYWORD = Pattern.compile("^default\\b");
+    private static final Pattern PATTERN_CALL_PARENTHESIS = Pattern.compile("^ *\\(");
+    private static final Pattern PATTERN_ATTRIBUTE_ASSIGNMENT = Pattern.compile("^\\s*[-\\w]+ *=");
     private final Scanner scanner;
     private int lineno;
     private int colno;
@@ -382,8 +392,7 @@ public class Lexer {
         Matcher matcher = scanner.getMatcherForPattern(pattern);
         if (matcher.find(0)) {
             int whitespaceLength = 0;
-            Pattern pattern1 = Pattern.compile("^([ ]+)([^ ]*)");
-            Matcher whitespace = pattern1.matcher(matcher.group(0));
+            Matcher whitespace = PATTERN_WHITESPACE_GROUP.matcher(matcher.group(0));
             if (whitespace.find(0)) {
                 whitespaceLength = whitespace.group(1).length();
                 incrementColumn(whitespaceLength);
@@ -400,12 +409,10 @@ public class Lexer {
                 return token;
             }
 
-            Pattern pattern2 = Pattern.compile("^[ \\t]*(\\n|$)");
-            Matcher matcher1 = pattern2.matcher(newInput);
+            Matcher matcher1 = PATTERN_NEWLINE_OR_END.matcher(newInput);
             if (matcher1.find(0)) {
-                Pattern pattern3 = Pattern.compile("^[ \\t]*");
                 int length = matcher.group(0).length();
-                Matcher matcher2 = pattern3.matcher(newInput);
+                Matcher matcher2 = PATTERN_OPTIONAL_WHITESPACE.matcher(newInput);
                 if (matcher2.find(0)) {
                     length = length + matcher2.end();
                 }
@@ -839,7 +846,7 @@ public class Lexer {
     }
 
     private boolean textHtml() {
-        Token token = scan(Pattern.compile("^(<[^\\n]*)"), new TextHtml());
+        Token token = scan(PATTERN_HTML_TAG, new TextHtml());
         if (token != null) {
             addText(new TextHtml(), token.getValue());
             return true;
@@ -984,7 +991,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             while (filter(true)) ;
             if (!path()) {
-                if (Pattern.compile("^[^ \\n]+").matcher(scanner.getInput()).find(0)) {
+                if (PATTERN_NON_WHITESPACE.matcher(scanner.getInput()).find(0)) {
                     fail();
                 } else {
                     throw error("NO_INCLUDE_PATH", "missing path for include");
@@ -1031,7 +1038,7 @@ public class Lexer {
             String val = token.getValue();
             CharacterParser.State parse = characterParser.parse(val);
             while (parse.isNesting() || parse.isString()) {
-                Matcher matcher = scanner.getMatcherForPattern(Pattern.compile(":([^:\\n]+)"));
+                Matcher matcher = scanner.getMatcherForPattern(PATTERN_WHEN_COLON);
                 if (!matcher.find(0))
                     break;
 
@@ -1049,7 +1056,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if (this.scan(Pattern.compile("^when\\b"))) {
+        if (this.scan(PATTERN_WHEN_KEYWORD)) {
             throw error("NO_WHEN_EXPRESSION", "missing expression for when");
         }
         return false;
@@ -1061,7 +1068,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if (this.scan(Pattern.compile("^default\\b"))) {
+        if (this.scan(PATTERN_DEFAULT_KEYWORD)) {
             throw error("DEFAULT_WITH_EXPRESSION", "default should not have an expression");
         }
         return false;
@@ -1102,10 +1109,10 @@ public class Lexer {
 
             incrementColumn(increment);
 
-            matcher = scanner.getMatcherForPattern(Pattern.compile("^ *\\("));
+            matcher = scanner.getMatcherForPattern(PATTERN_CALL_PARENTHESIS);
             if (matcher.find(0)) {
                 CharacterParser.Match range = this.bracketExpression(matcher.group(0).length() - 1);
-                matcher = Pattern.compile("^\\s*[-\\w]+ *=").matcher(range.getSrc());
+                matcher = PATTERN_ATTRIBUTE_ASSIGNMENT.matcher(range.getSrc());
 
                 if (!matcher.find(0)) { // not attributes
                     incrementColumn(1);
