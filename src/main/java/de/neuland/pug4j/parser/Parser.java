@@ -1070,10 +1070,9 @@ public class Parser {
         lexer.defer(token);
     }
 
-    @SuppressWarnings("rawtypes")
-    private Token accept(Class clazz) {
+    private <T extends Token> T accept(Class<T> clazz) {
         if (this.peek().getClass().equals(clazz)) {
-            return lexer.advance();
+            return clazz.cast(lexer.advance());
         }
         return null;
     }
@@ -1082,11 +1081,10 @@ public class Parser {
         return lexer.getLineno();
     }
 
-    @SuppressWarnings("rawtypes")
-    private Token expect(Class expectedTokenClass) {
+    private <T extends Token> T expect(Class<T> expectedTokenClass) {
         Token t = this.peek();
         if (t.getClass().equals(expectedTokenClass)) {
-            return advance();
+            return expectedTokenClass.cast(advance());
         } else {
             throw error("INVALID_TOKEN", "expected \"" + expectedTokenClass.toString() + "\", but got " + peek().getType() + "\"", peek());
         }
