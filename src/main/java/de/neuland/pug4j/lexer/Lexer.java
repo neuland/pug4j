@@ -880,8 +880,8 @@ public class Lexer {
         return false;
     }
 
-    private boolean prepend() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_PREPEND);
+    private boolean handleBlockLike(Pattern pattern, String mode) {
+        Matcher matcher = scanner.getMatcherForPattern(pattern);
         if (matcher.find(0)) {
             String name = matcher.group(1).trim();
             String comment = "";
@@ -899,7 +899,7 @@ public class Lexer {
                     len--;
                 }
                 incrementColumn(len);
-                token.setMode("prepend");
+                token.setMode(mode);
                 pushToken(tokEnd(token));
                 consume(matcher.end() - comment.length());
                 incrementColumn(matcher.end() - comment.length() - len);
@@ -907,64 +907,18 @@ public class Lexer {
             }
         }
         return false;
+    }
+
+    private boolean prepend() {
+        return handleBlockLike(PATTERN_PREPEND, "prepend");
     }
 
     private boolean append() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_APPEND);
-        if (matcher.find(0)) {
-            String name = matcher.group(1).trim();
-            String comment = "";
-
-            if (name.contains("//")) {
-                String[] split = StringUtils.split(name, "//");
-                comment = "//" + StringUtils.join(Arrays.copyOfRange(split, 1, split.length), "//");
-                name = StringUtils.split(name, "//")[0].trim();
-            }
-
-            if (StringUtils.isNotBlank(name)) {
-                Token token = tok(new Block(name));
-                int len = matcher.group(0).length() - comment.length();
-                while (PATTERN_WHITESPACE.matcher(String.valueOf(scanner.getInput().charAt(len - 1))).find(0)) {
-                    len--;
-                }
-                incrementColumn(len);
-                token.setMode("append");
-                pushToken(tokEnd(token));
-                consume(matcher.end() - comment.length());
-                incrementColumn(matcher.end() - comment.length() - len);
-                return true;
-            }
-        }
-        return false;
+        return handleBlockLike(PATTERN_APPEND, "append");
     }
 
     private boolean block() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_BLOCK);
-        if (matcher.find(0)) {
-            String name = matcher.group(1).trim();
-            String comment = "";
-
-            if (name.contains("//")) {
-                String[] split = StringUtils.split(name, "//");
-                comment = "//" + StringUtils.join(Arrays.copyOfRange(split, 1, split.length), "//");
-                name = StringUtils.split(name, "//")[0].trim();
-            }
-
-            if (StringUtils.isNotBlank(name)) {
-                Token token = tok(new Block(name));
-                int len = matcher.group(0).length() - comment.length();
-                while (PATTERN_WHITESPACE.matcher(String.valueOf(scanner.getInput().charAt(len - 1))).find(0)) {
-                    len--;
-                }
-                incrementColumn(len);
-                token.setMode("replace");
-                pushToken(tokEnd(token));
-                consume(matcher.end() - comment.length());
-                incrementColumn(matcher.end() - comment.length() - len);
-                return true;
-            }
-        }
-        return false;
+        return handleBlockLike(PATTERN_BLOCK, "replace");
     }
 
     private boolean mixinBlock() {
