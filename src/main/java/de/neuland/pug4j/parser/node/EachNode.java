@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import org.apache.commons.collections4.IteratorUtils;
 
 import de.neuland.pug4j.compiler.IndentWriter;
@@ -86,4 +87,8 @@ public class EachNode extends Node {
         this.elseNode = elseNode;
     }
 
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
+    }
 }

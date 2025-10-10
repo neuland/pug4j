@@ -19,9 +19,9 @@ public class PugModel implements Map<String, Object> {
     private static final String LOCALS = "locals";
     public static final String LOCAL_VARS = "pug4j__localVars";
     public static final String PUG4J_MODEL_PREFIX = "pug4j__";
-    private final Deque<Map<String, Object>> scopes = new LinkedList<Map<String, Object>>();
-    private final Map<String, MixinNode> mixins = new HashMap<String, MixinNode>();
-    private final Map<String, Filter> filter = new HashMap<String, Filter>();
+    private final Deque<Map<String, Object>> scopes = new LinkedList<>();
+    private final Map<String, MixinNode> mixins = new HashMap<>();
+    private final Map<String, Filter> filter = new HashMap<>();
 
     public PugModel(Map<String, Object> defaults) {
         pushScope();
@@ -34,8 +34,8 @@ public class PugModel implements Map<String, Object> {
     }
 
     public void pushScope() {
-        HashMap<String, Object> scope = new HashMap<String, Object>();
-        scope.put(LOCAL_VARS, new HashSet<String>());
+        HashMap<String, Object> scope = new HashMap<>();
+        scope.put(LOCAL_VARS, new HashSet<>());
         scopes.add(scope);
     }
 
@@ -54,7 +54,7 @@ public class PugModel implements Map<String, Object> {
     @Override
     public void clear() {
         scopes.clear();
-        scopes.add(new HashMap<String, Object>());
+        scopes.add(new HashMap<>());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class PugModel implements Map<String, Object> {
 
     @Override
     public Set<java.util.Map.Entry<String, Object>> entrySet() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<>();
         for (String key : keySet()) {
             map.put(key, get(key));
         }
@@ -130,7 +130,7 @@ public class PugModel implements Map<String, Object> {
     @Override
     // returns a set of unique keys
     public Set<String> keySet() {
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
             keys.addAll(i.next().keySet());
         }
@@ -199,7 +199,7 @@ public class PugModel implements Map<String, Object> {
     @Override
     // returns the size of all unique keys
     public Collection<Object> values() {
-        List<Object> values = new ArrayList<Object>();
+        List<Object> values = new ArrayList<>();
         for (String key : keySet()) {
             values.add(get(key));
         }

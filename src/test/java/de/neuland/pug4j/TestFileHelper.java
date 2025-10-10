@@ -27,7 +27,11 @@ public class TestFileHelper {
     public static final String TESTFILE_COMPILER_ERROR_FOLDER = "/compiler/errors/";
     
 	public static String getResourcePath(String fileName) throws FileNotFoundException,URISyntaxException {
-		String path = Paths.get(TestFileHelper.class.getResource(fileName).toURI()).toString();
+		java.net.URL resource = TestFileHelper.class.getResource(fileName);
+		if (resource == null) {
+			throw new FileNotFoundException("Resource not found: " + fileName);
+		}
+		String path = Paths.get(resource.toURI()).toString();
 		LoggerFactory.getLogger(TestFileHelper.class.getClass()).debug(path);
 		return path;
 	}

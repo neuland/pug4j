@@ -811,19 +811,9 @@ public class Parser {
         while (!(peek() instanceof EndPipelessText)) {
             token = advance();
             if (token instanceof Text) {
-                TextNode textNode = new TextNode();
-                textNode.setValue(token.getValue());
-                textNode.setLineNumber(token.getStartLineNumber());
-                textNode.setColumn(token.getStartColumn());
-                textNode.setFileName(this.filename);
-                blockNode.getNodes().add(textNode);
+                blockNode.getNodes().add(createTextNode(token, String.valueOf(token.getValue())));
             } else if (token instanceof Newline) {
-                TextNode textNode = new TextNode();
-                textNode.setValue("\n");
-                textNode.setLineNumber(token.getStartLineNumber());
-                textNode.setColumn(token.getStartColumn());
-                textNode.setFileName(this.filename);
-                blockNode.getNodes().add(textNode);
+                blockNode.getNodes().add(createTextNode(token, "\n"));
             } else if (token instanceof StartPugInterpolation) {
                 blockNode.getNodes().add(parseExpr());
                 expect(EndPugInterpolation.class);
@@ -843,6 +833,15 @@ public class Parser {
         }
         advance();
         return blockNode;
+    }
+
+    private TextNode createTextNode(Token token, String value) {
+        TextNode textNode = new TextNode();
+        textNode.setValue(value);
+        textNode.setLineNumber(token.getStartLineNumber());
+        textNode.setColumn(token.getStartColumn());
+        textNode.setFileName(this.filename);
+        return textNode;
     }
 
     private Node parseConditional() {
@@ -1070,10 +1069,9 @@ public class Parser {
         lexer.defer(token);
     }
 
-    @SuppressWarnings("rawtypes")
-    private Token accept(Class clazz) {
+    private <T extends Token> T accept(Class<T> clazz) {
         if (this.peek().getClass().equals(clazz)) {
-            return lexer.advance();
+            return clazz.cast(lexer.advance());
         }
         return null;
     }
@@ -1082,11 +1080,10 @@ public class Parser {
         return lexer.getLineno();
     }
 
-    @SuppressWarnings("rawtypes")
-    private Token expect(Class expectedTokenClass) {
+    private <T extends Token> T expect(Class<T> expectedTokenClass) {
         Token t = this.peek();
         if (t.getClass().equals(expectedTokenClass)) {
-            return advance();
+            return expectedTokenClass.cast(advance());
         } else {
             throw error("INVALID_TOKEN", "expected \"" + expectedTokenClass.toString() + "\", but got " + peek().getType() + "\"", peek());
         }

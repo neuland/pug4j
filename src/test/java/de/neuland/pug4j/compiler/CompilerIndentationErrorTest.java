@@ -3,6 +3,7 @@ package de.neuland.pug4j.compiler;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -70,7 +71,7 @@ public class CompilerIndentationErrorTest {
                 model = new HashMap<String, Object>();
             }
             return model;
-        }catch(NullPointerException e){
+        }catch(FileNotFoundException e){
             return new HashMap<String, Object>();
         }
     }

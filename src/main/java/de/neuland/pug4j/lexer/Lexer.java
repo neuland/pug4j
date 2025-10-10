@@ -61,21 +61,31 @@ public class Lexer {
     private static final Pattern PATTERN_SPACES = Pattern.compile("^\\n( *)");
     private static final Pattern PATTERN_COMMENT = Pattern.compile("^\\/\\/(-)?([^\\n]*)");
     private static final int INFINITY = Integer.MAX_VALUE;
-    public static final Pattern PATTERN_NO_CASE_EXPRESSION = Pattern.compile("^case\\b");
-    public static final Pattern PATTERN_MALFORMED_INCLUDE = Pattern.compile("^include\\b");
-    public static final Pattern PATTERN_MALFORMED_EXTENDS = Pattern.compile("^extends?\\b");
-    public static final Pattern PATTERN_STRING_INTERPOLATION = Pattern.compile("(\\\\)?([#!])\\{((?:.|\\n)*)$");
-    public static final Pattern PATTERN_INVALID_CLASSNAME = Pattern.compile("^\\.[_a-z0-9\\-]+", Pattern.CASE_INSENSITIVE);
-    public static final Pattern PATTERN_CLASSNAME_STARTS_WITH_DOT = Pattern.compile("^\\.");
-    public static final Pattern PATTERN_EXTRACT_INVALID_CLASSNAME = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
-    public static final Pattern PATTERN_EXTRACT_INVALID_ID = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
-    public static final Pattern PATTERN_DOCTYPE = Pattern.compile("^doctype *([^\\n]*)");
+    private static final Pattern PATTERN_NO_CASE_EXPRESSION = Pattern.compile("^case\\b");
+    private static final Pattern PATTERN_MALFORMED_INCLUDE = Pattern.compile("^include\\b");
+    private static final Pattern PATTERN_MALFORMED_EXTENDS = Pattern.compile("^extends?\\b");
+    private static final Pattern PATTERN_STRING_INTERPOLATION = Pattern.compile("(\\\\)?([#!])\\{((?:.|\\n)*)$");
+    private static final Pattern PATTERN_INVALID_CLASSNAME = Pattern.compile("^\\.[_a-z0-9\\-]+", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_CLASSNAME_STARTS_WITH_DOT = Pattern.compile("^\\.");
+    private static final Pattern PATTERN_EXTRACT_INVALID_CLASSNAME = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
+    private static final Pattern PATTERN_EXTRACT_INVALID_ID = Pattern.compile(".[^ \\t\\(\\#\\.\\:]*");
+    private static final Pattern PATTERN_DOCTYPE = Pattern.compile("^doctype *([^\\n]*)");
+    private static final Pattern PATTERN_WHITESPACE_GROUP = Pattern.compile("^([ ]+)([^ ]*)");
+    private static final Pattern PATTERN_NEWLINE_OR_END = Pattern.compile("^[ \\t]*(\\n|$)");
+    private static final Pattern PATTERN_OPTIONAL_WHITESPACE = Pattern.compile("^[ \\t]*");
+    private static final Pattern PATTERN_HTML_TAG = Pattern.compile("^(<[^\\n]*)");
+    private static final Pattern PATTERN_NON_WHITESPACE = Pattern.compile("^[^ \\n]+");
+    private static final Pattern PATTERN_WHEN_COLON = Pattern.compile(":([^:\\n]+)");
+    private static final Pattern PATTERN_WHEN_KEYWORD = Pattern.compile("^when\\b");
+    private static final Pattern PATTERN_DEFAULT_KEYWORD = Pattern.compile("^default\\b");
+    private static final Pattern PATTERN_CALL_PARENTHESIS = Pattern.compile("^ *\\(");
+    private static final Pattern PATTERN_ATTRIBUTE_ASSIGNMENT = Pattern.compile("^\\s*[-\\w]+ *=");
     private final Scanner scanner;
     private int lineno;
     private int colno;
     private final LinkedList<Token> tokens;
     private final LinkedList<Integer> indentStack;
-    private Pattern indentRe = null;
+    private Pattern indentRe;
     private boolean pipeless = false;
     private boolean interpolationAllowed = true;
     private final String filename;
@@ -258,8 +268,23 @@ public class Lexer {
     }
 
     private CharacterParser.Match bracketExpression(int skip) {
+        return bracketExpression(skip, true);
+    }
+
+    /**
+     * Parse a bracket expression starting at the given skip position.
+     *
+     * @param skip the number of characters to skip before starting
+     * @param throwOnError if true, throws exceptions on errors; if false, returns null
+     * @return the matched bracket expression, or null if throwOnError is false and parsing fails
+     */
+    private CharacterParser.Match bracketExpression(int skip, boolean throwOnError) {
         char start = scanner.getInput().charAt(skip);
-        assertIf(start == '(' || start == '{' || start == '[', "The start character should be \"(\", \"{\" or \"[\"");
+        if (throwOnError) {
+            assertIf(start == '(' || start == '{' || start == '[', "The start character should be \"(\", \"{\" or \"[\"");
+        } else if (!(start == '(' || start == '{' || start == '[')) {
+            return null;
+        }
         Map<Character, Character> closingBrackets = new HashMap<>();
         closingBrackets.put('(', ')');
         closingBrackets.put('{', '}');
@@ -271,25 +296,29 @@ public class Lexer {
         try {
             range = characterParser.parseUntil(scanner.getInput(), String.valueOf(end), options);
         } catch (CharacterParserException exception) {
-            if (exception.getIndex() != null) {
-                int index = exception.getIndex();
-                int tmp = scanner.getInput().substring(skip).indexOf("\n");
-                int nextNewline = tmp + skip;
-                int ptr = 0;
-                while (index > nextNewline && tmp != -1) {
-                    this.incrementLine(1);
-                    index += nextNewline + 1;
-                    ptr += nextNewline + 1;
-                    tmp = nextNewline = scanner.getInput().substring(ptr).indexOf("\n");
+            if (throwOnError) {
+                if (exception.getIndex() != null) {
+                    int index = exception.getIndex();
+                    int tmp = scanner.getInput().substring(skip).indexOf("\n");
+                    int nextNewline = tmp + skip;
+                    int ptr = 0;
+                    while (index > nextNewline && tmp != -1) {
+                        this.incrementLine(1);
+                        index += nextNewline + 1;
+                        ptr += nextNewline + 1;
+                        tmp = nextNewline = scanner.getInput().substring(ptr).indexOf("\n");
+                    }
+                    this.incrementColumn(index);
                 }
-                this.incrementColumn(index);
+                if ("CHARACTER_PARSER:END_OF_STRING_REACHED".equals(exception.getCode())) {
+                    throw error("NO_END_BRACKET", "The end of the string reached with no closing bracket " + end + " found.");
+                } else if ("CHARACTER_PARSER:MISMATCHED_BRACKET".equals(exception.getCode())) {
+                    throw error("BRACKET_MISMATCH", exception.getMessage());
+                }
+                throw exception;
+            } else {
+                return null;
             }
-            if ("CHARACTER_PARSER:END_OF_STRING_REACHED".equals(exception.getCode())) {
-                throw error("NO_END_BRACKET", "The end of the string reached with no closing bracket " + end + " found.");
-            } else if ("CHARACTER_PARSER:MISMATCHED_BRACKET".equals(exception.getCode())) {
-                throw error("BRACKET_MISMATCH", exception.getMessage());
-            }
-            throw exception;
         }
         return range;
     }
@@ -363,8 +392,7 @@ public class Lexer {
         Matcher matcher = scanner.getMatcherForPattern(pattern);
         if (matcher.find(0)) {
             int whitespaceLength = 0;
-            Pattern pattern1 = Pattern.compile("^([ ]+)([^ ]*)");
-            Matcher whitespace = pattern1.matcher(matcher.group(0));
+            Matcher whitespace = PATTERN_WHITESPACE_GROUP.matcher(matcher.group(0));
             if (whitespace.find(0)) {
                 whitespaceLength = whitespace.group(1).length();
                 incrementColumn(whitespaceLength);
@@ -381,12 +409,10 @@ public class Lexer {
                 return token;
             }
 
-            Pattern pattern2 = Pattern.compile("^[ \\t]*(\\n|$)");
-            Matcher matcher1 = pattern2.matcher(newInput);
+            Matcher matcher1 = PATTERN_NEWLINE_OR_END.matcher(newInput);
             if (matcher1.find(0)) {
-                Pattern pattern3 = Pattern.compile("^[ \\t]*");
                 int length = matcher.group(0).length();
-                Matcher matcher2 = pattern3.matcher(newInput);
+                Matcher matcher2 = PATTERN_OPTIONAL_WHITESPACE.matcher(newInput);
                 if (matcher2.find(0)) {
                     length = length + matcher2.end();
                 }
@@ -472,21 +498,20 @@ public class Lexer {
     private boolean interpolation() {
         Matcher matcher = scanner.getMatcherForPattern(PATTERN_INTERPOLATION);
         if (matcher.find(0)) {
-            try {
-                CharacterParser.Match match = this.bracketExpression(1);
-                this.scanner.consume(match.getEnd() + 1);
-                Token tok = tok(new Interpolation(match.getSrc(), lineno));
-                incrementColumn(2); // '#{'
-                assertExpression(match.getSrc());
-                String[] splitted = StringUtils.split(match.getSrc(), '\n');
-                int lines = splitted.length - 1;
-                incrementLine(lines);
-                incrementColumn(splitted[lines].length() + 1); // + 1 → '}'
-                pushToken(tokEnd(tok));
-                return true;
-            } catch (Exception ex) {
-                return false; //not an interpolation expression, just an unmatched open interpolation
+            CharacterParser.Match match = this.bracketExpression(1, false);
+            if (match == null) {
+                return false; // not an interpolation expression, just an unmatched open interpolation
             }
+            this.scanner.consume(match.getEnd() + 1);
+            Token tok = tok(new Interpolation(match.getSrc(), lineno));
+            incrementColumn(2); // '#{'
+            assertExpression(match.getSrc());
+            String[] splitted = StringUtils.split(match.getSrc(), '\n');
+            int lines = splitted.length - 1;
+            incrementLine(lines);
+            incrementColumn(splitted[lines].length() + 1); // + 1 → '}'
+            pushToken(tokEnd(tok));
+            return true;
         }
         return false;
     }
@@ -821,7 +846,7 @@ public class Lexer {
     }
 
     private boolean textHtml() {
-        Token token = scan(Pattern.compile("^(<[^\\n]*)"), new TextHtml());
+        Token token = scan(PATTERN_HTML_TAG, new TextHtml());
         if (token != null) {
             addText(new TextHtml(), token.getValue());
             return true;
@@ -855,8 +880,8 @@ public class Lexer {
         return false;
     }
 
-    private boolean prepend() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_PREPEND);
+    private boolean handleBlockLike(Pattern pattern, String mode) {
+        Matcher matcher = scanner.getMatcherForPattern(pattern);
         if (matcher.find(0)) {
             String name = matcher.group(1).trim();
             String comment = "";
@@ -874,7 +899,7 @@ public class Lexer {
                     len--;
                 }
                 incrementColumn(len);
-                token.setMode("prepend");
+                token.setMode(mode);
                 pushToken(tokEnd(token));
                 consume(matcher.end() - comment.length());
                 incrementColumn(matcher.end() - comment.length() - len);
@@ -882,64 +907,18 @@ public class Lexer {
             }
         }
         return false;
+    }
+
+    private boolean prepend() {
+        return handleBlockLike(PATTERN_PREPEND, "prepend");
     }
 
     private boolean append() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_APPEND);
-        if (matcher.find(0)) {
-            String name = matcher.group(1).trim();
-            String comment = "";
-
-            if (name.contains("//")) {
-                String[] split = StringUtils.split(name, "//");
-                comment = "//" + StringUtils.join(Arrays.copyOfRange(split, 1, split.length), "//");
-                name = StringUtils.split(name, "//")[0].trim();
-            }
-
-            if (StringUtils.isNotBlank(name)) {
-                Token token = tok(new Block(name));
-                int len = matcher.group(0).length() - comment.length();
-                while (PATTERN_WHITESPACE.matcher(String.valueOf(scanner.getInput().charAt(len - 1))).find(0)) {
-                    len--;
-                }
-                incrementColumn(len);
-                token.setMode("append");
-                pushToken(tokEnd(token));
-                consume(matcher.end() - comment.length());
-                incrementColumn(matcher.end() - comment.length() - len);
-                return true;
-            }
-        }
-        return false;
+        return handleBlockLike(PATTERN_APPEND, "append");
     }
 
     private boolean block() {
-        Matcher matcher = scanner.getMatcherForPattern(PATTERN_BLOCK);
-        if (matcher.find(0)) {
-            String name = matcher.group(1).trim();
-            String comment = "";
-
-            if (name.contains("//")) {
-                String[] split = StringUtils.split(name, "//");
-                comment = "//" + StringUtils.join(Arrays.copyOfRange(split, 1, split.length), "//");
-                name = StringUtils.split(name, "//")[0].trim();
-            }
-
-            if (StringUtils.isNotBlank(name)) {
-                Token token = tok(new Block(name));
-                int len = matcher.group(0).length() - comment.length();
-                while (PATTERN_WHITESPACE.matcher(String.valueOf(scanner.getInput().charAt(len - 1))).find(0)) {
-                    len--;
-                }
-                incrementColumn(len);
-                token.setMode("replace");
-                pushToken(tokEnd(token));
-                consume(matcher.end() - comment.length());
-                incrementColumn(matcher.end() - comment.length() - len);
-                return true;
-            }
-        }
-        return false;
+        return handleBlockLike(PATTERN_BLOCK, "replace");
     }
 
     private boolean mixinBlock() {
@@ -966,7 +945,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             while (filter(true)) ;
             if (!path()) {
-                if (Pattern.compile("^[^ \\n]+").matcher(scanner.getInput()).find(0)) {
+                if (PATTERN_NON_WHITESPACE.matcher(scanner.getInput()).find(0)) {
                     fail();
                 } else {
                     throw error("NO_INCLUDE_PATH", "missing path for include");
@@ -1013,7 +992,7 @@ public class Lexer {
             String val = token.getValue();
             CharacterParser.State parse = characterParser.parse(val);
             while (parse.isNesting() || parse.isString()) {
-                Matcher matcher = scanner.getMatcherForPattern(Pattern.compile(":([^:\\n]+)"));
+                Matcher matcher = scanner.getMatcherForPattern(PATTERN_WHEN_COLON);
                 if (!matcher.find(0))
                     break;
 
@@ -1031,7 +1010,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if (this.scan(Pattern.compile("^when\\b"))) {
+        if (this.scan(PATTERN_WHEN_KEYWORD)) {
             throw error("NO_WHEN_EXPRESSION", "missing expression for when");
         }
         return false;
@@ -1043,7 +1022,7 @@ public class Lexer {
             pushToken(tokEnd(token));
             return true;
         }
-        if (this.scan(Pattern.compile("^default\\b"))) {
+        if (this.scan(PATTERN_DEFAULT_KEYWORD)) {
             throw error("DEFAULT_WITH_EXPRESSION", "default should not have an expression");
         }
         return false;
@@ -1084,10 +1063,10 @@ public class Lexer {
 
             incrementColumn(increment);
 
-            matcher = scanner.getMatcherForPattern(Pattern.compile("^ *\\("));
+            matcher = scanner.getMatcherForPattern(PATTERN_CALL_PARENTHESIS);
             if (matcher.find(0)) {
                 CharacterParser.Match range = this.bracketExpression(matcher.group(0).length() - 1);
-                matcher = Pattern.compile("^\\s*[-\\w]+ *=").matcher(range.getSrc());
+                matcher = PATTERN_ATTRIBUTE_ASSIGNMENT.matcher(range.getSrc());
 
                 if (!matcher.find(0)) { // not attributes
                     incrementColumn(1);

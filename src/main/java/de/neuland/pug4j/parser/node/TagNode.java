@@ -1,6 +1,8 @@
 package de.neuland.pug4j.parser.node;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
@@ -92,5 +94,10 @@ public class TagNode extends AttrsNode {
 
     public void setInterpolated(boolean interpolated) {
         this.interpolated = interpolated;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }

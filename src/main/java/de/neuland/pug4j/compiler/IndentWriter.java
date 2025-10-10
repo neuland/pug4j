@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IndentWriter {
+    private static final Logger logger = LoggerFactory.getLogger(IndentWriter.class);
     public static final String INDENT = "  ";
     private int indent = 0;
     private boolean useIndent = false;
@@ -33,7 +36,8 @@ public class IndentWriter {
         try {
             writer.write(string);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to write to output: {}", string, e);
+            throw new RuntimeException("Failed to write template output", e);
         }
     }
 

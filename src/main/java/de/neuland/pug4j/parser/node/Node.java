@@ -1,10 +1,14 @@
 package de.neuland.pug4j.parser.node;
 
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
+import de.neuland.pug4j.model.PugModel;
+
 import java.util.LinkedList;
 
 public abstract class Node implements Cloneable {
 
-    protected LinkedList<Node> nodes = new LinkedList<Node>();
+    protected LinkedList<Node> nodes = new LinkedList<>();
     protected int lineNumber;
     protected int column;
     protected String name;
@@ -92,7 +96,7 @@ public abstract class Node implements Cloneable {
             clone.block = this.block.clone();
         }
 
-        clone.nodes = new LinkedList<Node>();
+        clone.nodes = new LinkedList<>();
         for (Node node : this.nodes) {
             clone.nodes.add(node.clone());
         }
@@ -107,4 +111,14 @@ public abstract class Node implements Cloneable {
     public int getColumn() {
         return column;
     }
+
+    /**
+     * Accept a visitor to process this node.
+     * This method implements the Visitor pattern to avoid instanceof chains.
+     *
+     * @param visitor the visitor to accept
+     * @param writer the writer to output to
+     * @param model the model containing template variables
+     */
+    public abstract void accept(NodeVisitor visitor, IndentWriter writer, PugModel model);
 }

@@ -1,6 +1,7 @@
 package de.neuland.pug4j.parser.node;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -63,5 +64,10 @@ public class ExpressionNode extends Node {
     @Override
     public void setValue(String value) {
         super.setValue(value.trim());
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }

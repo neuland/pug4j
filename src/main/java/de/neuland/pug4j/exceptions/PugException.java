@@ -1,6 +1,7 @@
 package de.neuland.pug4j.exceptions;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,9 +12,12 @@ import java.util.Map;
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class PugException extends RuntimeException {
 
+    private static final Logger logger = LoggerFactory.getLogger(PugException.class);
     private static final long serialVersionUID = -8189536050437574552L;
     private String filename;
     private int lineNumber;
@@ -96,16 +100,16 @@ public abstract class PugException extends RuntimeException {
     }
 
     public List<String> getTemplateLines() {
-        List<String> result = new ArrayList<String>();
-        try {
-            Reader reader = templateLoader.getReader(filename);
-            BufferedReader in = new BufferedReader(reader);
+        List<String> result = new ArrayList<>();
+        try (Reader reader = templateLoader.getReader(filename);
+             BufferedReader in = new BufferedReader(reader)) {
             String line;
             while ((line = in.readLine()) != null) {
                 result.add(line);
             }
             return result;
-        } catch (Exception e) {
+        } catch (IOException e) {
+            logger.warn("Failed to read template lines from file: {}", filename, e);
             return result;
         }
     }
@@ -120,7 +124,7 @@ public abstract class PugException extends RuntimeException {
     }
 
     public String toHtmlString(String generatedHtml) {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("filename", filename);
         model.put("linenumber", lineNumber);
         model.put("column", colNumber);
@@ -134,8 +138,8 @@ public abstract class PugException extends RuntimeException {
         try {
             URL url = PugException.class.getResource("/error.jade");
             return Pug4J.render(url, model, true);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | PugException e) {
+            logger.error("Failed to render error template for exception: {}", getName(), e);
             return null;
         }
     }

@@ -102,7 +102,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                 }
             }
             return eval.as(Object.class);
-        } catch (Exception ex) {
+        } catch (PolyglotException ex) {
             if (ex.getMessage() != null && ex.getMessage().startsWith("ReferenceError:")) {
                 return null;
             }

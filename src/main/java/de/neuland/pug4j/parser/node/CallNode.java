@@ -3,17 +3,19 @@ package de.neuland.pug4j.parser.node;
 import java.util.*;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.compiler.IndentWriter;
+import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.ArgumentSplitter;
 
 public class CallNode extends AttrsNode {
 
-    protected List<String> arguments = new ArrayList<String>();
-    boolean call = false;
+    protected List<String> arguments = new ArrayList<>();
+    private boolean call = false;
 
     public List<MixinBlockNode> getInjectionPoints(Node block) {
-        List<MixinBlockNode> result = new ArrayList<MixinBlockNode>();
+        List<MixinBlockNode> result = new ArrayList<>();
         for (Node node : block.getNodes()) {
             if (node instanceof MixinBlockNode && !node.hasNodes()) {
                 result.add((MixinBlockNode) node);
@@ -55,7 +57,7 @@ public class CallNode extends AttrsNode {
             }
         }
         if (mixin.getRest() != null) {
-            ArrayList<Object> restArguments = new ArrayList<Object>();
+            ArrayList<Object> restArguments = new ArrayList<>();
             for (int i = names.size(); i < arguments.size(); i++) {
                 Object value = null;
                 if (i < values.size()) {
@@ -94,5 +96,10 @@ public class CallNode extends AttrsNode {
 
     public void setCall(boolean call) {
         this.call = call;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+        visitor.visit(this, writer, model);
     }
 }
