@@ -92,7 +92,7 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [x] Replace raw types with generics (Parser.java:1074,1086)
 - [ ] Use diamond operator where applicable
 - [ ] Replace anonymous classes with lambdas where appropriate
-- [ ] Use java.nio.file.Path instead of String for file paths
+- [x] Use java.nio.file.Path instead of String for file paths
 - [ ] Adopt modern Java features (Optional, Stream API, etc.)
 
 ## Medium-Low Priority (Code Consistency)
