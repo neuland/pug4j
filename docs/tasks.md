@@ -147,9 +147,9 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [ ] Add IDE plugins or extensions support
 
 ### CI/CD Improvements
-- [ ] Update GitHub Actions from actions/checkout@v3 to @v4
-- [ ] Update GitHub Actions from actions/setup-java@v3 to @v4
-- [ ] Add Java 21 to test matrix
+- [x] Update GitHub Actions from actions/checkout@v3 to @v5
+- [x] Update GitHub Actions from actions/setup-java@v3 to @v5
+- [x] Add Java 21 to test matrix
 - [ ] Add code coverage reporting (JaCoCo)
 - [ ] Add automatic release notes generation
 - [ ] Set up continuous deployment to Maven Central
