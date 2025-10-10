@@ -30,7 +30,7 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 ### Architecture & Design Patterns
 - [x] Refactor Compiler.java:47-86 - replace instanceof chain with Visitor pattern or polymorphism
 - [ ] Extract duplicated code in Lexer.java:858-914 (prepend/append/block methods)
-- [ ] Reduce code duplication in Parser.java:811-843 (TextNode creation)
+- [x] Reduce code duplication in Parser.java:811-843 (TextNode creation)
 - [ ] Consider Builder pattern for Pug4J render methods to reduce overload count
 - [ ] Apply Single Responsibility Principle to large classes
 

@@ -811,19 +811,9 @@ public class Parser {
         while (!(peek() instanceof EndPipelessText)) {
             token = advance();
             if (token instanceof Text) {
-                TextNode textNode = new TextNode();
-                textNode.setValue(token.getValue());
-                textNode.setLineNumber(token.getStartLineNumber());
-                textNode.setColumn(token.getStartColumn());
-                textNode.setFileName(this.filename);
-                blockNode.getNodes().add(textNode);
+                blockNode.getNodes().add(createTextNode(token, String.valueOf(token.getValue())));
             } else if (token instanceof Newline) {
-                TextNode textNode = new TextNode();
-                textNode.setValue("\n");
-                textNode.setLineNumber(token.getStartLineNumber());
-                textNode.setColumn(token.getStartColumn());
-                textNode.setFileName(this.filename);
-                blockNode.getNodes().add(textNode);
+                blockNode.getNodes().add(createTextNode(token, "\n"));
             } else if (token instanceof StartPugInterpolation) {
                 blockNode.getNodes().add(parseExpr());
                 expect(EndPugInterpolation.class);
@@ -843,6 +833,15 @@ public class Parser {
         }
         advance();
         return blockNode;
+    }
+
+    private TextNode createTextNode(Token token, String value) {
+        TextNode textNode = new TextNode();
+        textNode.setValue(value);
+        textNode.setLineNumber(token.getStartLineNumber());
+        textNode.setColumn(token.getStartColumn());
+        textNode.setFileName(this.filename);
+        return textNode;
     }
 
     private Node parseConditional() {
