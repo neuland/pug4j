@@ -49,38 +49,38 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - [ ] Remove or properly mark debug code
 
 ### Performance Optimization
-- [ ] Review and optimize Pattern compilation strategy in Lexer.java
+- [x] Review and optimize Pattern compilation strategy in Lexer.java
 - [ ] Optimize repeated expression evaluation in loops
-- [ ] Replace lambda overhead with direct method calls where applicable
+- [x] Replace lambda overhead with direct method calls where applicable
 - [ ] Profile hot paths and optimize bottlenecks
 - [ ] Implement lazy initialization where appropriate
 
 ## Medium Priority (Modernization)
 
 ### Dependency Updates
-- [ ] Update slf4j-api from 2.0.16 to latest stable version
-- [ ] Update commons-jexl3 from 3.4.0 to latest version
-- [ ] Update commons-io from 2.18.0 to 2.20.0
-- [ ] Update commons-lang3 from 3.15.0 to 3.18.0
-- [ ] Update commons-text from 1.12.0 to 1.14.0
-- [ ] Update commons-collections4 from 4.4 to 4.5.0
-- [ ] Update caffeine from 2.9.3 to latest 2.x or 3.x version
-- [ ] Update gson from 2.10.1 to latest version
-- [ ] Update GraalVM from 21.3.12 to latest LTS version
-- [ ] Update Jackson BOM from 2.17.2 to latest version
-- [ ] Update all test dependencies to latest stable versions
+- [x] Update slf4j-api from 2.0.16 to latest stable version
+- [x] Update commons-jexl3 from 3.4.0 to latest version
+- [x] Update commons-io from 2.18.0 to 2.20.0
+- [x] Update commons-lang3 from 3.15.0 to 3.18.0
+- [x] Update commons-text from 1.12.0 to 1.14.0
+- [x] Update commons-collections4 from 4.4 to 4.5.0
+- [x] Update caffeine from 2.9.3 to latest 2.x or 3.x version
+- [x] Update gson from 2.10.1 to latest version
+- [x] Update GraalVM from 21.3.12 to latest LTS version
+- [x] Update Jackson BOM from 2.17.2 to latest version
+- [x] Update all test dependencies to latest stable versions
 
 ### Maven Plugin Updates
-- [ ] Update maven-compiler-plugin from 3.13.0 to 3.14.1 or 4.0.0-beta-2
-- [ ] Update maven-surefire-plugin from 3.5.2 to latest version
-- [ ] Update maven-javadoc-plugin from 3.8.0 to latest version
-- [ ] Update maven-enforcer-plugin from 3.5.0 to 3.6.2
-- [ ] Update maven-deploy-plugin from 3.1.3 to 3.1.4 or 4.0.0-beta-2
-- [ ] Update maven-gpg-plugin from 3.2.3 to 3.2.8
-- [ ] Update maven-clean-plugin from 3.4.0 to 3.5.0 or 4.0.0-beta-2
+- [x] Update maven-compiler-plugin from 3.13.0 to 3.14.1 or 4.0.0-beta-2
+- [x] Update maven-surefire-plugin from 3.5.2 to latest version
+- [x] Update maven-javadoc-plugin from 3.8.0 to latest version
+- [x] Update maven-enforcer-plugin from 3.5.0 to 3.6.2
+- [x] Update maven-deploy-plugin from 3.1.3 to 3.1.4 or 4.0.0-beta-2
+- [x] Update maven-gpg-plugin from 3.2.3 to 3.2.8
+- [x] Update maven-clean-plugin from 3.4.0 to 3.5.0 or 4.0.0-beta-2
 
 ### Build Configuration
-- [ ] Update parent POM from oss-parent:7 to latest version
+- [x] Update parent POM from oss-parent:7 to oss-parent:9
 - [ ] Add Maven Enforcer rules for dependency convergence
 - [ ] Configure dependency vulnerability scanning
 - [ ] Add SpotBugs or ErrorProne for static analysis
