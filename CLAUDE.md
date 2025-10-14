@@ -67,7 +67,7 @@ Built-in template caching using Caffeine cache:
 - Cross-platform testing (Windows/Linux) in CI
 
 ### Dependencies
-- Java 8+ required (builds with Java 8-17)
+- Java 11+ required
 - Core dependencies: Apache Commons (JEXL, IO, Lang, Text), Caffeine cache
 - Optional: GraalVM for JavaScript expression handling
 - Build: Maven 3.0+

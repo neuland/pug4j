@@ -36,13 +36,13 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 
 ### Null Safety & Validation
 - [ ] Add null checks before operations that could throw NPE
-- [ ] Replace exception-based control flow in PugConfiguration.java:155-161
+- [ ] Replace exception-based control flow in PugConfiguration.java:154-159
 - [ ] Add parameter validation at method entry points
 - [ ] Remove unnecessary null checks (e.g., Lexer.java:1480-1482)
 - [ ] Add @Nullable and @NonNull annotations throughout codebase
 
 ### Code Cleanup
-- [ ] Remove or implement TODO comments (6 found in codebase)
+- [ ] Remove or implement TODO comments (5 found in codebase: Compiler.java:83, PugTemplate.java:45,63,69, Lexer.java:743)
 - [ ] Add @Deprecated annotations to deprecated methods (PugTemplate.java:45,63,69)
 - [ ] Remove commented-out code or document why it's preserved
 - [ ] Address all FIXME and XXX comments
@@ -193,7 +193,7 @@ This document contains a comprehensive list of improvement tasks for the pug4j p
 - **Critical issues identified:** 15
 - **High priority issues:** 27 (1 completed)
 - **Medium priority issues:** 22
-- **TODO/FIXME comments:** 6
+- **TODO/FIXME comments:** 5
 - **Deprecated classes/methods:** 4
 
 ### Improvement Guidelines
@@ -212,5 +212,5 @@ When working on these tasks:
 - Update documentation for user-facing changes
 
 ---
-*Last updated: 2025-10-09*
+*Last updated: 2025-10-10*
 *Analysis performed by Claude Code*
