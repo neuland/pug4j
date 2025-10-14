@@ -316,7 +316,7 @@ config.setExpressionHandler(new GraalJsExpressionHandler());
 
 <a name="breaking-changes-2"></a>
 ## Breaking Changes in 3.0.0
-- Compiler Level has been raised to Java 11+
+- Compiler Level has been raised to Java 17+
 
 ## Breaking Changes in 2.0.0
 - Classes are renamed to pug4j.

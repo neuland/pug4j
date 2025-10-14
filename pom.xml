@@ -74,20 +74,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>git@github.com</project.scm.id>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <graalvm.version>23.1.8</graalvm.version>
-        <java.version>11</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <graalvm.version>25.0.0</graalvm.version>
+        <java.version>17</java.version>
     </properties>
 
     <profiles>
         <profile>
             <id>javac-release</id>
             <activation>
-                <jdk>[11,)</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <properties>
-                <maven.compiler.release>11</maven.compiler.release>
+                <maven.compiler.release>17</maven.compiler.release>
             </properties>
         </profile>
         <profile>
@@ -226,7 +226,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <!-- For Java 11 Modules, specify a module name. Do not create module-info.java until all
+                            <!-- For Java 17 Modules, specify a module name. Do not create module-info.java until all
                                  our dependencies specify a module name. -->
                             <Automatic-Module-Name>de.neuland.pug4j</Automatic-Module-Name>
                         </manifestEntries>
