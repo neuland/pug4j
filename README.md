@@ -315,6 +315,10 @@ config.setExpressionHandler(new GraalJsExpressionHandler());
 - [vertx-web](https://vertx.io/docs/vertx-web/java/#_jade_template_engine) jade4j for [Vert.X](http://vertx.io/)
 
 <a name="breaking-changes-2"></a>
+## Breaking Changes in 2.5.0
+- Compiler level has been raised to Java 17+
+- Update GraalVM from 21 LTS to 25 LTS
+
 ## Breaking Changes in 2.0.0
 - Classes are renamed to pug4j.
 - Default file extension is now .pug

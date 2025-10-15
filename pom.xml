@@ -74,22 +74,11 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>git@github.com</project.scm.id>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <graalvm.version>21.3.15</graalvm.version>
-        <java.version>8</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <graalvm.version>25.0.0</graalvm.version>
     </properties>
 
     <profiles>
-        <profile>
-            <id>javac-release</id>
-            <activation>
-                <jdk>[11,)</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.release>8</maven.compiler.release>
-            </properties>
-        </profile>
         <profile>
             <id>release-sign-artifacts</id>
             <activation>
@@ -319,27 +308,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.js</groupId>
+            <groupId>org.graalvm.polyglot</groupId>
             <artifactId>js</artifactId>
             <version>${graalvm.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.js</groupId>
-            <artifactId>js-scriptengine</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.tools</groupId>
-            <artifactId>profiler</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.tools</groupId>
-            <artifactId>chromeinspector</artifactId>
-            <version>${graalvm.version}</version>
+            <type>pom</type>
             <scope>runtime</scope>
         </dependency>
         <!-- Testing -->
