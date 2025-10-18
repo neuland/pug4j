@@ -190,44 +190,44 @@ public class GraalJsExpressionHandlerTest {
         assertEquals("Image 1",o);
         assertEquals("Image 1",((List)((Map)pugModel.get("product")).get("images")).get(0));
     }
-    @Test
-    @Ignore
-    public void testBlockNodeAccess() throws ExpressionException  {
-        IndentWriter writer = new IndentWriter(new StringWriter());
-        BlockNode blockNode = new BlockNode();
-        LinkedList<Node> nodes = new LinkedList();
-        TextNode textNode = new TextNode();
-        textNode.setValue("Hallo Welt");
-        nodes.add(textNode);
-        blockNode.setNodes(nodes);
-        pugModel.put("pug4j__block", blockNode);
-        pugModel.put("pug4j__writer", writer);
-        pugModel.put("pug4j__template", new PugTemplate());
-        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
-        Object o = graalJsExpressionHandler.evaluateExpression("pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)", pugModel);
-        assertEquals("Hallo Welt",writer.toString());
-    }
-    @Test
-    @Ignore
-    public void testContextInContextAccess() throws ExpressionException  {
-        IndentWriter writer = new IndentWriter(new StringWriter());
-        BlockNode blockNode = new BlockNode();
-        LinkedList<Node> nodes = new LinkedList();
-        ExpressionNode textNode = new ExpressionNode();
-        textNode.setBuffer(true);
-        textNode.setValue("item");
-        nodes.add(textNode);
-        blockNode.setNodes(nodes);
-        pugModel.put("pug4j__block", blockNode);
-        pugModel.put("pug4j__writer", writer);
-        PugTemplate pugTemplate = new PugTemplate();
-        pugModel.put("pug4j__template", pugTemplate);
-        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
-        pugModel.put("pug4j__context", graalJsExpressionHandler.getContext());
-        //Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];items.forEach(function(item){pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)})", pugModel);
-        Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];for(i=0;i<3;i++){var item = items[i];pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)}", pugModel);
-        assertEquals("123",writer.toString());
-    }
+//    @Test
+//    @Ignore
+//    public void testBlockNodeAccess() throws ExpressionException  {
+//        IndentWriter writer = new IndentWriter(new StringWriter());
+//        BlockNode blockNode = new BlockNode();
+//        LinkedList<Node> nodes = new LinkedList();
+//        TextNode textNode = new TextNode();
+//        textNode.setValue("Hallo Welt");
+//        nodes.add(textNode);
+//        blockNode.setNodes(nodes);
+//        pugModel.put("pug4j__block", blockNode);
+//        pugModel.put("pug4j__writer", writer);
+//        pugModel.put("pug4j__template", new PugTemplate());
+//        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
+//        Object o = graalJsExpressionHandler.evaluateExpression("pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)", pugModel);
+//        assertEquals("Hallo Welt",writer.toString());
+//    }
+//    @Test
+//    @Ignore
+//    public void testContextInContextAccess() throws ExpressionException  {
+//        IndentWriter writer = new IndentWriter(new StringWriter());
+//        BlockNode blockNode = new BlockNode();
+//        LinkedList<Node> nodes = new LinkedList();
+//        ExpressionNode textNode = new ExpressionNode();
+//        textNode.setBuffer(true);
+//        textNode.setValue("item");
+//        nodes.add(textNode);
+//        blockNode.setNodes(nodes);
+//        pugModel.put("pug4j__block", blockNode);
+//        pugModel.put("pug4j__writer", writer);
+//        PugTemplate pugTemplate = new PugTemplate();
+//        pugModel.put("pug4j__template", pugTemplate);
+//        pugModel.put("pug4j__model", new PugModel(new HashMap<>()));
+//        pugModel.put("pug4j__context", graalJsExpressionHandler.getContext());
+//        //Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];items.forEach(function(item){pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)})", pugModel);
+//        Object o = graalJsExpressionHandler.evaluateExpression("var items = ['1','2','3'];for(i=0;i<3;i++){var item = items[i];pug4j__block.execute(pug4j__writer,pug4j__model,pug4j__template)}", pugModel);
+//        assertEquals("123",writer.toString());
+//    }
 
 
 }

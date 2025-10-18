@@ -4,5 +4,6 @@ target/
 .project
 .settings/
 .idea
+!.idea/runConfigurations/
 *.iml
 release.properties
