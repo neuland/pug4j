@@ -7,3 +7,6 @@ target/
 !.idea/runConfigurations/
 *.iml
 release.properties
+.serena
+bin/
+.claude/settings.local.json

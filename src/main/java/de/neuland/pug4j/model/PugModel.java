@@ -156,7 +156,7 @@ public class PugModel implements Map<String, Object> {
     public Object putLocal(String key, Object value) {
         Object currentValue = get(key);
         Map<String, Object> scope = scopes.getLast();
-        scope.put(key, value);
+        scope.put(key, RecordWrapper.wrapIfRecord(value));
         return currentValue;
     }
 
@@ -166,14 +166,17 @@ public class PugModel implements Map<String, Object> {
         Map<String, Object> scope = getScopeWithKey(key);
         if (scope == null)
             scope = scopes.getLast();
-        scope.put(key, value);
+        scope.put(key, RecordWrapper.wrapIfRecord(value));
         return currentValue;
     }
 
     @Override
     // addes all map entries to the current scope map
     public void putAll(Map<? extends String, ? extends Object> m) {
-        scopes.getLast().putAll(m);
+        Map<String, Object> scope = scopes.getLast();
+        for (Map.Entry<? extends String, ? extends Object> entry : m.entrySet()) {
+            scope.put(entry.getKey(), RecordWrapper.wrapIfRecord(entry.getValue()));
+        }
     }
 
     @Override
