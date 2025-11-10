@@ -2,6 +2,7 @@ package de.neuland.pug4j.expression;
 
 import de.neuland.pug4j.jexl3.PugJexlArithmetic;
 import de.neuland.pug4j.jexl3.PugJexlBuilder;
+import de.neuland.pug4j.jexl3.RecordWrapperUberspect;
 import org.apache.commons.jexl3.*;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
@@ -24,8 +25,13 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
     private static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
     private JexlEngine jexl;
     private final JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
-    private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlExpressionHandler.class),
+    private final RecordWrapperUberspect pugUberspect = new RecordWrapperUberspect(LogFactory.getLog(JexlExpressionHandler.class),
             (op, obj) -> {
+                // RecordWrapper should be treated as the underlying record object (POJO), not as a Map
+                // This allows JEXL to call methods on the wrapped record
+                if (obj instanceof de.neuland.pug4j.model.RecordWrapper) {
+                    return JexlUberspect.POJO;
+                }
                 if (obj instanceof Map) {
                     return JexlUberspect.MAP;
                 }

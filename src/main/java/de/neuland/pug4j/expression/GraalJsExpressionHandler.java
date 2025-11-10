@@ -71,7 +71,15 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
                 String key = objectEntry.getKey();
                 if (!PugModel.LOCAL_VARS.equals(key)) {
-                    jsContextBindings.putMember(key, objectEntry.getValue());
+                    Object value = objectEntry.getValue();
+
+                    // If the value is a RecordWrapper, we need to convert it to a pure ProxyObject
+                    // because GraalJS treats objects implementing Map specially, ignoring their ProxyObject implementation
+                    if (value instanceof de.neuland.pug4j.model.RecordWrapper wrapper) {
+                        value = wrapper.asGraalProxy();
+                    }
+
+                    jsContextBindings.putMember(key, value);
                 }
             }
 

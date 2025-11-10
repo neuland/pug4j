@@ -150,6 +150,54 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
         return record;
     }
 
+    /**
+     * Returns a GraalJS-compatible proxy that only implements ProxyObject (not Map).
+     * This is needed because GraalJS treats objects implementing Map specially,
+     * ignoring their ProxyObject implementation.
+     *
+     * @return a ProxyObject that delegates to this RecordWrapper
+     */
+    public ProxyObject asGraalProxy() {
+        return new GraalJsRecordProxy(this);
+    }
+
+    /**
+     * A pure ProxyObject implementation that delegates to RecordWrapper.
+     * This doesn't implement Map, so GraalJS will use the ProxyObject methods.
+     */
+    private static class GraalJsRecordProxy implements ProxyObject {
+        private final RecordWrapper wrapper;
+
+        GraalJsRecordProxy(RecordWrapper wrapper) {
+            this.wrapper = wrapper;
+        }
+
+        @Override
+        public Object getMember(String key) {
+            return wrapper.getMember(key);
+        }
+
+        @Override
+        public Object getMemberKeys() {
+            return wrapper.getMemberKeys();
+        }
+
+        @Override
+        public boolean hasMember(String key) {
+            return wrapper.hasMember(key);
+        }
+
+        @Override
+        public void putMember(String key, Value value) {
+            wrapper.putMember(key, value);
+        }
+
+        @Override
+        public String toString() {
+            return wrapper.toString();
+        }
+    }
+
     // ProxyObject implementation for GraalVM support
 
     @Override
@@ -159,28 +207,25 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
             return componentValues.get(key);
         }
 
-        // Also check if there's a corresponding no-arg method (record accessor)
-        // This allows method call syntax like person.name() in addition to person.name
+        // Also check if there's a method on the record (for custom methods)
+        // This allows method call syntax like person.bla() for custom methods
+        // Note: Record component accessors should be accessed via property syntax (person.name)
+        // not method call syntax (person.name()), since returning ProxyExecutable breaks property access
         try {
             Method method = record.getClass().getMethod(key);
-            if (method.getParameterCount() == 0) {
-                method.setAccessible(true);
-                // Return a ProxyExecutable that invokes the method when called as a function
-                return (ProxyExecutable) args -> {
-                    try {
-                        Object result = method.invoke(record);
-                        // Wrap record results
-                        if (result != null && result.getClass().isRecord()) {
-                            return new RecordWrapper(result);
-                        }
-                        return result;
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to invoke " + key, e);
-                    }
-                };
-            }
+            method.setAccessible(true);
+            // Return a ProxyExecutable that invokes the method when called as a function
+            return (ProxyExecutable) args -> {
+                try {
+                    Object result = method.invoke(record);
+                    // Wrap record results
+                    return wrapIfRecord(result);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to invoke " + key, e);
+                }
+            };
         } catch (NoSuchMethodException e) {
-            // No method with this name
+            // Method not found, return null
         }
 
         return null;
@@ -193,7 +238,18 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
     @Override
     public boolean hasMember(String key) {
-        return componentValues.containsKey(key);
+        // Check if it's a component value
+        if (componentValues.containsKey(key)) {
+            return true;
+        }
+
+        // Also check if there's a no-arg method with this name
+        try {
+            record.getClass().getMethod(key);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     @Override

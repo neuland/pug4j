@@ -175,7 +175,8 @@ public class PugModel implements Map<String, Object> {
     public void putAll(Map<? extends String, ? extends Object> m) {
         Map<String, Object> scope = scopes.getLast();
         for (Map.Entry<? extends String, ? extends Object> entry : m.entrySet()) {
-            scope.put(entry.getKey(), RecordWrapper.wrapIfRecord(entry.getValue()));
+            Object wrapped = RecordWrapper.wrapIfRecord(entry.getValue());
+            scope.put(entry.getKey(), wrapped);
         }
     }
 
