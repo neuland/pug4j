@@ -12,16 +12,10 @@ import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JexlExpressionHandler extends AbstractExpressionHandler {
 
     private static final int MAX_ENTRIES = 5000;
-    private static Pattern plusplus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])\\+\\+\\s*;{0,1}\\s*$");
-    private static Pattern isplusplus = Pattern.compile("\\+\\+\\s*;{0,1}\\s*$");
-    private static Pattern minusminus = Pattern.compile("([a-zA-Z0-9-_]*[a-zA-Z0-9])--\\s*;{0,1}\\s*$");
-    private static Pattern isminusminus = Pattern.compile("--\\s*;{0,1}\\s*$");
     private JexlEngine jexl;
     private final JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
     private final Uberspect pugUberspect = new Uberspect(LogFactory.getLog(JexlExpressionHandler.class),
@@ -75,36 +69,12 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
         try {
             saveLocalVariableName(expression, model);
             expression = removeVar(expression);
-            if (isplusplus.matcher(expression).find()) {
-                expression = convertPlusPlusExpression(expression);
-            }
-            if (isminusminus.matcher(expression).find()) {
-                expression = convertMinusMinusExpression(expression);
-            }
             JexlScript e = jexl.createScript(expression);
             MapContext jexlContext = new MapContext(model);
             return e.execute(jexlContext);
         } catch (JexlException e) {
             throw new ExpressionException(expression, e);
         }
-    }
-
-    private String convertMinusMinusExpression(String expression) {
-        Matcher matcher = minusminus.matcher(expression);
-        if (matcher.find(0) && matcher.groupCount() == 1) {
-            String a = matcher.group(1);
-            expression = a + " = " + a + " - 1";
-        }
-        return expression;
-    }
-
-    private String convertPlusPlusExpression(String expression) {
-        Matcher matcher = plusplus.matcher(expression);
-        if (matcher.find(0) && matcher.groupCount() == 1) {
-            String a = matcher.group(1);
-            expression = a + " = " + a + " + 1";
-        }
-        return expression;
     }
 
     private String removeVar(String expression) {

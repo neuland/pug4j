@@ -1,7 +1,6 @@
 package de.neuland.pug4j.benchmark;
 
 import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.PugConfigurationCaffeine;
 import de.neuland.pug4j.template.ClasspathTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import org.openjdk.jmh.Main;
@@ -29,26 +28,14 @@ public class TemplateBenchmark {
 
     HashMap<String, Object> model = new HashMap<>();
 
-    PugConfigurationCaffeine jadeCaffeine = new PugConfigurationCaffeine();
 
-    PugConfiguration jade = new PugConfiguration();
+    PugConfiguration pug = new PugConfiguration();
 
     @Setup(Level.Invocation)
     public void setUp() {
-        jadeCaffeine.setTemplateLoader(templateLoader);
-        jade.setTemplateLoader(templateLoader);
+        pug.setTemplateLoader(templateLoader);
         model.put("pageName", "Jade");
         model.put("books", books);
-    }
-
-    @Benchmark
-    public void templatesCaffeine() throws Exception {
-
-        Writer writer = new StringWriter();
-        PugTemplate template =
-            jadeCaffeine.getTemplate("benchmark/simple" + templateId);
-        jadeCaffeine.renderTemplate(template, model, writer);
-
     }
 
     @Benchmark
@@ -56,8 +43,8 @@ public class TemplateBenchmark {
 
         Writer writer = new StringWriter();
         PugTemplate template =
-            jade.getTemplate("benchmark/simple" + templateId);
-        jade.renderTemplate(template, model, writer);
+            pug.getTemplate("benchmark/simple" + templateId);
+        pug.renderTemplate(template, model, writer);
 
     }
 
