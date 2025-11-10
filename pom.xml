@@ -78,6 +78,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <graalvm.version>21.3.15</graalvm.version>
         <java.version>8</java.version>
+        <!-- Disable SHA1 checksums for Maven Central Portal (only SHA256/SHA512 accepted) -->
+        <maven.deploy.checksums>sha256,sha512</maven.deploy.checksums>
     </properties>
 
     <profiles>

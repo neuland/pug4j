@@ -6,3 +6,6 @@ target/
 .idea
 *.iml
 release.properties
+bin/
+.serena
+.claude/settings.local.json
