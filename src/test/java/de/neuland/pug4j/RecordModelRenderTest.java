@@ -176,4 +176,102 @@ public class RecordModelRenderTest {
         assertEquals("<h1>Alice42</h1>", html);
     }
 
+    @Test
+    public void jexlHandlesRecordInConditional() throws Exception {
+        String pug = """
+                if person.age > 18
+                  p Adult
+                else
+                  p Minor
+                """;
+        PugConfiguration config = newJexlConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new Person("Alice", 42));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>Adult</p>", html);
+    }
+
+    @Test
+    public void graalHandlesRecordInConditional() throws Exception {
+        String pug = """
+                if person.age > 18
+                  p Adult
+                else
+                  p Minor
+                """;
+        PugConfiguration config = newGraalConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new Person("Alice", 42));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>Adult</p>", html);
+    }
+
+    @Test
+    public void jexlHandlesRecordWithNullComponent() throws Exception {
+        String pug = """
+                if person.address
+                  p= person.address.city
+                else
+                  p No address
+                """;
+        PugConfiguration config = newJexlConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new PersonWithAddress("Alice", 42, null));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>No address</p>", html);
+    }
+
+    @Test
+    public void graalHandlesRecordWithNullComponent() throws Exception {
+        String pug = """
+                if person.address
+                  p= person.address.city
+                else
+                  p No address
+                """;
+        PugConfiguration config = newGraalConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new PersonWithAddress("Alice", 42, null));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>No address</p>", html);
+    }
+
+    @Test
+    public void jexlHandlesRecordInInterpolation() throws Exception {
+        String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
+        PugConfiguration config = newJexlConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new Person("Alice", 42));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>Hello, Alice! You are 42 years old.</p>", html);
+    }
+
+    @Test
+    public void graalHandlesRecordInInterpolation() throws Exception {
+        String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
+        PugConfiguration config = newGraalConfig(pug);
+        PugTemplate template = config.getTemplate("inline");
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", new Person("Alice", 42));
+
+        String html = config.renderTemplate(template, model);
+        assertEquals("<p>Hello, Alice! You are 42 years old.</p>", html);
+    }
+
 }

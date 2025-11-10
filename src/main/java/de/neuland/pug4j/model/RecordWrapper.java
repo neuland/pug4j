@@ -1,5 +1,7 @@
 package de.neuland.pug4j.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
@@ -19,6 +21,8 @@ import java.util.*;
  * using the GraalJS expression handler.
  */
 public class RecordWrapper implements Map<String, Object>, ProxyObject {
+
+    private static final Log logger = LogFactory.getLog(RecordWrapper.class);
 
     private final Object record;
     private final Map<String, Object> componentValues;
@@ -58,9 +62,14 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
                 }
 
                 componentValues.put(name, value);
+            } catch (IllegalAccessException e) {
+                // This can happen if the record accessor is not accessible due to module restrictions
+                logger.warn("Cannot access record component '" + component.getName() +
+                           "' on record type " + recordClass.getName() + ": " + e.getMessage());
             } catch (Exception e) {
-                // If we can't access a component, skip it
-                // This shouldn't happen with valid records
+                // Unexpected error - log as error since this shouldn't happen with valid records
+                logger.error("Unexpected error accessing record component '" + component.getName() +
+                            "' on record type " + recordClass.getName(), e);
             }
         }
     }
@@ -202,15 +211,17 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
     @Override
     public Object getMember(String key) {
-        // For property access, return the value directly
+        // First, check if this is a record component - return the cached value directly
+        // This ensures record components are accessed as properties (person.name)
+        // rather than methods (person.name())
         if (componentValues.containsKey(key)) {
             return componentValues.get(key);
         }
 
-        // Also check if there's a method on the record (for custom methods)
-        // This allows method call syntax like person.bla() for custom methods
-        // Note: Record component accessors should be accessed via property syntax (person.name)
-        // not method call syntax (person.name()), since returning ProxyExecutable breaks property access
+        // If not a component, check for custom methods on the record
+        // This allows calling custom methods like person.customMethod()
+        // Since component accessors were already checked above, we won't
+        // accidentally expose them as callable functions
         try {
             Method method = record.getClass().getMethod(key);
             method.setAccessible(true);
@@ -218,14 +229,15 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
             return (ProxyExecutable) args -> {
                 try {
                     Object result = method.invoke(record);
-                    // Wrap record results
+                    // Wrap record results to support nested records
                     return wrapIfRecord(result);
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to invoke " + key, e);
+                    throw new RuntimeException("Failed to invoke method '" + key + "' on record " +
+                                             record.getClass().getSimpleName(), e);
                 }
             };
         } catch (NoSuchMethodException e) {
-            // Method not found, return null
+            // Method not found, return null (property doesn't exist)
         }
 
         return null;

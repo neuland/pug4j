@@ -17,10 +17,12 @@ pug4j was formerly known as jade4j. Because of the naming change of the javascri
     - [Filters](#api-filters)
     - [Helpers](#api-helpers)
     - [Model Defaults](#api-model-defaults)
+    - [Java Records Support](#api-records)
     - [Template Loader](#api-template-loader)
 - [Expressions](#expressions)
 - [Reserved Words](#reserved-words)
 - [Framework Integrations](#framework-integrations)
+- [Breaking Changes in 3.0.0](#breaking-changes-3)
 - [Breaking Changes in 2.0.0](#breaking-changes-2)
 - [Breaking Changes in 1.0.0](#breaking-changes-1)
 - [Authors](#authors)
@@ -252,6 +254,48 @@ defaults.put("url", new MyUrlHelper());
 config.setSharedVariables(defaults);
 ```
 
+<a name="api-records"></a>
+### Java Records Support
+
+Since version 3.0.0, pug4j supports Java records as model objects. Records are automatically wrapped to make their components accessible in templates using property syntax, just like with Maps or POJOs.
+
+**Example:**
+
+```java
+// Define records
+record Author(String name, String email) {}
+record Book(String title, double price, boolean available, Author author) {}
+
+// Create model with records
+Author author = new Author("Douglas Adams", "douglas@example.com");
+Book book = new Book("The Hitchhiker's Guide to the Galaxy", 5.70, true, author);
+
+Map<String, Object> model = new HashMap<>();
+model.put("book", book);
+```
+
+**Template usage:**
+
+```pug
+div
+  h1= book.title
+  p Price: #{book.price} €
+  if book.available
+    p In stock!
+  p Author: #{book.author.name} (#{book.author.email})
+```
+
+**Key features:**
+- **Automatic wrapping**: Records are automatically wrapped when added to the model
+- **Nested records**: Nested records are fully supported (e.g., `book.author.name`)
+- **Property access**: Use dot notation (`book.title`) instead of method calls (`book.title()`)
+- **Custom methods**: Records with custom methods can call them using function syntax (`record.customMethod()`)
+- **Both expression handlers**: Works with both JEXL (default) and GraalJS expression handlers
+- **Immutable**: Records remain immutable in templates
+
+**Requirements:**
+- Java 17 or higher (required for record support)
+
 <a name="api-template-loader"></a>
 ### Template Loader
 
@@ -314,10 +358,17 @@ config.setExpressionHandler(new GraalJsExpressionHandler());
 - [neuland/spring-pug4j](https://github.com/neuland/spring-pug4j) pug4j spring integration.
 - [vertx-web](https://vertx.io/docs/vertx-web/java/#_jade_template_engine) jade4j for [Vert.X](http://vertx.io/)
 
-<a name="breaking-changes-2"></a>
+<a name="breaking-changes-3"></a>
 ## Breaking Changes in 3.0.0
-- Compiler Level has been raised to Java 17+
+- **Java 17+ required**: Minimum Java version raised from Java 8 to Java 17
+- **Dependency updates**:
+  - GraalVM updated to 25.0.0 (simplified dependencies using `polyglot` and `js-community`)
+  - Caffeine cache updated to 3.2.2
+  - Flexmark updated to 0.64.8
+- **New feature**: Java records support - records are now automatically wrapped when added to model
+- **Maven version updated**: Now version 3.0.0-SNAPSHOT
 
+<a name="breaking-changes-2"></a>
 ## Breaking Changes in 2.0.0
 - Classes are renamed to pug4j.
 - Default file extension is now .pug

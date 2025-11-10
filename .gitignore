@@ -3,8 +3,7 @@ target/
 .classpath
 .project
 .settings/
-.idea/*
-!.idea/runConfigurations/
+.idea
 *.iml
 release.properties
 bin/

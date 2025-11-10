@@ -1,4 +1,36 @@
 # History
+## 3.0.0 / 2025-11-10
+**Breaking Changes:**
+* **Java 17+ required**: Minimum Java version raised from Java 8 to Java 17
+* **Major dependency updates**:
+  * GraalVM updated to 25.0.0 (simplified dependencies using `polyglot` and `js-community`)
+  * Caffeine cache updated to 3.2.2
+  * Flexmark updated to 0.64.8
+
+**New Features:**
+* **Java Records Support**: Records are now fully supported as model objects
+  * Records are automatically wrapped when added to the model (via `RecordWrapper`)
+  * Component access using property syntax (e.g., `person.name` in templates)
+  * Nested records fully supported (e.g., `person.address.city`)
+  * Custom methods on records can be called using function syntax
+  * Works with both JEXL (default) and GraalJS expression handlers
+  * Immutable by design, matching record semantics
+
+**Improvements:**
+* Enhanced error handling in `RecordWrapper` with proper logging for reflection errors
+* Improved GraalVM integration with better proxy object handling for records
+* Custom `RecordWrapperUberspect` for JEXL to enable method calls on wrapped records
+* Added comprehensive test coverage for record support (both JEXL and GraalJS)
+
+**Bug Fixes:**
+* Fixed GraalJS Map handling issue that prevented ProxyObject methods from being called
+* Improved method resolution to avoid conflicts between property access and method calls
+
+**Documentation:**
+* Added comprehensive Java Records documentation to README.md with examples
+* Updated CLAUDE.md to reflect new Java 17+ requirement
+* Added Breaking Changes section for 3.0.0
+
 ## 2.4.0 / 2025-10-10
 * Refactored Compiler to use Visitor pattern instead of instanceof chain for improved maintainability
 * Fixed thread safety issue in CachingFilter
