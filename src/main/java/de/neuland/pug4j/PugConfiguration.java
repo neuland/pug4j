@@ -81,7 +81,8 @@ public class PugConfiguration {
     private TemplateLoader templateLoader = new FileTemplateLoader();
     private ExpressionHandler expressionHandler = new JexlExpressionHandler();
     protected static final long MAX_ENTRIES = 1000L;
-    private Cache<String, PugTemplate> cache = Caffeine.newBuilder().maximumSize(MAX_ENTRIES).build();
+    private long maxCacheSize = MAX_ENTRIES;
+    private Cache<String, PugTemplate> cache = Caffeine.newBuilder().maximumSize(maxCacheSize).build();
 
     public PugConfiguration() {
         setFilter(FILTER_CDATA, new CDATAFilter());
@@ -214,5 +215,76 @@ public class PugConfiguration {
     public void clearCache() {
         expressionHandler.clearCache();
         cache.invalidateAll();
+    }
+
+    /**
+     * Gets the maximum number of entries in the template cache.
+     *
+     * @return the maximum cache size
+     */
+    public long getMaxCacheSize() {
+        return maxCacheSize;
+    }
+
+    /**
+     * Sets the maximum number of entries in the template cache.
+     * The cache will be rebuilt with the new size, and existing entries will be cleared.
+     *
+     * @param maxCacheSize the maximum cache size (must be positive)
+     * @throws IllegalArgumentException if maxCacheSize is not positive
+     */
+    public void setMaxCacheSize(long maxCacheSize) {
+        if (maxCacheSize <= 0) {
+            throw new IllegalArgumentException("maxCacheSize must be positive");
+        }
+        if (this.maxCacheSize != maxCacheSize) {
+            this.maxCacheSize = maxCacheSize;
+            rebuildCache();
+        }
+    }
+
+    /**
+     * Rebuilds the template cache with the current maxCacheSize.
+     * This will clear all existing cached templates.
+     */
+    private void rebuildCache() {
+        cache = Caffeine.newBuilder().maximumSize(maxCacheSize).build();
+    }
+
+    /**
+     * Sets the expression handler cache size.
+     * This method only works if the expression handler is a {@link JexlExpressionHandler}.
+     * If a different expression handler is used, this method will throw an {@link IllegalStateException}.
+     *
+     * @param cacheSize the cache size (0 to disable, positive value to enable with specific size)
+     * @throws IllegalStateException if the expression handler is not a JexlExpressionHandler
+     * @throws IllegalArgumentException if cacheSize is negative
+     */
+    public void setExpressionCacheSize(int cacheSize) {
+        if (expressionHandler instanceof JexlExpressionHandler) {
+            ((JexlExpressionHandler) expressionHandler).setCacheSize(cacheSize);
+        } else {
+            throw new IllegalStateException(
+                    "setExpressionCacheSize() only works with JexlExpressionHandler, current handler is: "
+                            + expressionHandler.getClass().getName());
+        }
+    }
+
+    /**
+     * Gets the expression handler cache size.
+     * This method only works if the expression handler is a {@link JexlExpressionHandler}.
+     * If a different expression handler is used, this method will throw an {@link IllegalStateException}.
+     *
+     * @return the cache size
+     * @throws IllegalStateException if the expression handler is not a JexlExpressionHandler
+     */
+    public int getExpressionCacheSize() {
+        if (expressionHandler instanceof JexlExpressionHandler) {
+            return ((JexlExpressionHandler) expressionHandler).getCacheSize();
+        } else {
+            throw new IllegalStateException(
+                    "getExpressionCacheSize() only works with JexlExpressionHandler, current handler is: "
+                            + expressionHandler.getClass().getName());
+        }
     }
 }

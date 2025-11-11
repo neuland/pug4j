@@ -24,36 +24,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Template engine for loading, parsing, and caching Pug templates.
- * <p>
- * This is the main entry point for the Pug4J API. Create a PugEngine instance
- * with the desired configuration, then use it to load templates that can be
- * rendered with different models and contexts.
- * </p>
- *
- * <p>Example usage:</p>
- * <pre>{@code
- * PugEngine engine = PugEngine.builder()
- *     .templateLoader(FileTemplateLoader.builder()
- *         .templateLoaderPath("/templates")
- *         .build())
- *     .filter("markdown", new MarkdownFilter())
- *     .caching(true)
- *     .build();
- *
- * PugTemplate template = engine.getTemplate("index");
- * String html = template.render(model, RenderContext.defaults());
- * }</pre>
- *
- * @since 3.0.0
- */
 public class PugEngine {
 
     private static final String FILTER_CDATA = "cdata";
     private static final String FILTER_CSS = "css";
     private static final String FILTER_JS = "js";
-    private static final long MAX_CACHE_ENTRIES = 1000L;
+    private static final long DEFAULT_MAX_CACHE_ENTRIES = 1000L;
+    private static final int DEFAULT_EXPRESSION_CACHE_SIZE = 5000;
 
     private final TemplateLoader templateLoader;
     private final ExpressionHandler expressionHandler;
@@ -66,10 +43,18 @@ public class PugEngine {
         this.expressionHandler = builder.expressionHandler;
         this.caching = builder.caching;
         this.filters = Collections.unmodifiableMap(new HashMap<>(builder.filters));
-        this.cache = Caffeine.newBuilder().maximumSize(MAX_CACHE_ENTRIES).build();
+        this.cache = Caffeine.newBuilder().maximumSize(builder.maxCacheSize).build();
 
         // Configure expression handler caching
-        this.expressionHandler.setCache(this.caching);
+        if (builder.caching) {
+            if (expressionHandler instanceof JexlExpressionHandler) {
+                ((JexlExpressionHandler) expressionHandler).setCacheSize(builder.expressionCacheSize);
+            } else {
+                expressionHandler.setCache(true);
+            }
+        } else {
+            expressionHandler.setCache(false);
+        }
     }
 
     /**
@@ -275,6 +260,8 @@ public class PugEngine {
         private TemplateLoader templateLoader = new FileTemplateLoader();
         private ExpressionHandler expressionHandler = new JexlExpressionHandler();
         private boolean caching = true;
+        private long maxCacheSize = DEFAULT_MAX_CACHE_ENTRIES;
+        private int expressionCacheSize = DEFAULT_EXPRESSION_CACHE_SIZE;
         private Map<String, Filter> filters = new HashMap<>();
 
         private Builder() {
@@ -320,6 +307,38 @@ public class PugEngine {
          */
         public Builder caching(boolean caching) {
             this.caching = caching;
+            return this;
+        }
+
+        /**
+         * Sets the maximum number of entries in the template cache.
+         * Only applies when caching is enabled.
+         *
+         * @param maxCacheSize the maximum cache size (must be positive)
+         * @return this builder for method chaining
+         * @throws IllegalArgumentException if maxCacheSize is not positive
+         */
+        public Builder maxCacheSize(long maxCacheSize) {
+            if (maxCacheSize <= 0) {
+                throw new IllegalArgumentException("maxCacheSize must be positive");
+            }
+            this.maxCacheSize = maxCacheSize;
+            return this;
+        }
+
+        /**
+         * Sets the expression handler cache size.
+         * Only applies when caching is enabled and the expression handler is a {@link JexlExpressionHandler}.
+         *
+         * @param expressionCacheSize the cache size (0 to disable, positive value to enable)
+         * @return this builder for method chaining
+         * @throws IllegalArgumentException if expressionCacheSize is negative
+         */
+        public Builder expressionCacheSize(int expressionCacheSize) {
+            if (expressionCacheSize < 0) {
+                throw new IllegalArgumentException("expressionCacheSize must be non-negative");
+            }
+            this.expressionCacheSize = expressionCacheSize;
             return this;
         }
 

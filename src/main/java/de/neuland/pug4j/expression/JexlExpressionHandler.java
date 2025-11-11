@@ -111,6 +111,30 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
         jexl = getJexlEngine(options);
     }
 
+    /**
+     * Sets the expression cache to a specific size.
+     * A cache size of 0 disables caching.
+     *
+     * @param cacheSize the cache size (0 to disable, positive value to enable with specific size)
+     * @throws IllegalArgumentException if cacheSize is negative
+     */
+    public void setCacheSize(int cacheSize) {
+        if (cacheSize < 0) {
+            throw new IllegalArgumentException("cacheSize must be non-negative");
+        }
+        options.setCache(cacheSize);
+        jexl = getJexlEngine(options);
+    }
+
+    /**
+     * Gets the current expression cache size.
+     *
+     * @return the cache size
+     */
+    public int getCacheSize() {
+        return options.getCache();
+    }
+
     public void clearCache() {
         jexl.clearCache();
     }
