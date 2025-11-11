@@ -57,11 +57,11 @@ public class Pug4J {
         pretty ? RenderContext.builder().prettyPrint(true).build() : RenderContext.defaults();
 
     PugTemplate template = engine.getTemplate(filePath);
-    template.render(model, context, engine, writer);
+    engine.render(template, model, context, writer);
   }
 
   /**
-   * @deprecated Use {@link PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(PugTemplate template, Map<String, Object> model)
@@ -70,19 +70,19 @@ public class Pug4J {
   }
 
   /**
-   * @deprecated Use {@link PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(PugTemplate template, Map<String, Object> model, boolean pretty)
       throws PugCompilerException {
+    PugEngine engine = PugEngine.builder().build();
     RenderContext context =
         pretty ? RenderContext.builder().prettyPrint(true).build() : RenderContext.defaults();
-    PugEngine engine = PugEngine.builder().build();
-    return template.render(model, context, engine);
+    return engine.render(template, model, context);
   }
 
   /**
-   * @deprecated Use {@link PugTemplate#render(Map, RenderContext, PugEngine, Writer)} instead.
+   * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext, Writer)} instead.
    */
   @Deprecated
   public static void render(PugTemplate template, Map<String, Object> model, Writer writer)
@@ -91,21 +91,21 @@ public class Pug4J {
   }
 
   /**
-   * @deprecated Use {@link PugTemplate#render(Map, RenderContext, PugEngine, Writer)} instead.
+   * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext, Writer)} instead.
    */
   @Deprecated
   public static void render(
       PugTemplate template, Map<String, Object> model, Writer writer, boolean pretty)
       throws PugCompilerException {
+    PugEngine engine = PugEngine.builder().build();
     RenderContext context =
         pretty ? RenderContext.builder().prettyPrint(true).build() : RenderContext.defaults();
-    PugEngine engine = PugEngine.builder().build();
-    template.render(model, context, engine, writer);
+    engine.render(template, model, context, writer);
   }
 
   /**
    * @deprecated This method is rarely used. Create a {@link PugEngine} and use {@link
-   *     PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(URL url, Map<String, Object> model)
@@ -115,7 +115,7 @@ public class Pug4J {
 
   /**
    * @deprecated This method is rarely used. Create a {@link PugEngine} and use {@link
-   *     PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(URL url, Map<String, Object> model, boolean pretty)
@@ -127,14 +127,14 @@ public class Pug4J {
       RenderContext context =
           pretty ? RenderContext.builder().prettyPrint(true).build() : RenderContext.defaults();
       PugTemplate template = engine.getTemplate(url.getPath());
-      return template.render(model, context, engine);
+      return engine.render(template, model, context);
     }
   }
 
   /**
    * @deprecated This method is rarely used. Create a {@link PugEngine} with {@link
    *     de.neuland.pug4j.template.ReaderTemplateLoader} and use {@link
-   *     PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(Reader reader, String filename, Map<String, Object> model)
@@ -145,7 +145,7 @@ public class Pug4J {
   /**
    * @deprecated This method is rarely used. Create a {@link PugEngine} with {@link
    *     de.neuland.pug4j.template.ReaderTemplateLoader} and use {@link
-   *     PugTemplate#render(Map, RenderContext, PugEngine)} instead.
+   *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
   @Deprecated
   public static String render(
@@ -156,9 +156,14 @@ public class Pug4J {
     RenderContext context =
         pretty ? RenderContext.builder().prettyPrint(true).build() : RenderContext.defaults();
     PugTemplate template = engine.getTemplate(filename);
-    return template.render(model, context, engine);
+    return engine.render(template, model, context);
   }
 
+  /**
+   * @deprecated This method is not part of the simple API. Create a {@link PugEngine} and use
+   *     {@link PugEngine#getTemplate(String)} instead.
+   */
+  @Deprecated
   public static PugTemplate getTemplate(String filename) throws IOException {
     if (filename == null) {
       throw new IllegalArgumentException("Filename can not be null");
@@ -175,6 +180,11 @@ public class Pug4J {
     return engine.getTemplate(filePath);
   }
 
+  /**
+   * @deprecated This method is not part of the simple API. Create a {@link PugEngine} and use
+   *     {@link PugEngine#getTemplate(String)} instead.
+   */
+  @Deprecated
   public static PugTemplate getTemplate(String filename, String extension) throws IOException {
     if (filename == null) {
       throw new IllegalArgumentException("Filename can not be null");

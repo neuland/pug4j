@@ -11,7 +11,6 @@ import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.CssFilter;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.filter.JsFilter;
-import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.template.FileTemplateLoader;
@@ -110,12 +109,23 @@ public class PugConfiguration {
 
   public void renderTemplate(PugTemplate template, Map<String, Object> model, Writer writer)
       throws PugCompilerException {
-    PugModel pugModel = new PugModel(sharedVariables);
-    for (String filterName : filters.keySet()) {
-      pugModel.addFilter(filterName, filters.get(filterName));
-    }
-    pugModel.putAll(model);
-    template.process(pugModel, writer, this);
+    // Convert deprecated PugConfiguration to new API
+    PugEngine engine =
+        PugEngine.builder()
+            .templateLoader(templateLoader)
+            .expressionHandler(expressionHandler)
+            .caching(caching)
+            .filters(filters)
+            .build();
+
+    RenderContext context =
+        RenderContext.builder()
+            .prettyPrint(prettyPrint)
+            .defaultMode(mode)
+            .globalVariables(sharedVariables)
+            .build();
+
+    engine.render(template, model, context, writer);
   }
 
   public String renderTemplate(PugTemplate template, Map<String, Object> model)

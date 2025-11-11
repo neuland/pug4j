@@ -2,6 +2,7 @@ package de.neuland.pug4j;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import de.neuland.pug4j.compiler.Compiler;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.exceptions.PugException;
 import de.neuland.pug4j.expression.ExpressionHandler;
@@ -10,12 +11,14 @@ import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.CssFilter;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.filter.JsFilter;
+import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.TemplateLoader;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Path;
@@ -195,9 +198,7 @@ public class PugEngine {
   }
 
   /**
-   * Renders a template with the given model and render context, writing output to a Writer. This is
-   * a convenience method that delegates to {@link PugTemplate#render(Map, RenderContext, PugEngine,
-   * Writer)}.
+   * Renders a template with the given model and render context, writing output to a Writer.
    *
    * @param template the template to render
    * @param model the model data
@@ -209,13 +210,37 @@ public class PugEngine {
   public void render(
       PugTemplate template, Map<String, Object> model, RenderContext context, Writer writer)
       throws PugCompilerException {
-    template.render(model, context, this, writer);
+    if (template == null) {
+      throw new IllegalArgumentException("template cannot be null");
+    }
+    if (model == null) {
+      throw new IllegalArgumentException("model cannot be null");
+    }
+    if (context == null) {
+      throw new IllegalArgumentException("context cannot be null");
+    }
+    if (writer == null) {
+      throw new IllegalArgumentException("writer cannot be null");
+    }
+
+    // Create PugModel with global variables from context
+    PugModel pugModel = new PugModel(context.getGlobalVariables());
+
+    // Add all filters from the engine
+    for (Map.Entry<String, Filter> entry : filters.entrySet()) {
+      pugModel.addFilter(entry.getKey(), entry.getValue());
+    }
+
+    // Add user model data
+    pugModel.putAll(model);
+
+    // Compile and render
+    Compiler compiler = new Compiler(template, context, this);
+    compiler.compile(pugModel, writer);
   }
 
   /**
    * Renders a template with the given model and render context, returning the result as a String.
-   * This is a convenience method that delegates to {@link PugTemplate#render(Map, RenderContext,
-   * PugEngine)}.
    *
    * @param template the template to render
    * @param model the model data
@@ -226,12 +251,13 @@ public class PugEngine {
    */
   public String render(PugTemplate template, Map<String, Object> model, RenderContext context)
       throws PugCompilerException {
-    return template.render(model, context, this);
+    StringWriter writer = new StringWriter();
+    render(template, model, context, writer);
+    return writer.toString();
   }
 
   /**
-   * Renders a template with the given model using default render settings. This is a convenience
-   * method that delegates to {@link PugTemplate#render(Map, PugEngine)}.
+   * Renders a template with the given model using default render settings.
    *
    * @param template the template to render
    * @param model the model data
@@ -241,7 +267,7 @@ public class PugEngine {
    */
   public String render(PugTemplate template, Map<String, Object> model)
       throws PugCompilerException {
-    return template.render(model, this);
+    return render(template, model, RenderContext.defaults());
   }
 
   private PugTemplate createTemplate(String name) throws PugException, IOException {
