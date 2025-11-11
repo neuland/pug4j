@@ -89,7 +89,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>2.4.0</version>
+  <version>3.0.0</version>
 </dependency>
 ```
 
@@ -113,89 +113,126 @@ mvn install
 <a name="simple-api"></a>
 ## Simple static API
 
-Parsing template and generating template in one step.
+The simple static API provides the easiest way to render templates in one step:
 
 ```java
 String html = Pug4J.render("./index.pug", model);
 ```
 
-If you use this in production you would probably do the template parsing only once per template and call the render method with different models.
+With pretty printing:
 
 ```java
-PugTemplate template = Pug4J.getTemplate("./index.pug");
-String html = Pug4J.render(template, model);
+String html = Pug4J.render("./index.pug", model, true);
 ```
 
-Streaming output using a `java.io.Writer`
+Streaming output using a `java.io.Writer`:
 
 ```java
-Pug4J.render(template, model, writer);
+Pug4J.render("./index.pug", model, writer);
 ```
+
+**Note:** For production use with template reuse, use the Full API below which provides caching and more control.
 
 <a name="api"></a>
 ## Full API
 
-If you need more control you can instantiate a `PugConfiguration` object.
-Pug4J needs a Base path, so that it can determine the parent path. In the simple static API the basePath is empty.
-To configure a basePath. You need to use the FileTemplateLoader or ClassPathTemplateLoader and set setBase("").
-Example for template location: /root/dir/base/path/index.pug
+For production use, create a `PugEngine` instance with the builder pattern. This separates template loading/caching (engine) from render-time settings (context).
+
+**Quick setup:**
 
 ```java
-FileTemplateLoader fileLoader = new FileTemplateLoader("/root/dir/");
-fileLoader.setBase("base/path");
+PugEngine engine = PugEngine.forPath("/templates/");
+PugTemplate template = engine.getTemplate("index.pug");
+String html = engine.render(template, model);
+```
 
-PugConfiguration config = new PugConfiguration();
-config.setTemplateLoader(fileLoader);
+**Advanced configuration:**
 
-PugTemplate template = config.getTemplate("/index");
+```java
+// Configure template loading
+FileTemplateLoader loader = new FileTemplateLoader("/root/dir/");
+loader.setBase("base/path");
 
-Map<String, Object> model = new HashMap<String, Object>();
+// Build engine with settings
+PugEngine engine = PugEngine.builder()
+    .templateLoader(loader)
+    .caching(true)
+    .build();
+
+// Get template (cached automatically)
+PugTemplate template = engine.getTemplate("index.pug");
+
+// Prepare model
+Map<String, Object> model = new HashMap<>();
 model.put("company", "neuland");
 
-config.renderTemplate(template, model);
+// Render with default settings
+String html = engine.render(template, model);
+
+// Or with custom render context
+RenderContext context = RenderContext.builder()
+    .prettyPrint(true)
+    .defaultMode(Pug4J.Mode.HTML)
+    .build();
+
+String prettyHtml = engine.render(template, model, context);
 ```
-Pug is now allowed to read all files below /root/dir/ but not in / and /root.
+
+**Key concepts:**
+- **PugEngine**: Immutable template factory - configure once, use many times
+- **RenderContext**: Immutable render settings - can be reused or created per-render
+- **PugTemplate**: Parsed template - obtained from engine, rendered via engine
 
 <a name="api-caching"></a>
 ### Caching
 
-The `PugConfiguration` handles template caching for you. If you request the same unmodified template twice you'll get the same instance and avoid unnecessary parsing.
+`PugEngine` handles template caching automatically. If you request the same unmodified template twice, you'll get the same instance and avoid unnecessary parsing.
 
 ```java
-PugTemplate t1 = config.getTemplate("index.pug");
-PugTemplate t2 = config.getTemplate("index.pug");
+PugTemplate t1 = engine.getTemplate("index.pug");
+PugTemplate t2 = engine.getTemplate("index.pug");
 t1.equals(t2) // true
 ```
 
-You can clear the template and expression cache by calling the following:
+Clear the template and expression cache:
 
 ```java
-config.clearCache();
+engine.clearCache();
 ```
 
-For development mode, you can also disable caching completely:
+Configure caching at build time:
 
 ```java
-config.setCaching(false);
+PugEngine engine = PugEngine.builder()
+    .caching(false)  // Disable for development
+    .maxCacheSize(500)  // Limit cache size
+    .expressionCacheSize(1000)  // Configure expression cache
+    .build();
 ```
 
 <a name="api-output"></a>
 ### Output Formatting
 
-By default, Pug4J produces compressed HTML without unneeded whitespace. You can change this behaviour by enabling PrettyPrint:
+By default, Pug4J produces compressed HTML without unneeded whitespace. You can enable pretty printing using `RenderContext`:
 
 ```java
-config.setPrettyPrint(true);
+RenderContext context = RenderContext.builder()
+    .prettyPrint(true)
+    .build();
+
+String html = engine.render(template, model, context);
 ```
 
 Pug detects if it has to generate (X)HTML or XML code by your specified [doctype](https://github.com/pugjs/pug#syntax).
 
-If you are rendering partial templates that don't include a doctype pug4j generates HTML code. You can also set the `mode` manually:
+If you are rendering partial templates that don't include a doctype, pug4j generates HTML code. You can set the `defaultMode` manually:
 
-```
-config.setMode(Pug4J.Mode.HTML);   // <input checked>
-config.setMode(Pug4J.Mode.XHTML);  // <input checked="true" />
-config.setMode(Pug4J.Mode.XML);    // <input checked="true"></input>
+```java
+RenderContext context = RenderContext.builder()
+    .defaultMode(Pug4J.Mode.HTML)   // <input checked>
+    .defaultMode(Pug4J.Mode.XHTML)  // <input checked="true" />
+    .defaultMode(Pug4J.Mode.XML)    // <input checked="true"></input>
+    .build();
 ```
 
 <a name="api-filters"></a>
@@ -212,9 +249,13 @@ will generate
     <h1>headline</h1>
     <p>hello <strong>world</strong></p>
 
-pug4j comes with a `plain` and `cdata` filter. `plain` takes your input to pass it directly through, `cdata` wraps your content in `<![CDATA[...]]>`. You can add your custom filters to your configuration.
+pug4j comes with built-in `cdata`, `css`, and `js` filters. You can add custom filters when building your engine:
 
-    config.setFilter("markdown", new MarkdownFilter());
+```java
+PugEngine engine = PugEngine.builder()
+    .filter("markdown", new MarkdownFilter())
+    .build();
+```
 
 To implement your own filter, you have to implement the `Filter` Interface. If your filter doesn't use any data from the model you can inherit from the abstract `CachingFilter` and also get caching for free. See the [neuland/jade4j-coffeescript-filter](https://github.com/neuland/jade4j-coffeescript-filter) project as an example.
 
@@ -242,16 +283,22 @@ p= math.round(1.44)
 ```
 
 <a name="api-model-defaults"></a>
-### Model Defaults
+### Model Defaults (Global Variables)
 
-If you are using multiple templates you might have the need for a set of default objects that are available in all templates.
+If you are using multiple templates, you might need default objects available in all renders. Use `globalVariables` in `RenderContext`:
 
 ```java
-Map<String, Object> defaults = new HashMap<String, Object>();
-defaults.put("city", "Bremen");
-defaults.put("country", "Germany");
-defaults.put("url", new MyUrlHelper());
-config.setSharedVariables(defaults);
+Map<String, Object> globals = new HashMap<>();
+globals.put("city", "Bremen");
+globals.put("country", "Germany");
+globals.put("url", new MyUrlHelper());
+
+RenderContext context = RenderContext.builder()
+    .globalVariables(globals)
+    .build();
+
+// These variables are now available in every render using this context
+String html = engine.render(template, model, context);
 ```
 
 <a name="api-records"></a>
@@ -302,14 +349,23 @@ div
 By default, pug4j searches for template files in your work directory. By specifying your own `FileTemplateLoader`, you can alter that behavior. You can also implement the `TemplateLoader` interface to create your own.
 
 ```java
-TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8"); //Defines the path under which all templates are found. You can't include templates from parent directory "/"
-loader.setBase("my-maintemplates/"); //the folder where all files starting with "/" are found. This where your main templates are.
-config.setTemplateLoader(loader);
-```
-* '/index' points to '/templates/my-maintemplates/index.pug'
-* 'index' points to '/templates/index.pug'
+TemplateLoader loader = new FileTemplateLoader("/templates/", "UTF-8");
+loader.setBase("my-maintemplates/");
 
-There is also a `ClasspathTemplateLoader` and `ReaderTemplateLoader`.
+PugEngine engine = PugEngine.builder()
+    .templateLoader(loader)
+    .build();
+```
+
+* `/index` points to `/templates/my-maintemplates/index.pug`
+* `index` points to `/templates/index.pug`
+
+**Available loaders:**
+- `FileTemplateLoader` - loads from filesystem
+- `ClasspathTemplateLoader` - loads from classpath
+- `ReaderTemplateLoader` - loads from Reader instances
+
+You can also implement the `TemplateLoader` interface to create your own custom loader.
 
 <a name="expressions"></a>
 ## Expressions
@@ -343,13 +399,13 @@ book["size"] // works
 You can read more about this in the [JEXL documentation](https://commons.apache.org/proper/commons-jexl/reference/syntax.html#Language_Elements).
 
 <a name="graalvm"></a>
-### GraalVM Expressionhandler (NEW! since 2.0.0 / experimental!)
-If you want to use pure javascript expression handling, you can try out the new GraalJS Expression Handler. It supports native javascript expressions but is slower (really slow!) than the Jexl Expression Handler. You can configure it like this:
+### GraalVM Expressionhandler (since 2.0.0 / experimental!)
+If you want to use pure JavaScript expression handling, you can use the GraalJS Expression Handler. It supports native JavaScript expressions but is significantly slower than the JEXL Expression Handler. Configure it when building your engine:
 
 ```java
-PugConfiguration config = new PugConfiguration();
-
-config.setExpressionHandler(new GraalJsExpressionHandler());
+PugEngine engine = PugEngine.builder()
+    .expressionHandler(new GraalJsExpressionHandler())
+    .build();
 ```
 
 
@@ -360,13 +416,28 @@ config.setExpressionHandler(new GraalJsExpressionHandler());
 
 <a name="breaking-changes-3"></a>
 ## Breaking Changes in 3.0.0
+
+### API Redesign
+- **`PugConfiguration` deprecated**: Replaced by immutable `PugEngine` and `RenderContext`
+  - **Migration required**: See examples in Full API section above
+  - Old API still works but will be removed in 4.0.0
+- **Templates no longer self-render**: Use `engine.render(template, model, context)` instead of `template.render(model, context)`
+- **Simple API changes**:
+  - `Pug4J.getTemplate()` methods deprecated (not part of simple API)
+  - Template-based `Pug4J.render(template, ...)` methods deprecated
+  - Use `Pug4J.render(filename, ...)` for simple cases or `PugEngine` for advanced use
+
+### Other Breaking Changes
 - **Java 17+ required**: Minimum Java version raised from Java 8 to Java 17
 - **Dependency updates**:
   - GraalVM updated to 25.0.0 (simplified dependencies using `polyglot` and `js-community`)
   - Caffeine cache updated to 3.2.2
   - Flexmark updated to 0.64.8
-- **New feature**: Java records support - records are now automatically wrapped when added to model
-- **Maven version updated**: Now version 3.0.0-SNAPSHOT
+
+### New Features
+- **Java records support**: Records are now automatically wrapped when added to model
+- **Immutable builder pattern**: Thread-safe configuration with builder pattern
+- **Better separation of concerns**: Template loading, caching, and rendering are clearly separated
 
 <a name="breaking-changes-2"></a>
 ## Breaking Changes in 2.0.0

@@ -6,6 +6,13 @@
   * GraalVM updated to 25.0.0 (simplified dependencies using `polyglot` and `js-community`)
   * Caffeine cache updated to 3.2.2
   * Flexmark updated to 0.64.8
+* **Major API redesign**: New immutable builder-based API
+  * **`PugConfiguration` deprecated**: Replaced by `PugEngine` and `RenderContext`
+  * **`PugEngine`**: Immutable template factory with builder pattern for configuration
+  * **`RenderContext`**: Immutable render-time settings (prettyPrint, defaultMode, globalVariables)
+  * Templates no longer self-render - use `engine.render(template, model, context)` instead
+  * Simple API (`Pug4J`) cleaned up: `getTemplate()` methods deprecated (not part of simple API)
+  * Deprecated template-based render methods in `Pug4J` class
 
 **New Features:**
 * **Java Records Support**: Records are now fully supported as model objects
@@ -15,21 +22,53 @@
   * Custom methods on records can be called using function syntax
   * Works with both JEXL (default) and GraalJS expression handlers
   * Immutable by design, matching record semantics
+* **New convenience methods**: `PugEngine.forPath(path)` for quick engine setup
+* **Configurable expression cache**: Separate control over template and expression caching
 
 **Improvements:**
 * Enhanced error handling in `RecordWrapper` with proper logging for reflection errors
 * Improved GraalVM integration with better proxy object handling for records
 * Custom `RecordWrapperUberspect` for JEXL to enable method calls on wrapped records
 * Added comprehensive test coverage for record support (both JEXL and GraalJS)
+* Better separation of concerns: template loading, caching, and rendering are now clearly separated
+* Thread-safe builder pattern for engine and context configuration
 
 **Bug Fixes:**
 * Fixed GraalJS Map handling issue that prevented ProxyObject methods from being called
 * Improved method resolution to avoid conflicts between property access and method calls
 
+**Migration Guide:**
+```java
+// Old API (2.x)
+PugConfiguration config = new PugConfiguration();
+config.setTemplateLoader(loader);
+config.setPrettyPrint(true);
+config.setMode(Mode.HTML);
+PugTemplate template = config.getTemplate("index");
+String html = config.renderTemplate(template, model);
+
+// New API (3.0+)
+PugEngine engine = PugEngine.builder()
+    .templateLoader(loader)
+    .build();
+
+RenderContext context = RenderContext.builder()
+    .prettyPrint(true)
+    .defaultMode(Mode.HTML)
+    .build();
+
+PugTemplate template = engine.getTemplate("index");
+String html = engine.render(template, model, context);
+
+// Or use the simple API
+String html = Pug4J.render("index.pug", model);
+```
+
 **Documentation:**
 * Added comprehensive Java Records documentation to README.md with examples
 * Updated CLAUDE.md to reflect new Java 17+ requirement
 * Added Breaking Changes section for 3.0.0
+* Updated API documentation with new PugEngine and RenderContext examples
 
 ## 2.4.0 / 2025-10-10
 * Refactored Compiler to use Visitor pattern instead of instanceof chain for improved maintainability
