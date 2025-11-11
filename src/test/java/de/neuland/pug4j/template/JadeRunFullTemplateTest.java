@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import de.neuland.pug4j.PugEngine;
 import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.TestFileHelper;
+import de.neuland.pug4j.UnitTestSetup;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.helper.beans.IterableMap;
 import java.io.FileNotFoundException;
@@ -24,10 +25,7 @@ public class JadeRunFullTemplateTest {
 
   @Before
   public void setUp() throws Exception {
-    engine =
-        PugEngine.builder()
-            .templateLoader(new FileTemplateLoader(Path.of(getResourcePath("")), "jade"))
-            .build();
+    engine = UnitTestSetup.createEngine(getResourcePath(""), "jade");
   }
 
   @Test

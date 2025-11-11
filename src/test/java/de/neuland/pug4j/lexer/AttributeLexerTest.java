@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.UnitTestSetup;
 import de.neuland.pug4j.lexer.token.Attribute;
 import de.neuland.pug4j.lexer.token.Token;
 import de.neuland.pug4j.parser.node.ExpressionString;
@@ -22,7 +23,7 @@ public class AttributeLexerTest {
 
   @Before
   public void setUp() throws Exception {
-    engine = PugEngine.builder().build();
+    engine = UnitTestSetup.createEngine();
   }
 
   private List<Token> findAttributes(String attributeString) {

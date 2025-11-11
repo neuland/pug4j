@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.UnitTestSetup;
 import de.neuland.pug4j.template.PugTemplate;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -22,7 +23,7 @@ public class TagNodeTest {
 
   @Before
   public void init() {
-    engine = PugEngine.builder().build();
+    engine = UnitTestSetup.createEngine();
   }
 
   @Test

@@ -27,16 +27,12 @@ public class RecordModelRenderTest {
   record PersonWithAddress(String name, int age, Address address) {}
 
   private PugEngine newGraalEngine(String pug) throws Exception {
-    ReaderTemplateLoader loader = new ReaderTemplateLoader(new StringReader(pug), "inline");
-    return PugEngine.builder()
-        .templateLoader(loader)
-        .expressionHandler(new GraalJsExpressionHandler())
-        .build();
+    return UnitTestSetup.createEngineFromReader(
+        new StringReader(pug), "inline", new GraalJsExpressionHandler());
   }
 
   private PugEngine newJexlEngine(String pug) throws Exception {
-    ReaderTemplateLoader loader = new ReaderTemplateLoader(new StringReader(pug), "inline");
-    return PugEngine.builder().templateLoader(loader).build();
+    return UnitTestSetup.createEngineFromReader(new StringReader(pug), "inline");
   }
 
   @Test
