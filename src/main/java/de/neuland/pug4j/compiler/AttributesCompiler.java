@@ -1,13 +1,14 @@
 package de.neuland.pug4j.compiler;
 
 import com.google.gson.Gson;
-import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.Attr;
 import de.neuland.pug4j.parser.node.AttrsNode;
 import de.neuland.pug4j.parser.node.ExpressionString;
+import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -16,12 +17,19 @@ import java.util.*;
 
 public class AttributesCompiler {
 
-
-    private final PugConfiguration configuration;
+    private final de.neuland.pug4j.PugEngine engine;
     private static final Gson gson = new Gson();
 
-    public AttributesCompiler(final PugConfiguration pugConfiguration) {
-        this.configuration = pugConfiguration;
+    public AttributesCompiler(final de.neuland.pug4j.PugEngine engine) {
+        this.engine = engine;
+    }
+
+    private ExpressionHandler getExpressionHandler() {
+        return engine.getExpressionHandler();
+    }
+
+    private TemplateLoader getTemplateLoader() {
+        return engine.getTemplateLoader();
     }
 
     protected String visitAttributes(PugModel model, final AttrsNode node, boolean terse) {
@@ -44,9 +52,9 @@ public class AttributesCompiler {
     private void addAttributesBlockToAttributesList(final PugModel model, final AttrsNode node, final String attributeBlockExpression, final LinkedList<Attr> newAttributes) {
         Object attributesBlock = null;
         try {
-            attributesBlock = configuration.getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
+            attributesBlock = getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
         if (attributesBlock instanceof Map) {
             Map<String, Object> map = (Map<String, Object>) attributesBlock;
@@ -56,7 +64,7 @@ public class AttributesCompiler {
                 newAttributes.add(attr);
             }
         } else {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
+            throw new PugCompilerException(node, getTemplateLoader(), "attribute block '" + attributeBlockExpression + "' is not a Map");
         }
     }
 
@@ -244,9 +252,9 @@ public class AttributesCompiler {
     private Object evaluateExpression(ExpressionString attribute, PugModel model, final AttrsNode node) {
         String expression = attribute.getValue();
         try {
-            return configuration.getExpressionHandler().evaluateExpression(expression, model);
+            return getExpressionHandler().evaluateExpression(expression, model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
     }
 

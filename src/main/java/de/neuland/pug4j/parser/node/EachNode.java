@@ -21,22 +21,33 @@ public class EachNode extends Node {
     private Node elseNode;
 
     @SuppressWarnings("unchecked")
-    public void run(IndentWriter writer, PugModel model, Object result, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+    public void run(IndentWriter writer, PugModel model, Object result,
+            de.neuland.pug4j.expression.ExpressionHandler expressionHandler,
+            de.neuland.pug4j.template.TemplateLoader templateLoader,
+            final Consumer<Node> nodeConsumer) {
         if (result instanceof Iterable<?>) {
-            runIterator(((Iterable<?>) result).iterator(), model, writer, configuration, nodeConsumer);
+            runIterator(((Iterable<?>) result).iterator(), model, writer, nodeConsumer);
         } else if (result.getClass().isArray()) {
             Iterator<?> iterator = IteratorUtils.arrayIterator(result);
-            runIterator(iterator, model, writer, configuration, nodeConsumer);
+            runIterator(iterator, model, writer, nodeConsumer);
         } else if (result instanceof Map) {
-            runMap((Map<Object, Object>) result, model, writer, configuration, nodeConsumer);
+            runMap((Map<Object, Object>) result, model, writer, nodeConsumer);
         }
     }
 
-    private void runIterator(Iterator<?> iterator, PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+    /**
+     * @deprecated Use run(IndentWriter, PugModel, Object, ExpressionHandler, TemplateLoader, Consumer) instead
+     */
+    @Deprecated
+    public void run(IndentWriter writer, PugModel model, Object result, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+        run(writer, model, result, configuration.getExpressionHandler(), configuration.getTemplateLoader(), nodeConsumer);
+    }
+
+    private void runIterator(Iterator<?> iterator, PugModel model, IndentWriter writer, final Consumer<Node> nodeConsumer) {
         int index = 0;
 
         if (!iterator.hasNext()) {
-            executeElseNode(model, writer, configuration, nodeConsumer);
+            executeElseNode(model, writer, nodeConsumer);
             return;
         }
 
@@ -48,10 +59,10 @@ public class EachNode extends Node {
         }
     }
 
-    private void runMap(Map<Object, Object> result, PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+    private void runMap(Map<Object, Object> result, PugModel model, IndentWriter writer, final Consumer<Node> nodeConsumer) {
         Set<Object> keys = result.keySet();
         if (keys.isEmpty()) {
-            executeElseNode(model, writer, configuration, nodeConsumer);
+            executeElseNode(model, writer, nodeConsumer);
             return;
         }
         for (Object key : keys) {
@@ -61,7 +72,7 @@ public class EachNode extends Node {
         }
     }
 
-    private void executeElseNode(PugModel model, IndentWriter writer, PugConfiguration configuration, final Consumer<Node> nodeConsumer) {
+    private void executeElseNode(PugModel model, IndentWriter writer, final Consumer<Node> nodeConsumer) {
         if (elseNode != null) {
             nodeConsumer.accept(elseNode);
         }

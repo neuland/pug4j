@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
@@ -43,15 +45,23 @@ public class CompilerTagErrorTest {
     }
 
     private void run(String testName, boolean pretty, PugModel model) throws IOException, URISyntaxException {
-        Parser parser = null;
-        PugConfiguration pugConfiguration = new PugConfiguration();
-        pugConfiguration.setPrettyPrint(pretty);
         FileTemplateLoader loader = new FileTemplateLoader(TestFileHelper.getCompilerErrorsResourcePath(""),
                     "jade");
-        parser = new Parser(testName, loader, pugConfiguration.getExpressionHandler());
+
+        JexlExpressionHandler expressionHandler = new JexlExpressionHandler();
+        PugEngine engine = PugEngine.builder()
+                .templateLoader(loader)
+                .expressionHandler(expressionHandler)
+                .build();
+
+        RenderContext context = RenderContext.builder()
+                .prettyPrint(pretty)
+                .build();
+
+        Parser parser = new Parser(testName, loader, expressionHandler);
         Node root = parser.parse();
         PugTemplate pugTemplate = new PugTemplate(root);
-        Compiler compiler = new Compiler(pugTemplate,pugConfiguration);
+        Compiler compiler = new Compiler(pugTemplate, context, engine);
         String expected = readFile(testName + ".html");
         model.addFilter("markdown", new MarkdownFilter());
         model.addFilter("plain", new PlainFilter());

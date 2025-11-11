@@ -5,7 +5,9 @@ import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
+import de.neuland.pug4j.template.TemplateLoader;
 
 import java.util.LinkedList;
 
@@ -72,16 +74,24 @@ public class TagNode extends AttrsNode {
         return everyIsInline(nodes);
     }
 
-    public String bufferName(PugConfiguration configuration, PugModel model) {
+    public String bufferName(ExpressionHandler expressionHandler, TemplateLoader templateLoader, PugModel model) {
         if (isInterpolated()) {
             try {
-                return configuration.getExpressionHandler().evaluateStringExpression(name, model);
+                return expressionHandler.evaluateStringExpression(name, model);
             } catch (ExpressionException e) {
-                throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
+                throw new PugCompilerException(this, templateLoader, e);
             }
         } else {
             return name;
         }
+    }
+
+    /**
+     * @deprecated Use bufferName(ExpressionHandler, TemplateLoader, PugModel) instead
+     */
+    @Deprecated
+    public String bufferName(PugConfiguration configuration, PugModel model) {
+        return bufferName(configuration.getExpressionHandler(), configuration.getTemplateLoader(), model);
     }
 
     public boolean isSelfClosingTag() {

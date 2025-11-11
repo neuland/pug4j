@@ -13,19 +13,30 @@ public class FilterNode extends AttrsNode {
 
     private LinkedList<IncludeFilterNode> filters = new LinkedList<>();
 
-    public Map<String, Object> convertToFilterAttributes(PugConfiguration configuration, PugModel model, LinkedList<Attr> attributes) {
+    public Map<String, Object> convertToFilterAttributes(
+            de.neuland.pug4j.expression.ExpressionHandler expressionHandler,
+            de.neuland.pug4j.template.TemplateLoader templateLoader,
+            PugModel model, LinkedList<Attr> attributes) {
         Map<String, Object> evaluatedAttributes = new HashMap<>();
         for (Attr attribute : attributes) {
             if (attribute.getValue() instanceof ExpressionString) {
                 try {
-                    evaluatedAttributes.put(attribute.getName(), configuration.getExpressionHandler().evaluateExpression(((ExpressionString) attribute.getValue()).getValue(), model));
+                    evaluatedAttributes.put(attribute.getName(), expressionHandler.evaluateExpression(((ExpressionString) attribute.getValue()).getValue(), model));
                 } catch (ExpressionException e) {
-                    throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
+                    throw new PugCompilerException(this, templateLoader, e);
                 }
             } else
                 evaluatedAttributes.put(attribute.getName(), attribute.getValue());
         }
         return evaluatedAttributes;
+    }
+
+    /**
+     * @deprecated Use convertToFilterAttributes(ExpressionHandler, TemplateLoader, PugModel, LinkedList) instead
+     */
+    @Deprecated
+    public Map<String, Object> convertToFilterAttributes(PugConfiguration configuration, PugModel model, LinkedList<Attr> attributes) {
+        return convertToFilterAttributes(configuration.getExpressionHandler(), configuration.getTemplateLoader(), model, attributes);
     }
 
     public void setFilter(LinkedList<IncludeFilterNode> filters) {

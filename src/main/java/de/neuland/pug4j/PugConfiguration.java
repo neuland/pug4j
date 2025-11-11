@@ -25,6 +25,47 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @deprecated As of 3.0.0, replaced by {@link PugEngine} and {@link RenderContext}.
+ * <p>
+ * This class mixed three responsibilities: template loading, caching, and rendering configuration.
+ * The new API separates these concerns:
+ * </p>
+ * <ul>
+ *   <li>{@link PugEngine} - Template factory and cache manager</li>
+ *   <li>{@link RenderContext} - Render-time options (prettyPrint, defaultMode, globalVariables)</li>
+ * </ul>
+ *
+ * <p><strong>Migration example:</strong></p>
+ * <pre>{@code
+ * // Old API (2.x)
+ * PugConfiguration config = new PugConfiguration();
+ * config.setTemplateLoader(loader);
+ * config.setPrettyPrint(true);
+ * config.setMode(Mode.HTML);
+ * PugTemplate template = config.getTemplate("index");
+ * String html = config.renderTemplate(template, model);
+ *
+ * // New API (3.0+)
+ * PugEngine engine = PugEngine.builder()
+ *     .templateLoader(loader)
+ *     .build();
+ *
+ * RenderContext context = RenderContext.builder()
+ *     .prettyPrint(true)
+ *     .defaultMode(Mode.HTML)
+ *     .build();
+ *
+ * PugTemplate template = engine.getTemplate("index");
+ * String html = engine.render(template, model, context);
+ * }</pre>
+ *
+ * <p>This class will be removed in version 4.0.0.</p>
+ *
+ * @see PugEngine
+ * @see RenderContext
+ */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class PugConfiguration {
 
     private static final String FILTER_CDATA = "cdata";

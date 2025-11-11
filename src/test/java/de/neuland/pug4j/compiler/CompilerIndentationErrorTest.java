@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.template.PugTemplate;
 import org.apache.commons.io.FileUtils;
@@ -47,12 +49,21 @@ public class CompilerIndentationErrorTest {
 
         FileTemplateLoader loader = new FileTemplateLoader(TestFileHelper.getCompilerErrorsResourcePath(""),
                 "jade");
-        PugConfiguration config = new PugConfiguration();
-        config.setPrettyPrint(pretty);
-        Parser parser = new Parser(testName, loader, new JexlExpressionHandler());
+
+        JexlExpressionHandler expressionHandler = new JexlExpressionHandler();
+        PugEngine engine = PugEngine.builder()
+                .templateLoader(loader)
+                .expressionHandler(expressionHandler)
+                .build();
+
+        RenderContext context = RenderContext.builder()
+                .prettyPrint(pretty)
+                .build();
+
+        Parser parser = new Parser(testName, loader, expressionHandler);
         Node root = parser.parse();
         PugTemplate pugTemplate = new PugTemplate(root);
-        Compiler compiler = new Compiler(pugTemplate,config);
+        Compiler compiler = new Compiler(pugTemplate, context, engine);
         String expected = readFile(testName + ".html");
         model.addFilter("markdown", new MarkdownFilter());
         model.addFilter("plain", new PlainFilter());

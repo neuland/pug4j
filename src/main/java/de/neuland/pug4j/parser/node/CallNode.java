@@ -30,7 +30,9 @@ public class CallNode extends AttrsNode {
         return result;
     }
 
-    public LinkedHashMap<String, Object> getMixinVariables(PugModel model, MixinNode mixin, PugConfiguration configuration) {
+    public LinkedHashMap<String, Object> getMixinVariables(PugModel model, MixinNode mixin,
+            de.neuland.pug4j.expression.ExpressionHandler expressionHandler,
+            de.neuland.pug4j.template.TemplateLoader templateLoader) {
         LinkedHashMap<String, Object> mixinVariables = new LinkedHashMap<>();
         List<String> names = mixin.getArguments();
         List<String> values = arguments;
@@ -47,9 +49,9 @@ public class CallNode extends AttrsNode {
             }
             if (valueExpression != null) {
                 try {
-                    value = configuration.getExpressionHandler().evaluateExpression(valueExpression, model);
+                    value = expressionHandler.evaluateExpression(valueExpression, model);
                 } catch (Throwable e) {
-                    throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
+                    throw new PugCompilerException(this, templateLoader, e);
                 }
             }
             if (key != null) {
@@ -65,9 +67,9 @@ public class CallNode extends AttrsNode {
                 }
                 if (value != null) {
                     try {
-                        value = configuration.getExpressionHandler().evaluateExpression(values.get(i), model);
+                        value = expressionHandler.evaluateExpression(values.get(i), model);
                     } catch (Throwable e) {
-                        throw new PugCompilerException(this, configuration.getTemplateLoader(), e);
+                        throw new PugCompilerException(this, templateLoader, e);
                     }
                 }
                 restArguments.add(value);
@@ -75,6 +77,14 @@ public class CallNode extends AttrsNode {
             mixinVariables.put(mixin.getRest(), restArguments);
         }
         return mixinVariables;
+    }
+
+    /**
+     * @deprecated Use getMixinVariables(PugModel, MixinNode, ExpressionHandler, TemplateLoader) instead
+     */
+    @Deprecated
+    public LinkedHashMap<String, Object> getMixinVariables(PugModel model, MixinNode mixin, PugConfiguration configuration) {
+        return getMixinVariables(model, mixin, configuration.getExpressionHandler(), configuration.getTemplateLoader());
     }
 
     public List<String> getArguments() {

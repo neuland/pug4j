@@ -5,7 +5,7 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.Consumer;
 
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
@@ -13,6 +13,7 @@ import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.*;
 import de.neuland.pug4j.template.PugTemplate;
+import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -21,14 +22,24 @@ import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 public class Compiler implements NodeVisitor {
 
     private final PugTemplate template;
-    private final PugConfiguration configuration;
+    private final RenderContext context;
+    private final de.neuland.pug4j.PugEngine engine;
     private String bufferedExpressionString = "";
     private final AttributesCompiler attributesCompiler;
 
-    public Compiler(PugTemplate pugTemplate, PugConfiguration configuration) {
+    public Compiler(PugTemplate pugTemplate, RenderContext context, de.neuland.pug4j.PugEngine engine) {
         this.template = pugTemplate;
-        this.configuration = configuration;
-        this.attributesCompiler = new AttributesCompiler(configuration);
+        this.context = context;
+        this.engine = engine;
+        this.attributesCompiler = new AttributesCompiler(engine);
+    }
+
+    private ExpressionHandler getExpressionHandler() {
+        return engine.getExpressionHandler();
+    }
+
+    private TemplateLoader getTemplateLoader() {
+        return engine.getTemplateLoader();
     }
 
     public String compileToString(PugModel model) throws PugCompilerException {
@@ -39,7 +50,7 @@ public class Compiler implements NodeVisitor {
 
     public void compile(PugModel model, Writer w) throws PugCompilerException {
         IndentWriter writer = new IndentWriter(w);
-        writer.setUseIndent(configuration.isPrettyPrint());
+        writer.setUseIndent(context.isPrettyPrint());
         visit(writer, model, template.getRootNode());
 
     }
@@ -66,7 +77,7 @@ public class Compiler implements NodeVisitor {
             writer.prettyIndent(0, true);
         }
 
-        final String tagName = node.bufferName(configuration, model);
+        final String tagName = node.bufferName(getExpressionHandler(), getTemplateLoader(), model);
         final boolean terse = template.isTerse();
         final String tagAttributes = attributesCompiler.visitAttributes(model, node, terse);
 
@@ -136,9 +147,9 @@ public class Compiler implements NodeVisitor {
             }
 
             try {
-                configuration.getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
+                getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
             } catch (ExpressionException e) {
-                throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+                throw new PugCompilerException(node, getTemplateLoader(), e);
             }
             bufferedExpressionString = "";
         }
@@ -166,9 +177,9 @@ public class Compiler implements NodeVisitor {
 
         String newname = (dynamic ? node.getName().substring(2, node.getName().length() - 1) : '"' + node.getName() + '"');
         try {
-            newname = (String) configuration.getExpressionHandler().evaluateExpression(newname, model);
+            newname = (String) getExpressionHandler().evaluateExpression(newname, model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
 
         MixinNode mixin;
@@ -176,7 +187,7 @@ public class Compiler implements NodeVisitor {
         mixin = model.getMixin(mixinname);
 
         if (mixin == null) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), "mixin " + node.getName() + " is not defined");
+            throw new PugCompilerException(node, getTemplateLoader(), "mixin " + node.getName() + " is not defined");
         }
 
         // Clone mixin
@@ -197,9 +208,9 @@ public class Compiler implements NodeVisitor {
         if (node.isCall()) {
             model.pushScope();
             model.putLocal("block", node.getBlock());
-            final LinkedHashMap<String, Object> mixinVariables = node.getMixinVariables(model, mixin, configuration);
+            final LinkedHashMap<String, Object> mixinVariables = node.getMixinVariables(model, mixin, getExpressionHandler(), getTemplateLoader());
             model.putAll(mixinVariables);
-            Map<String, String> attrs = new AttributesCompiler(configuration).getAttributesMap(model, node, template.isTerse());
+            Map<String, String> attrs = attributesCompiler.getAttributesMap(model, node, template.isTerse());
             model.putLocal("attributes", attrs);
 
             visit(writer, model, mixin.getBlock());
@@ -213,7 +224,7 @@ public class Compiler implements NodeVisitor {
         try {
             boolean skip = false;
             for (Node when : node.getBlock().getNodes()) {
-                if (skip || "default".equals(when.getValue()) || node.checkCondition(model, when, configuration.getExpressionHandler())) {
+                if (skip || "default".equals(when.getValue()) || node.checkCondition(model, when, getExpressionHandler())) {
                     if (when.getBlock() != null) {
                         visit(writer, model, when);
                         break;
@@ -223,7 +234,7 @@ public class Compiler implements NodeVisitor {
                 }
             }
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
     }
 
@@ -244,12 +255,12 @@ public class Compiler implements NodeVisitor {
     public void visit(ConditionalNode node, IndentWriter writer, PugModel model) {
         for (IfConditionNode conditionNode : node.getConditions()) {
             try {
-                if (conditionNode.isDefault() || node.checkCondition(model, conditionNode.getValue(), configuration.getExpressionHandler()) ^ conditionNode.isInverse()) {
+                if (conditionNode.isDefault() || node.checkCondition(model, conditionNode.getValue(), getExpressionHandler()) ^ conditionNode.isInverse()) {
                     visit(writer, model, conditionNode.getBlock());
                     return;
                 }
             } catch (ExpressionException e) {
-                throw new PugCompilerException(conditionNode, configuration.getTemplateLoader(), e);
+                throw new PugCompilerException(conditionNode, getTemplateLoader(), e);
             }
         }
     }
@@ -263,16 +274,16 @@ public class Compiler implements NodeVisitor {
     public void visit(EachNode node, IndentWriter writer, PugModel model) {
         Object result;
         try {
-            result = configuration.getExpressionHandler().evaluateExpression(node.getCode(), model);
+            result = getExpressionHandler().evaluateExpression(node.getCode(), model);
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
         if (result == null) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), "[" + node.getCode() + "] has to be iterable but was null");
+            throw new PugCompilerException(node, getTemplateLoader(), "[" + node.getCode() + "] has to be iterable but was null");
         }
         model.pushScope();
         final Consumer<Node> nodeConsumer = (Node lambdaNode) -> visit(writer, model, lambdaNode);
-        node.run(writer, model, result, configuration, nodeConsumer);
+        node.run(writer, model, result, getExpressionHandler(), getTemplateLoader(), nodeConsumer);
         model.popScope();
     }
 
@@ -317,9 +328,9 @@ public class Compiler implements NodeVisitor {
         } else {
             Object result = null;
             try {
-                result = configuration.getExpressionHandler().evaluateExpression(value, model);
+                result = getExpressionHandler().evaluateExpression(value, model);
             } catch (ExpressionException e) {
-                throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+                throw new PugCompilerException(node, getTemplateLoader(), e);
             }
             if (result == null || !node.isBuffer()) {
                 return;
@@ -361,14 +372,13 @@ public class Compiler implements NodeVisitor {
             values.add(node1.getValue());
         }
 
-        ExpressionHandler expressionHandler = configuration.getExpressionHandler();
         String result = StringUtils.join(values, "");
         //For example:
         //:cdata:custom():custom1()
         for (FilterNode filterValue : nestedFilterNodes) {
             Filter filter = model.getFilter(filterValue.getValue());
             if (filter != null) {
-                result = filter.convert(result, node.convertToFilterAttributes(configuration, model, filterValue.getAttributes()), model);
+                result = filter.convert(result, node.convertToFilterAttributes(getExpressionHandler(), getTemplateLoader(), model, filterValue.getAttributes()), model);
             }
         }
 
@@ -376,7 +386,7 @@ public class Compiler implements NodeVisitor {
         //:cdata
         Filter filter = model.getFilter(node.getValue());
         if (filter != null) {
-            result = filter.convert(result, node.convertToFilterAttributes(configuration, model, node.getAttributes()), model);
+            result = filter.convert(result, node.convertToFilterAttributes(getExpressionHandler(), getTemplateLoader(), model, node.getAttributes()), model);
         }
 
         //For example:
@@ -384,7 +394,7 @@ public class Compiler implements NodeVisitor {
         for (IncludeFilterNode filterValue : node.getFilters()) {
             filter = model.getFilter(filterValue.getValue());
             if (filter != null) {
-                result = filter.convert(result, node.convertToFilterAttributes(configuration, model, filterValue.getAttributes()), model);
+                result = filter.convert(result, node.convertToFilterAttributes(getExpressionHandler(), getTemplateLoader(), model, filterValue.getAttributes()), model);
             }
         }
         writer.append(result);
@@ -433,12 +443,12 @@ public class Compiler implements NodeVisitor {
     public void visit(WhileNode node, IndentWriter writer, PugModel model) {
         try {
             model.pushScope();
-            while (configuration.getExpressionHandler().evaluateBooleanExpression(node.getValue(), model)) {
+            while (getExpressionHandler().evaluateBooleanExpression(node.getValue(), model)) {
                 visit(writer, model, node.getBlock());
             }
             model.popScope();
         } catch (ExpressionException e) {
-            throw new PugCompilerException(node, configuration.getTemplateLoader(), e);
+            throw new PugCompilerException(node, getTemplateLoader(), e);
         }
     }
 

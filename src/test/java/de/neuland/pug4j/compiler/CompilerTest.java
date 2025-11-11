@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.exceptions.PugLexerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.filter.CssFilter;
@@ -445,12 +446,18 @@ public class CompilerTest {
 
 
         Node root = parser.parse();
-        PugConfiguration config = new PugConfiguration();
-        config.setPrettyPrint(pretty);
-        config.setTemplateLoader(loader);
-        config.setExpressionHandler(expressionHandler);
+
+        de.neuland.pug4j.PugEngine engine = de.neuland.pug4j.PugEngine.builder()
+                .templateLoader(loader)
+                .expressionHandler(expressionHandler)
+                .build();
+
+        RenderContext context = RenderContext.builder()
+                .prettyPrint(pretty)
+                .build();
+
         PugTemplate pugTemplate = new PugTemplate(root);
-        Compiler compiler = new Compiler(pugTemplate,config);
+        Compiler compiler = new Compiler(pugTemplate, context, engine);
 
         String expected = readFile(testName + expectedFileNameExtension);
         model.addFilter("markdown", new MarkdownFilter());
