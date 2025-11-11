@@ -5,8 +5,8 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 
 public class PugJexlBuilder extends JexlBuilder {
-    @Override
-    public JexlEngine create() {
-        return new PugJexlEngine(this);
-    }
+  @Override
+  public JexlEngine create() {
+    return new PugJexlEngine(this);
+  }
 }

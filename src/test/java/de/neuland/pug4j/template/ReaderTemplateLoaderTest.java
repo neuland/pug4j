@@ -1,52 +1,51 @@
 package de.neuland.pug4j.template;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
 public class ReaderTemplateLoaderTest {
-    
-    @Test
-    public void getReaderShouldReturnReaderIfNameExactlyMatches() throws IOException {
-        Reader reader = new StringReader("Hello #{foo}!");
-        ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template.jade");
 
-        Reader readerResult = templateLoader.getReader("template.jade");
+  @Test
+  public void getReaderShouldReturnReaderIfNameExactlyMatches() throws IOException {
+    Reader reader = new StringReader("Hello #{foo}!");
+    ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template.jade");
 
-        assertEquals(reader, readerResult);
-    }
+    Reader readerResult = templateLoader.getReader("template.jade");
 
-    @Test
-    public void getReaderShouldReturnReaderIfNameOfParameterIsWithoutExtension() throws IOException {
-        Reader reader = new StringReader("Hello #{foo}!");
-        ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template.pug");
+    assertEquals(reader, readerResult);
+  }
 
-        Reader readerResult = templateLoader.getReader("template");
+  @Test
+  public void getReaderShouldReturnReaderIfNameOfParameterIsWithoutExtension() throws IOException {
+    Reader reader = new StringReader("Hello #{foo}!");
+    ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template.pug");
 
-        assertEquals(reader, readerResult);
-    }
+    Reader readerResult = templateLoader.getReader("template");
 
-    @Test
-    public void getReaderShouldReturnReaderIfNameOfObjectIsWithoutExtension() throws IOException {
-        Reader reader = new StringReader("Hello #{foo}!");
-        ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template");
+    assertEquals(reader, readerResult);
+  }
 
-        Reader readerResult = templateLoader.getReader("template.pug");
+  @Test
+  public void getReaderShouldReturnReaderIfNameOfObjectIsWithoutExtension() throws IOException {
+    Reader reader = new StringReader("Hello #{foo}!");
+    ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template");
 
-        assertEquals(reader, readerResult);
-    }
+    Reader readerResult = templateLoader.getReader("template.pug");
 
-    @Test
-    public void getReaderShouldReturnReaderIfNameIsCompletelyWithoutExtension() throws IOException {
-        Reader reader = new StringReader("Hello #{foo}!");
-        ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template");
+    assertEquals(reader, readerResult);
+  }
 
-        Reader readerResult = templateLoader.getReader("template");
+  @Test
+  public void getReaderShouldReturnReaderIfNameIsCompletelyWithoutExtension() throws IOException {
+    Reader reader = new StringReader("Hello #{foo}!");
+    ReaderTemplateLoader templateLoader = new ReaderTemplateLoader(reader, "template");
 
-        assertEquals(reader, readerResult);
-    }
+    Reader readerResult = templateLoader.getReader("template");
 
+    assertEquals(reader, readerResult);
+  }
 }

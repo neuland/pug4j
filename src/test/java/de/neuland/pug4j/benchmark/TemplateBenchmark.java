@@ -3,14 +3,13 @@ package de.neuland.pug4j.benchmark;
 import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.template.ClasspathTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
-import org.openjdk.jmh.Main;
-import org.openjdk.jmh.annotations.*;
-
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.openjdk.jmh.Main;
+import org.openjdk.jmh.annotations.*;
 
 @Fork(1)
 @Warmup(iterations = 10)
@@ -19,36 +18,33 @@ import java.util.List;
 @State(Scope.Benchmark)
 public class TemplateBenchmark {
 
-    ClasspathTemplateLoader templateLoader = new ClasspathTemplateLoader();
+  ClasspathTemplateLoader templateLoader = new ClasspathTemplateLoader();
 
-    List<String> books = Arrays.asList("booka", "bookb", "bookc");
+  List<String> books = Arrays.asList("booka", "bookb", "bookc");
 
-    @Param({ "0", "1" })
-    public int templateId;
+  @Param({"0", "1"})
+  public int templateId;
 
-    HashMap<String, Object> model = new HashMap<>();
+  HashMap<String, Object> model = new HashMap<>();
 
+  PugConfiguration pug = new PugConfiguration();
 
-    PugConfiguration pug = new PugConfiguration();
+  @Setup(Level.Invocation)
+  public void setUp() {
+    pug.setTemplateLoader(templateLoader);
+    model.put("pageName", "Jade");
+    model.put("books", books);
+  }
 
-    @Setup(Level.Invocation)
-    public void setUp() {
-        pug.setTemplateLoader(templateLoader);
-        model.put("pageName", "Jade");
-        model.put("books", books);
-    }
+  @Benchmark
+  public void templates() throws Exception {
 
-    @Benchmark
-    public void templates() throws Exception {
+    Writer writer = new StringWriter();
+    PugTemplate template = pug.getTemplate("benchmark/simple" + templateId);
+    pug.renderTemplate(template, model, writer);
+  }
 
-        Writer writer = new StringWriter();
-        PugTemplate template =
-            pug.getTemplate("benchmark/simple" + templateId);
-        pug.renderTemplate(template, model, writer);
-
-    }
-
-    public static void main(String[] args) throws Exception {
-        Main.main(args);
-    }
+  public static void main(String[] args) throws Exception {
+    Main.main(args);
+  }
 }

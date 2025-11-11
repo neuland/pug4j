@@ -3,86 +3,80 @@ package de.neuland.pug4j.template;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.TestFileHelper;
+import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.helper.beans.IterableMap;
+import de.neuland.pug4j.model.PugModel;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import de.neuland.pug4j.helper.beans.IterableMap;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.TestFileHelper;
-import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.model.PugModel;
-
 public class JadeRunFullTemplateTest {
 
-    private PugConfiguration cfg = new PugConfiguration();
+  private PugConfiguration cfg = new PugConfiguration();
 
+  @Before
+  public void setUp() throws Exception {
+    cfg.setTemplateLoader(new FileTemplateLoader(getResourcePath(""), "jade"));
+  }
 
-    @Before
-    public void setUp() throws Exception {
-        cfg.setTemplateLoader(new FileTemplateLoader(getResourcePath(""), "jade"));
+  @Test
+  public void testFullRun() throws IOException {
+
+    Map<String, Object> root = new HashMap<String, Object>();
+    root.put("hello", "world");
+    root.put("hallo", null);
+    PugModel model = new PugModel(root);
+
+    PugTemplate temp = cfg.getTemplate("fullrun");
+
+    StringWriter out = new StringWriter();
+    try {
+      temp.process(model, out, cfg);
+    } catch (PugCompilerException e) {
+      e.printStackTrace();
+      fail();
     }
+    out.flush();
+    assertEquals("<div><div>Hi everybody</div></div>", out.toString());
+  }
 
-    @Test
-    public void testFullRun() throws IOException {
+  @Test
+  public void testEachLoopWithIterableMap() throws Exception {
 
-        Map<String, Object> root = new HashMap<String, Object>();
-        root.put("hello", "world");
-        root.put("hallo", null);
-        PugModel model = new PugModel(root);
+    IterableMap users = new IterableMap();
+    users.put("bob", "Robert Smith");
+    users.put("alex", "Alex Supertramp");
 
-        PugTemplate temp = cfg.getTemplate("fullrun");
+    Map<String, Object> root = new HashMap<String, Object>();
+    root.put("users", users);
+    PugModel model = new PugModel(root);
 
-        StringWriter out = new StringWriter();
-        try {
-            temp.process(model, out,cfg);
-        } catch (PugCompilerException e) {
-            e.printStackTrace();
-            fail();
-        }
-        out.flush();
-        assertEquals("<div><div>Hi everybody</div></div>", out.toString());
+    PugTemplate temp = cfg.getTemplate("each_loop");
 
+    StringWriter out = new StringWriter();
+    try {
+      temp.process(model, out, cfg);
+    } catch (PugCompilerException e) {
+      e.printStackTrace();
+      fail();
     }
+    out.flush();
+    assertEquals("<ul><li>Robert Smith</li><li>Alex Supertramp</li></ul>", out.toString());
+  }
 
-    @Test
-    public void testEachLoopWithIterableMap() throws Exception {
-
-        IterableMap users = new IterableMap();
-        users.put("bob", "Robert Smith");
-        users.put("alex", "Alex Supertramp");
-
-        Map<String, Object> root = new HashMap<String, Object>();
-        root.put("users", users);
-        PugModel model = new PugModel(root);
-
-        PugTemplate temp = cfg.getTemplate("each_loop");
-
-        StringWriter out = new StringWriter();
-        try {
-            temp.process(model, out, cfg);
-        } catch (PugCompilerException e) {
-            e.printStackTrace();
-            fail();
-        }
-        out.flush();
-        assertEquals("<ul><li>Robert Smith</li><li>Alex Supertramp</li></ul>", out.toString());
-
+  public String getResourcePath(String fileName) throws URISyntaxException {
+    try {
+      return TestFileHelper.getRootResourcePath() + "/template/" + fileName;
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
     }
-
-    public String getResourcePath(String fileName) throws URISyntaxException {
-        try {
-            return TestFileHelper.getRootResourcePath() + "/template/" + fileName;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    return null;
+  }
 }
-

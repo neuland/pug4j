@@ -5,18 +5,18 @@ import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.model.PugModel;
 
 public class CommentNode extends Node {
-    private boolean buffered;
+  private boolean buffered;
 
-    public boolean isBuffered() {
-        return buffered;
-    }
+  public boolean isBuffered() {
+    return buffered;
+  }
 
-    public void setBuffered(boolean buffered) {
-        this.buffered = buffered;
-    }
+  public void setBuffered(boolean buffered) {
+    this.buffered = buffered;
+  }
 
-    @Override
-    public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
-        visitor.visit(this, writer, model);
-    }
+  @Override
+  public void accept(NodeVisitor visitor, IndentWriter writer, PugModel model) {
+    visitor.visit(this, writer, model);
+  }
 }

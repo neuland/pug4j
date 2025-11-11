@@ -1,179 +1,178 @@
 package de.neuland.pug4j.lexer;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.gson.Gson;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.lexer.token.*;
 import de.neuland.pug4j.template.FileTemplateLoader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
-
 @RunWith(Parameterized.class)
 public class OriginalLexer_0_0_8_Test {
-    private static class ExpectedToken {
+  private static class ExpectedToken {
 
+    String type;
 
-        String type;
+    int line;
+    public int col;
 
-        int line;
-        public int col;
+    String name;
 
-        String name;
+    Object val;
 
-        Object val;
+    Boolean selfClosing;
 
-        Boolean selfClosing;
+    Boolean escape;
+    Boolean escaped;
 
-        Boolean escape;
-        Boolean escaped;
+    Boolean buffer;
+    String args;
+    String mode;
+  }
 
-        Boolean buffer;
-        String args;
-        String mode;
+  private static String[] ignoredCases = new String[] {"regression.784"};
+
+  private static Map<String, String> mappedTypes = new HashMap<String, String>();
+
+  static {
+    mappedTypes.put("attributelist", "attrs");
+    mappedTypes.put("cssid", "id");
+    mappedTypes.put("cssclass", "class");
+    mappedTypes.put("colon", ":");
+    mappedTypes.put("expression", "code");
+    mappedTypes.put("extendstoken", "extends");
+    mappedTypes.put("mixinblock", "mixin-block");
+    mappedTypes.put("pipelesstext", "start-pipeless-text");
+    mappedTypes.put("attributesblock", "&attributes");
+    mappedTypes.put("casetoken", "case");
+    mappedTypes.put("startpuginterpolation", "start-jade-interpolation");
+    mappedTypes.put("endpuginterpolation", "end-jade-interpolation");
+    mappedTypes.put("startpipelesstext", "start-pipeless-text");
+    mappedTypes.put("endpipelesstext", "end-pipeless-text");
+  }
+
+  private String typeOf(Token token) {
+    String simpleClassName = token.getClass().getSimpleName().toLowerCase();
+    if (mappedTypes.containsKey(simpleClassName)) {
+      return mappedTypes.get(simpleClassName);
     }
+    return simpleClassName;
+  }
 
-    private static String[] ignoredCases = new String[]{"regression.784"};
+  private String tokenToJsonLine(ExpectedToken expected) {
+    return new Gson().newBuilder().disableHtmlEscaping().create().toJson(expected);
+  }
 
-    private static Map<String, String> mappedTypes = new HashMap<String, String>();
+  private String readFile(String fileName) throws IOException, URISyntaxException {
+    return FileUtils.readFileToString(
+        new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/" + fileName)), "UTF-8");
+  }
 
-    static {
-        mappedTypes.put("attributelist", "attrs");
-        mappedTypes.put("cssid", "id");
-        mappedTypes.put("cssclass", "class");
-        mappedTypes.put("colon", ":");
-        mappedTypes.put("expression", "code");
-        mappedTypes.put("extendstoken", "extends");
-        mappedTypes.put("mixinblock", "mixin-block");
-        mappedTypes.put("pipelesstext", "start-pipeless-text");
-        mappedTypes.put("attributesblock", "&attributes");
-        mappedTypes.put("casetoken", "case");
-        mappedTypes.put("startpuginterpolation", "start-jade-interpolation");
-        mappedTypes.put("endpuginterpolation", "end-jade-interpolation");
-        mappedTypes.put("startpipelesstext", "start-pipeless-text");
-        mappedTypes.put("endpipelesstext", "end-pipeless-text");
+  private String file;
+
+  public OriginalLexer_0_0_8_Test(String file) {
+    this.file = file;
+  }
+
+  @Test
+  public void shouldLexJadeToTokens() throws IOException, URISyntaxException {
+    FileTemplateLoader loader1 =
+        new FileTemplateLoader(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
+    Lexer lexer1 = new Lexer(file, loader1, new JexlExpressionHandler());
+    LinkedList<Token> tokens = lexer1.getTokens();
+    String[] expected =
+        readFile(file.replace(".jade", ".expected.json")).replaceAll("\r", "").split("\\n");
+    ArrayList<String> actual = new ArrayList<String>();
+
+    for (Token token : tokens) {
+      ExpectedToken expectedToken = new ExpectedToken();
+      expectedToken.type = typeOf(token);
+      if (token instanceof Tag) {
+        expectedToken.selfClosing = token.isSelfClosing();
+      }
+      if (token instanceof Attribute) {
+        expectedToken.val = ((Attribute) token).getAttributeValue();
+        expectedToken.name = token.getName();
+        expectedToken.escape = ((Attribute) token).mustEscape();
+      } else {
+        expectedToken.val = token.getValue();
+      }
+      if (token instanceof Mixin) {
+        expectedToken.args = ((Mixin) token).getArguments();
+      }
+      if (token instanceof Call) {
+        expectedToken.args = ((Call) token).getArguments();
+      }
+      if (token instanceof Expression) {
+        expectedToken.buffer = token.isBuffer();
+        expectedToken.escape = ((Expression) token).isEscape();
+      }
+      if (token instanceof Block) {
+        expectedToken.mode = token.getMode();
+      }
+      expectedToken.line = token.getStartLineNumber();
+      expectedToken.col = token.getStartColumn();
+      String s = tokenToJsonLine(expectedToken);
+      actual.add(s);
     }
+    assertToken(expected, actual);
+    //        for (int i = 0; i < expected.length; i++) {
+    //            Token token = tokens.get(i);
+    //            if (breakOnEndOfStreamTokens(token)) {
+    //                break;
+    //            }
+    //            ExpectedToken expectedToken = tokenFromJsonLine(expected[i]);
+    //            if (breakOnTextTokens(expectedToken)) {
+    //                break;
+    //            }
+    //            assertToken(token, expectedToken);
+    //        }
+  }
 
-
-    private String typeOf(Token token) {
-        String simpleClassName = token.getClass().getSimpleName().toLowerCase();
-        if (mappedTypes.containsKey(simpleClassName)) {
-            return mappedTypes.get(simpleClassName);
-        }
-        return simpleClassName;
+  private void assertToken(String[] expected, List<String> actual) {
+    StringBuffer expectedString = new StringBuffer();
+    for (String s : expected) {
+      expectedString.append(s).append("\n");
     }
-
-    private String tokenToJsonLine(ExpectedToken expected) {
-        return new Gson().newBuilder().disableHtmlEscaping().create().toJson(expected);
+    StringBuffer actualString = new StringBuffer();
+    for (String s : actual) {
+      actualString.append(s).append("\n");
     }
+    String expected1 = expectedString.toString();
+    String actual1 = actualString.toString();
+    assertEquals(expected1, actual1);
+    //        assertThat(actualString).isEqualTo(expectedString);
+  }
 
-    private String readFile(String fileName) throws IOException, URISyntaxException {
-        return FileUtils.readFileToString(new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/" + fileName)), "UTF-8");
+  private void assertToken(Token token, ExpectedToken expectedToken) {
+    assertEquals(expectedToken.type, typeOf(token));
+    assertEquals(expectedToken.selfClosing, token.isSelfClosing());
+    assertEquals(expectedToken.val, token.getValue());
+    // assertThat(token.getLineNumber()).isEqualTo(expectedToken.line);
+  }
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
+    File folder = new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
+    Collection<File> files = FileUtils.listFiles(folder, new String[] {"jade"}, false);
+
+    Collection<String[]> data = new ArrayList<String[]>();
+    for (File file : files) {
+      if (!ArrayUtils.contains(ignoredCases, file.getName().replace(".jade", ""))) {
+        data.add(new String[] {file.getName()});
+      }
     }
-
-    private String file;
-
-    public OriginalLexer_0_0_8_Test(String file) {
-        this.file = file;
-    }
-
-    @Test
-    public void shouldLexJadeToTokens() throws IOException, URISyntaxException {
-        FileTemplateLoader loader1 = new FileTemplateLoader(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
-        Lexer lexer1 = new Lexer(file, loader1, new JexlExpressionHandler());
-        LinkedList<Token> tokens = lexer1.getTokens();
-        String[] expected = readFile(file.replace(".jade", ".expected.json")).replaceAll("\r", "").split("\\n");
-        ArrayList<String> actual = new ArrayList<String>();
-
-        for (Token token : tokens) {
-            ExpectedToken expectedToken = new ExpectedToken();
-            expectedToken.type=typeOf(token);
-            if(token instanceof Tag) {
-                expectedToken.selfClosing = token.isSelfClosing();
-            }
-            if(token instanceof Attribute) {
-                expectedToken.val = ((Attribute) token).getAttributeValue();
-                expectedToken.name = token.getName();
-                expectedToken.escape = ((Attribute) token).mustEscape();
-            }else{
-                expectedToken.val=token.getValue();
-            }
-            if(token instanceof Mixin){
-                expectedToken.args=((Mixin) token).getArguments();
-            }
-            if(token instanceof Call){
-                expectedToken.args=((Call) token).getArguments();
-            }
-            if(token instanceof Expression) {
-                expectedToken.buffer = token.isBuffer();
-                expectedToken.escape = ((Expression) token).isEscape();
-            }
-            if(token instanceof Block) {
-                expectedToken.mode = token.getMode();
-            }
-            expectedToken.line=token.getStartLineNumber();
-            expectedToken.col=token.getStartColumn();
-            String s = tokenToJsonLine(expectedToken);
-            actual.add(s);
-        }
-        assertToken(expected,actual);
-//        for (int i = 0; i < expected.length; i++) {
-//            Token token = tokens.get(i);
-//            if (breakOnEndOfStreamTokens(token)) {
-//                break;
-//            }
-//            ExpectedToken expectedToken = tokenFromJsonLine(expected[i]);
-//            if (breakOnTextTokens(expectedToken)) {
-//                break;
-//            }
-//            assertToken(token, expectedToken);
-//        }
-    }
-    private void assertToken(String[] expected,List<String>actual){
-        StringBuffer expectedString = new StringBuffer();
-        for (String s : expected) {
-            expectedString.append(s).append("\n");
-
-        }
-        StringBuffer actualString = new StringBuffer();
-        for (String s : actual) {
-            actualString.append(s).append("\n");
-        }
-        String expected1 = expectedString.toString();
-        String actual1 = actualString.toString();
-        assertEquals(expected1, actual1);
-//        assertThat(actualString).isEqualTo(expectedString);
-    }
-    private void assertToken(Token token, ExpectedToken expectedToken) {
-        assertEquals(expectedToken.type,typeOf(token));
-        assertEquals(expectedToken.selfClosing,token.isSelfClosing());
-        assertEquals(expectedToken.val,token.getValue());
-        //assertThat(token.getLineNumber()).isEqualTo(expectedToken.line);
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
-        File folder = new File(TestFileHelper.getLexer_0_0_8_ResourcePath("cases/"));
-        Collection<File> files = FileUtils.listFiles(folder, new String[]{"jade"}, false);
-
-        Collection<String[]> data = new ArrayList<String[]>();
-        for (File file : files) {
-            if (!ArrayUtils.contains(ignoredCases, file.getName().replace(".jade", ""))) {
-                data.add(new String[]{file.getName()});
-            }
-
-        }
-        return data;
-    }
+    return data;
+  }
 }

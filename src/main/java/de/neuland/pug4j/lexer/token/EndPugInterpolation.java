@@ -1,6 +1,5 @@
 package de.neuland.pug4j.lexer.token;
 
 public class EndPugInterpolation extends Token {
-    public EndPugInterpolation() {
-    }
+  public EndPugInterpolation() {}
 }

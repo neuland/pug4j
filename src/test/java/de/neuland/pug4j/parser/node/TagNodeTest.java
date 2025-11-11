@@ -1,5 +1,6 @@
 package de.neuland.pug4j.parser.node;
 
+import static org.junit.Assert.assertEquals;
 
 import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.PugConfiguration;
@@ -9,223 +10,208 @@ import java.util.LinkedList;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-
 public class TagNodeTest {
 
-    private static final String TEXT = "dummytext";
+  private static final String TEXT = "dummytext";
 
+  private String[] bodylessTags = {
+    "meta", "img", "link", "input", "area", "base", "col", "br", "hr", "source"
+  };
+  private String[] normalTags = {"div", "table", "span"};
+  private PugConfiguration jade;
 
-    private String[] bodylessTags = { "meta", "img", "link", "input", "area", "base", "col", "br", "hr", "source" };
-    private String[] normalTags = { "div", "table", "span" };
-    private PugConfiguration jade;
+  @Before
+  public void init() {
+    jade = new PugConfiguration();
+  }
 
+  @Test
+  public void shouldCloseBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
 
-    @Before
-    public void init() {
-        jade = new PugConfiguration();
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
+
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
+  @Test
+  public void shouldCloseBodylessTagsWithoutSlashAndIgnoreBlockWhenCompilingToHtml() {
 
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + ">", result);
     }
+  }
 
-    @Test
-    public void shouldCloseBodylessTagsWithoutSlashAndIgnoreBlockWhenCompilingToHtml() {
+  @Test
+  public void shouldCloseBodylessTagsWithEndTagWhenCompilingToXml() {
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + ">",result);
-        }
+      assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
+  }
 
-    @Test
-    public void shouldCloseBodylessTagsWithEndTagWhenCompilingToXml() {
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+  @Test
+  public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
-        }
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
+  @Test
+  public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+  @Test
+  public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
+    for (String tagName : bodylessTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseSelfClosingBodylessTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
-        for (String tagName : bodylessTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+  @Test
+  public void shouldCloseNormalTagsWithEndTagWhenCompilingToXhtml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
+  }
 
-    @Test
-    public void shouldCloseNormalTagsWithEndTagWhenCompilingToXhtml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
+  @Test
+  public void shouldCloseNormalTagsWithEndTagWhenCompilingToHtml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
-        }
+      assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
+  }
 
+  @Test
+  public void shouldCloseNormalTagsWithEndTagWhenCompilingToXml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-    @Test
-    public void shouldCloseNormalTagsWithEndTagWhenCompilingToHtml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
-        }
+      assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
+  }
 
+  @Test
+  public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-    @Test
-    public void shouldCloseNormalTagsWithEndTagWhenCompilingToXml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">",result);
-        }
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
+  @Test
+  public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-    @Test
-    public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXhtml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XHTML);
-
-
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToHtml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.HTML);
+  @Test
+  public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
+    for (String tagName : normalTags) {
+      TagNode tagNode = new TagNode();
+      tagNode.setName(tagName);
+      tagNode.setSelfClosing(true);
+      withTextBlock(tagNode);
+      PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
+      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
-
-            assertEquals("<" + tagName + "/>",result);
-        }
+      assertEquals("<" + tagName + "/>", result);
     }
+  }
 
-    @Test
-    public void shouldCloseSelfClosingNormalTagsWithSlashAndIgnoreBlockWhenCompilingToXml() {
-        for (String tagName : normalTags) {
-            TagNode tagNode = new TagNode();
-            tagNode.setName(tagName);
-            tagNode.setSelfClosing(true);
-            withTextBlock(tagNode);
-            PugTemplate template = new PugTemplate(tagNode,Pug4J.Mode.XML);
+  private void withTextBlock(TagNode tagNode) {
+    TextNode textNode = new TextNode();
+    textNode.setValue(TEXT);
 
+    BlockNode blockNode = new BlockNode();
 
-            String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+    LinkedList<Node> list = new LinkedList<Node>();
+    list.add(textNode);
+    blockNode.setNodes(list);
 
-            assertEquals("<" + tagName + "/>",result);
-        }
-    }
-
-    private void withTextBlock(TagNode tagNode) {
-        TextNode textNode = new TextNode();
-        textNode.setValue(TEXT);
-
-        BlockNode blockNode = new BlockNode();
-
-        LinkedList<Node> list = new LinkedList<Node>();
-        list.add(textNode);
-        blockNode.setNodes(list);
-
-        tagNode.setBlock(blockNode);
-    }
-
-
+    tagNode.setBlock(blockNode);
+  }
 }

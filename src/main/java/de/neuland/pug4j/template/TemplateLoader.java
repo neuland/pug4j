@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.io.Reader;
 
 public interface TemplateLoader {
-    public long getLastModified(String name) throws IOException;
+  public long getLastModified(String name) throws IOException;
 
-    public Reader getReader(String name) throws IOException;
+  public Reader getReader(String name) throws IOException;
 
-    public String getExtension();
+  public String getExtension();
 
-    public String getBase();
+  public String getBase();
 }
-
