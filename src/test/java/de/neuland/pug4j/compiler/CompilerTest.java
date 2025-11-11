@@ -6,12 +6,12 @@ import static org.junit.Assert.fail;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import de.neuland.pug4j.Pug4J;
-import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.exceptions.PugLexerException;
 import de.neuland.pug4j.expression.ExpressionHandler;
+import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.filter.CssFilter;
 import de.neuland.pug4j.filter.JsFilter;
 import de.neuland.pug4j.filter.MarkdownFilter;
@@ -433,7 +433,7 @@ public class CompilerTest {
 
   private void run(String testName, boolean pretty, PugModel model) {
     Parser parser = null;
-    ExpressionHandler expressionHandler = new PugConfiguration().getExpressionHandler();
+    ExpressionHandler expressionHandler = new JexlExpressionHandler();
     FileTemplateLoader loader = null;
     try {
       loader = new FileTemplateLoader(TestFileHelper.getCompilerResourcePath(""), "jade");

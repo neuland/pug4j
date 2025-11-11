@@ -1,6 +1,7 @@
 package de.neuland.pug4j.benchmark;
 
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.template.ClasspathTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import java.io.StringWriter;
@@ -27,21 +28,20 @@ public class TemplateBenchmark {
 
   HashMap<String, Object> model = new HashMap<>();
 
-  PugConfiguration pug = new PugConfiguration();
+  PugEngine pugEngine;
 
   @Setup(Level.Invocation)
   public void setUp() {
-    pug.setTemplateLoader(templateLoader);
+    pugEngine = PugEngine.builder().templateLoader(templateLoader).build();
     model.put("pageName", "Jade");
     model.put("books", books);
   }
 
   @Benchmark
   public void templates() throws Exception {
-
     Writer writer = new StringWriter();
-    PugTemplate template = pug.getTemplate("benchmark/simple" + templateId);
-    pug.renderTemplate(template, model, writer);
+    PugTemplate template = pugEngine.getTemplate("benchmark/simple" + templateId);
+    pugEngine.render(template, model, RenderContext.defaults(), writer);
   }
 
   public static void main(String[] args) throws Exception {

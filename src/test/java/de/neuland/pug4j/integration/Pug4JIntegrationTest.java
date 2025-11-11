@@ -2,10 +2,8 @@ package de.neuland.pug4j.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import de.neuland.pug4j.ParameterizedTestCaseHelper;
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.IntegrationTestSetup;
 import de.neuland.pug4j.TestFileHelper;
-import de.neuland.pug4j.expression.JexlExpressionHandler;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -18,6 +16,15 @@ import org.junit.runners.Parameterized;
 public class Pug4JIntegrationTest {
 
   private static String[] ignoredCases = new String[] {"include-with-filter"};
+  private static final IntegrationTestSetup testSetup;
+
+  static {
+    try {
+      testSetup = IntegrationTestSetup.forCases();
+    } catch (FileNotFoundException | URISyntaxException e) {
+      throw new RuntimeException("Failed to initialize test setup", e);
+    }
+  }
 
   private String file;
 
@@ -27,22 +34,11 @@ public class Pug4JIntegrationTest {
 
   @Test
   public void shouldCompilePugToHtml() throws Exception {
-    String fileTemplateLoaderPath = TestFileHelper.getPug4JTestsResourcePath("");
-    String basePath = "cases";
-    String extension = "pug";
-    JexlExpressionHandler expressionHandler = new JexlExpressionHandler();
-    PugConfiguration pug = new PugConfiguration();
-    pug.setExpressionHandler(expressionHandler);
-    ParameterizedTestCaseHelper testHelper =
-        new ParameterizedTestCaseHelper(
-            fileTemplateLoaderPath, basePath, extension, expressionHandler);
-    PugConfiguration pugConfiguration = testHelper.getPugConfiguration();
-
     HashMap<String, Object> model = new HashMap<String, Object>();
     model.put("title", "Pug");
 
-    String actual = testHelper.getActualHtml(file, pugConfiguration, model);
-    String expected = testHelper.getExpectedHtml(file);
+    String actual = testSetup.getActualHtml(file, model);
+    String expected = testSetup.getExpectedHtml(file);
 
     assertEquals(file, expected, actual);
   }
@@ -51,6 +47,6 @@ public class Pug4JIntegrationTest {
   public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
     String resourcePath = TestFileHelper.getPug4JTestsResourcePath("/cases");
     String extension = "pug";
-    return ParameterizedTestCaseHelper.createTestFileData(resourcePath, extension, ignoredCases);
+    return IntegrationTestSetup.createTestFileData(resourcePath, extension, ignoredCases);
   }
 }

@@ -3,7 +3,7 @@ package de.neuland.pug4j.lexer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
 import de.neuland.pug4j.lexer.token.Attribute;
 import de.neuland.pug4j.lexer.token.Token;
 import de.neuland.pug4j.parser.node.ExpressionString;
@@ -18,19 +18,21 @@ import org.junit.Test;
 public class AttributeLexerTest {
 
   private Lexer lexer;
+  private PugEngine engine;
 
   @Before
-  public void setUp() throws Exception {}
+  public void setUp() throws Exception {
+    engine = PugEngine.builder().build();
+  }
 
   private List<Token> findAttributes(String attributeString) {
-    PugConfiguration pugConfiguration = new PugConfiguration();
     try {
       lexer =
           new Lexer(
               attributeString,
               "test.pug",
-              pugConfiguration.getTemplateLoader(),
-              pugConfiguration.getExpressionHandler());
+              engine.getTemplateLoader(),
+              engine.getExpressionHandler());
     } catch (IOException e) {
       e.printStackTrace();
     }

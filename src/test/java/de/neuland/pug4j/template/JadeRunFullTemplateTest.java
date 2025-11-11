@@ -3,15 +3,16 @@ package de.neuland.pug4j.template;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.helper.beans.IterableMap;
-import de.neuland.pug4j.model.PugModel;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
@@ -19,11 +20,14 @@ import org.junit.Test;
 
 public class JadeRunFullTemplateTest {
 
-  private PugConfiguration cfg = new PugConfiguration();
+  private PugEngine engine;
 
   @Before
   public void setUp() throws Exception {
-    cfg.setTemplateLoader(new FileTemplateLoader(getResourcePath(""), "jade"));
+    engine =
+        PugEngine.builder()
+            .templateLoader(new FileTemplateLoader(Path.of(getResourcePath("")), "jade"))
+            .build();
   }
 
   @Test
@@ -32,13 +36,12 @@ public class JadeRunFullTemplateTest {
     Map<String, Object> root = new HashMap<String, Object>();
     root.put("hello", "world");
     root.put("hallo", null);
-    PugModel model = new PugModel(root);
 
-    PugTemplate temp = cfg.getTemplate("fullrun");
+    PugTemplate temp = engine.getTemplate("fullrun");
 
     StringWriter out = new StringWriter();
     try {
-      temp.process(model, out, cfg);
+      engine.render(temp, root, RenderContext.defaults(), out);
     } catch (PugCompilerException e) {
       e.printStackTrace();
       fail();
@@ -56,13 +59,12 @@ public class JadeRunFullTemplateTest {
 
     Map<String, Object> root = new HashMap<String, Object>();
     root.put("users", users);
-    PugModel model = new PugModel(root);
 
-    PugTemplate temp = cfg.getTemplate("each_loop");
+    PugTemplate temp = engine.getTemplate("each_loop");
 
     StringWriter out = new StringWriter();
     try {
-      temp.process(model, out, cfg);
+      engine.render(temp, root, RenderContext.defaults(), out);
     } catch (PugCompilerException e) {
       e.printStackTrace();
       fail();

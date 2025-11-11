@@ -134,12 +134,14 @@ public class Pug4JTest {
   @Test
   public void testConfigurationDefault() throws Exception {
     final Path path = Paths.get("src/test/resources/compiler/extends.pug");
-    PugConfiguration config = new PugConfiguration();
     String fileName = path.toAbsolutePath().toString();
-    config.setTemplateLoader(new FileTemplateLoader(FilenameUtils.getFullPath(fileName)));
-    PugTemplate template = config.getTemplate(FilenameUtils.getName(fileName));
+    PugEngine engine =
+        PugEngine.builder()
+            .templateLoader(new FileTemplateLoader(FilenameUtils.getFullPath(fileName)))
+            .build();
+    PugTemplate template = engine.getTemplate(FilenameUtils.getName(fileName));
     Map<String, Object> model = new HashMap<String, Object>();
-    final String html = config.renderTemplate(template, model);
+    final String html = engine.render(template, model);
     assertEquals(
         "<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",
         html);
@@ -147,10 +149,10 @@ public class Pug4JTest {
 
   @Test
   public void testConfigurationDefaultWithRelativePath() throws Exception {
-    PugConfiguration config = new PugConfiguration();
-    PugTemplate template = config.getTemplate("src/test/resources/compiler/extends.pug");
+    PugEngine engine = PugEngine.builder().build();
+    PugTemplate template = engine.getTemplate("src/test/resources/compiler/extends.pug");
     Map<String, Object> model = new HashMap<String, Object>();
-    final String html = config.renderTemplate(template, model);
+    final String html = engine.render(template, model);
     assertEquals(
         "<h1>hello world</h1><p>default foo</p><p>special bar</p><div class=\"prepend\">hello world</div><div class=\"append\">hello world</div><ul><li>1</li><li>2</li><li>3</li><li>4</li></ul><ul><li>a</li><li>b</li><li>c</li><li>d</li></ul>",
         html);

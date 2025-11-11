@@ -3,7 +3,8 @@ package de.neuland.pug4j.integration;
 import static org.junit.Assert.assertEquals;
 
 import de.neuland.pug4j.Pug4J;
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
+import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.CssFilter;
@@ -80,25 +81,30 @@ public class IssuesTest {
 
   private void compareJade(TemplateLoader templateLoader, String templateName)
       throws IOException, URISyntaxException {
-    PugConfiguration jade = new PugConfiguration();
-    jade.setTemplateLoader(templateLoader);
-    jade.setMode(Pug4J.Mode.XHTML); // original jade uses xhtml by default
-    jade.setFilter("plain", new PlainFilter());
-    jade.setFilter("cdata", new CDATAFilter());
-    jade.setFilter("custom-filter", new CustomTestFilter());
-    jade.setFilter("marked", new MarkdownFilter());
-    jade.setFilter("markdown", new MarkdownFilter());
-    jade.setFilter("verbatim", new VerbatimFilter());
-    jade.setFilter("js", new JsFilter());
-    jade.setFilter("css", new CssFilter());
+    PugEngine engine =
+        PugEngine.builder()
+            .templateLoader(templateLoader)
+            .filter("plain", new PlainFilter())
+            .filter("cdata", new CDATAFilter())
+            .filter("custom-filter", new CustomTestFilter())
+            .filter("marked", new MarkdownFilter())
+            .filter("markdown", new MarkdownFilter())
+            .filter("verbatim", new VerbatimFilter())
+            .filter("js", new JsFilter())
+            .filter("css", new CssFilter())
+            .build();
 
-    jade.setPrettyPrint(true);
+    RenderContext context =
+        RenderContext.builder()
+            .prettyPrint(true)
+            .defaultMode(Pug4J.Mode.XHTML) // original jade uses xhtml by default
+            .build();
 
-    PugTemplate template = jade.getTemplate(templateName);
+    PugTemplate template = engine.getTemplate(templateName);
     HashMap<String, Object> model = new HashMap<String, Object>();
     model.put("title", "Jade");
     model.put("format", new FormatHelper());
-    String html = jade.renderTemplate(template, model);
+    String html = engine.render(template, model, context);
 
     String expected = readFile(file.replace(".jade", ".html")).trim().replaceAll("\r", "");
 

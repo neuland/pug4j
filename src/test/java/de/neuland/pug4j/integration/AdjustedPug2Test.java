@@ -2,10 +2,8 @@ package de.neuland.pug4j.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import de.neuland.pug4j.ParameterizedTestCaseHelper;
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.IntegrationTestSetup;
 import de.neuland.pug4j.TestFileHelper;
-import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -40,6 +38,31 @@ public class AdjustedPug2Test {
         "blocks-in-if" // js block not suppoerted
       };
 
+  private static final IntegrationTestSetup testSetup;
+
+  static {
+    try {
+      testSetup =
+          new IntegrationTestSetup(
+              TestFileHelper.getAdjustedPug2ResourcePath(""),
+              "cases",
+              "pug",
+              new JexlExpressionHandler(),
+              builder ->
+                  builder.filter(
+                      "custom2",
+                      (source, attributes, model) -> {
+                        Object opt = attributes.get("opt");
+                        Object num = attributes.get("num");
+                        assertEquals("val", opt);
+                        assertEquals(2, num);
+                        return "START" + source + "STOP";
+                      }));
+    } catch (FileNotFoundException | URISyntaxException e) {
+      throw new RuntimeException("Failed to initialize test setup", e);
+    }
+  }
+
   private String file;
 
   public AdjustedPug2Test(String file) {
@@ -48,28 +71,11 @@ public class AdjustedPug2Test {
 
   @Test
   public void shouldCompilePugToHtml() throws Exception {
-    String fileTemplateLoaderPath = TestFileHelper.getAdjustedPug2ResourcePath("");
-    String basePath = "cases";
-    String extension = "pug";
-    ExpressionHandler expressionHandler = new JexlExpressionHandler();
-    ParameterizedTestCaseHelper testHelper =
-        new ParameterizedTestCaseHelper(
-            fileTemplateLoaderPath, basePath, extension, expressionHandler);
-    PugConfiguration pugConfiguration = testHelper.getPugConfiguration();
-    pugConfiguration.setFilter(
-        "custom2",
-        (source, attributes, model) -> {
-          Object opt = attributes.get("opt");
-          Object num = attributes.get("num");
-          assertEquals("val", opt);
-          assertEquals(2, num);
-          return "START" + source + "STOP";
-        });
     HashMap<String, Object> model = new HashMap<String, Object>();
     model.put("title", "Pug");
 
-    String actual = testHelper.getActualHtml(file, pugConfiguration, model);
-    String expected = testHelper.getExpectedHtml(file);
+    String actual = testSetup.getActualHtml(file, model);
+    String expected = testSetup.getExpectedHtml(file);
 
     assertEquals(file, expected, actual);
   }
@@ -78,6 +84,6 @@ public class AdjustedPug2Test {
   public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
     String resourcePath = TestFileHelper.getAdjustedPug2ResourcePath("/cases");
     String extension = "pug";
-    return ParameterizedTestCaseHelper.createTestFileData(resourcePath, extension, ignoredCases);
+    return IntegrationTestSetup.createTestFileData(resourcePath, extension, ignoredCases);
   }
 }

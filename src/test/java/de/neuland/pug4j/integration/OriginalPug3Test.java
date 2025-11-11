@@ -2,8 +2,7 @@ package de.neuland.pug4j.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import de.neuland.pug4j.ParameterizedTestCaseHelper;
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.IntegrationTestSetup;
 import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.expression.GraalJsExpressionHandler;
 import java.io.*;
@@ -38,6 +37,21 @@ public class OriginalPug3Test {
 
   private static String[] casesWithoutLinebreak = new String[] {"filters.nested"};
 
+  private static final IntegrationTestSetup testSetup;
+
+  static {
+    try {
+      testSetup =
+          new IntegrationTestSetup(
+              TestFileHelper.getOriginalPug3ResourcePath(""),
+              "cases",
+              "pug",
+              new GraalJsExpressionHandler());
+    } catch (FileNotFoundException | URISyntaxException e) {
+      throw new RuntimeException("Failed to initialize test setup", e);
+    }
+  }
+
   private String file;
 
   public OriginalPug3Test(String file) {
@@ -46,22 +60,13 @@ public class OriginalPug3Test {
 
   @Test
   public void shouldCompileJadeToHtml() throws Exception {
-    String basePath = "cases";
-    String fileTemplateLoaderPath = TestFileHelper.getOriginalPug3ResourcePath("");
-    String extension = "pug";
-    GraalJsExpressionHandler expressionHandler = new GraalJsExpressionHandler();
-    ParameterizedTestCaseHelper testHelper =
-        new ParameterizedTestCaseHelper(
-            fileTemplateLoaderPath, basePath, extension, expressionHandler);
-    PugConfiguration pugConfiguration = testHelper.getPugConfiguration();
-
     HashMap<String, Object> model = new HashMap<String, Object>();
     model.put("title", "Pug");
 
-    String actual = testHelper.getActualHtml(file, pugConfiguration, model);
-    String expected = testHelper.getExpectedHtml(file);
+    String actual = testSetup.getActualHtml(file, model);
+    String expected = testSetup.getExpectedHtml(file);
 
-    if (ArrayUtils.contains(casesWithoutLinebreak, file.replace("." + extension, ""))) {
+    if (ArrayUtils.contains(casesWithoutLinebreak, file.replace(".pug", ""))) {
       actual = actual.replaceAll("\\n| ", "");
       expected = expected.replaceAll("\\n| ", "");
     }
@@ -73,6 +78,6 @@ public class OriginalPug3Test {
   public static Collection<String[]> data() throws FileNotFoundException, URISyntaxException {
     String resourcePath = TestFileHelper.getOriginalPug3ResourcePath("/cases");
     String extension = "pug";
-    return ParameterizedTestCaseHelper.createTestFileData(resourcePath, extension, ignoredCases);
+    return IntegrationTestSetup.createTestFileData(resourcePath, extension, ignoredCases);
   }
 }

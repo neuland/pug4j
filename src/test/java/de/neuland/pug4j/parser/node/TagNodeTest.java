@@ -3,7 +3,7 @@ package de.neuland.pug4j.parser.node;
 import static org.junit.Assert.assertEquals;
 
 import de.neuland.pug4j.Pug4J;
-import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.PugEngine;
 import de.neuland.pug4j.template.PugTemplate;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -18,11 +18,11 @@ public class TagNodeTest {
     "meta", "img", "link", "input", "area", "base", "col", "br", "hr", "source"
   };
   private String[] normalTags = {"div", "table", "span"};
-  private PugConfiguration jade;
+  private PugEngine engine;
 
   @Before
   public void init() {
-    jade = new PugConfiguration();
+    engine = PugEngine.builder().build();
   }
 
   @Test
@@ -34,7 +34,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -49,7 +49,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + ">", result);
     }
@@ -63,7 +63,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
@@ -79,7 +79,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -94,7 +94,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -109,7 +109,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -123,7 +123,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
@@ -137,7 +137,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
@@ -151,7 +151,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + ">" + TEXT + "</" + tagName + ">", result);
     }
@@ -166,7 +166,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XHTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -181,7 +181,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.HTML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }
@@ -196,7 +196,7 @@ public class TagNodeTest {
       withTextBlock(tagNode);
       PugTemplate template = new PugTemplate(tagNode, Pug4J.Mode.XML);
 
-      String result = jade.renderTemplate(template, Collections.<String, Object>emptyMap());
+      String result = engine.render(template, Collections.<String, Object>emptyMap());
 
       assertEquals("<" + tagName + "/>", result);
     }

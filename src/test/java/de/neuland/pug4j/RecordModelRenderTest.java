@@ -26,31 +26,29 @@ public class RecordModelRenderTest {
 
   record PersonWithAddress(String name, int age, Address address) {}
 
-  private PugConfiguration newGraalConfig(String pug) throws Exception {
-    PugConfiguration config = new PugConfiguration();
-    config.setExpressionHandler(new GraalJsExpressionHandler());
+  private PugEngine newGraalEngine(String pug) throws Exception {
     ReaderTemplateLoader loader = new ReaderTemplateLoader(new StringReader(pug), "inline");
-    config.setTemplateLoader(loader);
-    return config;
+    return PugEngine.builder()
+        .templateLoader(loader)
+        .expressionHandler(new GraalJsExpressionHandler())
+        .build();
   }
 
-  private PugConfiguration newJexlConfig(String pug) throws Exception {
-    PugConfiguration config = new PugConfiguration();
+  private PugEngine newJexlEngine(String pug) throws Exception {
     ReaderTemplateLoader loader = new ReaderTemplateLoader(new StringReader(pug), "inline");
-    config.setTemplateLoader(loader);
-    return config;
+    return PugEngine.builder().templateLoader(loader).build();
   }
 
   @Test
   public void rendersRecordComponentsWithDotAccess() throws Exception {
     String pug = "h1= person.name\np= person.age";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     // Depending on GraalJS member resolution, this may or may not work; keep as documentation of
     // desired behavior
     assertEquals("<h1>Alice</h1><p>42</p>", html);
@@ -59,13 +57,13 @@ public class RecordModelRenderTest {
   @Test
   public void rendersNestedRecordComponentsWithDotAccess() throws Exception {
     String pug = "h1= person.address.city\np= person.address.zip";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, new Address("Berlin", "10115")));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Berlin</h1><p>10115</p>", html);
   }
 
@@ -74,13 +72,13 @@ public class RecordModelRenderTest {
       "GraalJS does not support method call syntax for record components - use property access instead (person.name not person.name())")
   public void rendersRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.name()\np= person.age()";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Alice</h1><p>42</p>", html);
   }
 
@@ -89,26 +87,26 @@ public class RecordModelRenderTest {
       "GraalJS does not support method call syntax for records - use property access instead (person.address.city not person.address().city())")
   public void rendersNestedRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.address().city()\np= person.address().zip()";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, new Address("Berlin", "10115")));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Berlin</h1><p>10115</p>", html);
   }
 
   @Test
   public void jexlRendersRecordComponentsWithDotAccess() throws Exception {
     String pug = "h1= person.name\np= person.age";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     // Depending on GraalJS member resolution, this may or may not work; keep as documentation of
     // desired behavior
     assertEquals("<h1>Alice</h1><p>42</p>", html);
@@ -117,67 +115,67 @@ public class RecordModelRenderTest {
   @Test
   public void jexlRendersNestedRecordComponentsWithDotAccess() throws Exception {
     String pug = "h1= person.address.city\np= person.address.zip";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, new Address("Berlin", "10115")));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Berlin</h1><p>10115</p>", html);
   }
 
   @Test
   public void jexlRendersRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.name()\np= person.age()";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Alice</h1><p>42</p>", html);
   }
 
   @Test
   public void jexlRendersNestedRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.address().city()\np= person.address().zip()";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, new Address("Berlin", "10115")));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Berlin</h1><p>10115</p>", html);
   }
 
   @Test
   public void jexlCallsMethodOnRecord() throws Exception {
     String pug = "h1= person.bla()";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
 
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Alice42</h1>", html);
   }
 
   @Test
   public void graalCallsMethodOnRecord() throws Exception {
     String pug = "h1= person.bla()";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
 
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<h1>Alice42</h1>", html);
   }
 
@@ -190,13 +188,13 @@ public class RecordModelRenderTest {
                 else
                   p Minor
                 """;
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>Adult</p>", html);
   }
 
@@ -209,13 +207,13 @@ public class RecordModelRenderTest {
                 else
                   p Minor
                 """;
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>Adult</p>", html);
   }
 
@@ -228,13 +226,13 @@ public class RecordModelRenderTest {
                 else
                   p No address
                 """;
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, null));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>No address</p>", html);
   }
 
@@ -247,39 +245,39 @@ public class RecordModelRenderTest {
                 else
                   p No address
                 """;
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new PersonWithAddress("Alice", 42, null));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>No address</p>", html);
   }
 
   @Test
   public void jexlHandlesRecordInInterpolation() throws Exception {
     String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
-    PugConfiguration config = newJexlConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newJexlEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>Hello, Alice! You are 42 years old.</p>", html);
   }
 
   @Test
   public void graalHandlesRecordInInterpolation() throws Exception {
     String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
-    PugConfiguration config = newGraalConfig(pug);
-    PugTemplate template = config.getTemplate("inline");
+    PugEngine engine = newGraalEngine(pug);
+    PugTemplate template = engine.getTemplate("inline");
 
     Map<String, Object> model = new HashMap<>();
     model.put("person", new Person("Alice", 42));
 
-    String html = config.renderTemplate(template, model);
+    String html = engine.render(template, model);
     assertEquals("<p>Hello, Alice! You are 42 years old.</p>", html);
   }
 }
