@@ -1,9 +1,9 @@
-package de.neuland.pug4j.template;
+package de.neuland.pug4j;
 
-import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.TestFileHelper;
 import de.neuland.pug4j.parser.Parser;
 import de.neuland.pug4j.parser.node.Node;
+import de.neuland.pug4j.template.FileTemplateLoader;
+import de.neuland.pug4j.template.PugTemplate;
 import org.junit.Before;
 import org.junit.Test;
 
