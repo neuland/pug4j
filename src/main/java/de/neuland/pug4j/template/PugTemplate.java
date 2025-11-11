@@ -33,17 +33,12 @@ public class PugTemplate {
         compiler.compile(model, writer);
     }
 
-    // Deprecated in 2.x: kept for backward compatibility. Will be removed in 3.0.0. Use the overload with PugConfiguration instead.
-    public void process(PugModel model, Writer writer) throws PugCompilerException {
-        process(model, writer, new PugConfiguration());
-    }
-
     public Node getRootNode() {
         return rootNode;
     }
 
-    //@TODO: Deprecated: Remove in 3.0.0, use constructor
-    public void setRootNode(Node rootNode) {
+
+    private void setRootNode(Node rootNode) {
         final Node peek = rootNode.getNodes().peek();
         if (peek instanceof DoctypeNode) {
             DoctypeNode doctypeNode = (DoctypeNode) peek;
@@ -60,14 +55,9 @@ public class PugTemplate {
         return xml;
     }
 
-    //@TODO: Deprecated: Remove in 3.0.0, use constructor
-    public void setDoctype(String name) {
+    private void setDoctype(String name) {
         this.terse = "html".equals(name);
         this.xml = "xml".equals(name);
     }
 
-    //@TODO: Deprecated: Remove in 3.0.0, use constructor
-    public void setMode(Mode mode) {
-        setDoctype(mode.name().toLowerCase());
-    }
 }
