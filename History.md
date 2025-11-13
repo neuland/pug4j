@@ -1,4 +1,7 @@
 # History
+## 2.4.1 / 2025-11-13
+* Remove ++ and -- conversion, because it is supported by jexl.
+
 ## 2.4.0 / 2025-10-10
 * Refactored Compiler to use Visitor pattern instead of instanceof chain for improved maintainability
 * Fixed thread safety issue in CachingFilter
