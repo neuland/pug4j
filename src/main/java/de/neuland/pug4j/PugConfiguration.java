@@ -73,6 +73,7 @@ public class PugConfiguration {
   private Map<String, Object> sharedVariables = new HashMap<>();
   private TemplateLoader templateLoader = new FileTemplateLoader();
   private ExpressionHandler expressionHandler = new JexlExpressionHandler();
+  private PugEngine engine = null; // Cached engine instance
   protected static final long MAX_ENTRIES = 1000L;
   private long maxCacheSize = MAX_ENTRIES;
   private Cache<String, PugTemplate> cache =
@@ -82,6 +83,24 @@ public class PugConfiguration {
     setFilter(FILTER_CDATA, new CDATAFilter());
     setFilter(FILTER_SCRIPT, new JsFilter());
     setFilter(FILTER_STYLE, new CssFilter());
+  }
+
+  /**
+   * Gets or creates the PugEngine instance. This method lazily initializes the engine
+   * on first use and returns the cached instance on subsequent calls.
+   * 
+   * @return the PugEngine instance
+   */
+  private PugEngine getOrCreateEngine() {
+    if (engine == null) {
+      engine = PugEngine.builder()
+          .templateLoader(templateLoader)
+          .expressionHandler(expressionHandler)
+          .caching(caching)
+          .filters(filters)
+          .build();
+    }
+    return engine;
   }
 
   public PugTemplate getTemplate(String name) throws IOException, PugException {
@@ -110,13 +129,7 @@ public class PugConfiguration {
   public void renderTemplate(PugTemplate template, Map<String, Object> model, Writer writer)
       throws PugCompilerException {
     // Convert deprecated PugConfiguration to new API
-    PugEngine engine =
-        PugEngine.builder()
-            .templateLoader(templateLoader)
-            .expressionHandler(expressionHandler)
-            .caching(caching)
-            .filters(filters)
-            .build();
+    PugEngine engine = getOrCreateEngine();
 
     RenderContext context =
         RenderContext.builder()
@@ -153,10 +166,12 @@ public class PugConfiguration {
 
   public void setFilter(String name, Filter filter) {
     filters.put(name, filter);
+    this.engine = null; // Invalidate cached engine
   }
 
   public void removeFilter(String name) {
     filters.remove(name);
+    this.engine = null; // Invalidate cached engine
   }
 
   public Map<String, Filter> getFilters() {
@@ -165,6 +180,7 @@ public class PugConfiguration {
 
   public void setFilters(Map<String, Filter> filters) {
     this.filters = filters;
+    this.engine = null; // Invalidate cached engine
   }
 
   public Map<String, Object> getSharedVariables() {
@@ -181,10 +197,12 @@ public class PugConfiguration {
 
   public void setTemplateLoader(TemplateLoader templateLoader) {
     this.templateLoader = templateLoader;
+    this.engine = null; // Invalidate cached engine
   }
 
   public void setExpressionHandler(ExpressionHandler expressionHandler) {
     this.expressionHandler = expressionHandler;
+    this.engine = null; // Invalidate cached engine
   }
 
   public ExpressionHandler getExpressionHandler() {
@@ -215,6 +233,7 @@ public class PugConfiguration {
     if (cache != this.caching) {
       expressionHandler.setCache(cache);
       this.caching = cache;
+      this.engine = null; // Invalidate cached engine
     }
   }
 
