@@ -1,9 +1,6 @@
 package de.neuland.pug4j;
 
 import de.neuland.pug4j.exceptions.PugCompilerException;
-import de.neuland.pug4j.model.PugModel;
-import de.neuland.pug4j.parser.Parser;
-import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.ReaderTemplateLoader;

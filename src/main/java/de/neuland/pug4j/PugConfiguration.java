@@ -88,10 +88,10 @@ public class PugConfiguration {
   /**
    * Gets or creates the PugEngine instance. This method lazily initializes the engine
    * on first use and returns the cached instance on subsequent calls.
-   * 
+   *
    * @return the PugEngine instance
    */
-  private PugEngine getOrCreateEngine() {
+  public PugEngine getOrCreateEngine() {
     if (engine == null) {
       engine = PugEngine.builder()
           .templateLoader(templateLoader)
