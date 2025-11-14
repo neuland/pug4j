@@ -41,7 +41,9 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
     extractComponents();
   }
 
-  /** Extracts all component values from the record using reflection. */
+  /**
+   * Extracts all component values from the record using reflection.
+   */
   private void extractComponents() {
     Class<?> recordClass = record.getClass();
     RecordComponent[] components = recordClass.getRecordComponents();
@@ -218,6 +220,11 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public Object getMember(String key) {
+    // Special internal marker to allow JS-side detection/wrapping
+    if ("__isRecordWrapper".equals(key)) {
+      return Boolean.TRUE;
+    }
+
     // First, check if this is a record component - return the cached value directly
     // This ensures record components are accessed as properties (person.name)
     // rather than methods (person.name())
@@ -284,6 +291,33 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
   @Override
   public String toString() {
     return record.toString();
+  }
+
+  // Attempt to support method-style access like person.name() on ProxyObject
+  // GraalJS should dispatch member calls to this if supported by the ProxyObject API
+  public Object invokeMember(String key, Object... args) {
+    try {
+      Method method = record.getClass().getMethod(key);
+      method.setAccessible(true);
+      Object result = method.invoke(record);
+      return wrapIfRecord(result);
+    } catch (NoSuchMethodException e) {
+      // Not a no-arg method; try with arity
+      try {
+        Class<?>[] types = new Class<?>[args.length];
+        for (int i = 0; i < args.length; i++) {
+          types[i] = args[i] == null ? Object.class : args[i].getClass();
+        }
+        Method method = record.getClass().getMethod(key, types);
+        method.setAccessible(true);
+        Object result = method.invoke(record, args);
+        return wrapIfRecord(result);
+      } catch (Exception ex) {
+        throw new RuntimeException("Failed to invoke member '" + key + "' on record", ex);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to invoke member '" + key + "' on record", e);
+    }
   }
 
   @Override
