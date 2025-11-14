@@ -89,7 +89,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>3.0.0-alpha.1</version>
+  <version>3.0.0-alpha-2</version>
 </dependency>
 ```
 
