@@ -127,13 +127,39 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
       }
       return eval.as(Object.class);
     } catch (PolyglotException ex) {
-      if (ex.getMessage() != null && ex.getMessage().startsWith("ReferenceError:")) {
-        return null;
+      String msg = ex.getMessage();
+      if (msg != null) {
+        if (msg.startsWith("ReferenceError:")) {
+          return null;
+        }
+        // Retry strategy for record components written with method-call syntax under GraalJS.
+        // If evaluation failed, and the expression contains zero-arg member calls like .name(),
+        // try rewriting them to property access .name and evaluate once.
+        if (expression.matches(".*\\.[A-Za-z_$][A-Za-z0-9_$]*\\(\\).*")) {
+          String generalRewritten = removeAllEmptyMemberCalls(expression);
+          if (!generalRewritten.equals(expression)) {
+            try {
+              Source js2 = generalRewritten.startsWith("{")
+                  ? Source.create("js", "(" + generalRewritten + ")")
+                  : Source.create("js", generalRewritten);
+              Value eval2 = context.parse(js2).execute();
+              return eval2.as(Object.class);
+            } catch (PolyglotException retryEx) {
+              // fall through to normal handling below
+            }
+          }
+        }
       }
       throw new ExpressionException(expression, ex);
     } finally {
       context.leave();
     }
+  }
+
+  private static String removeAllEmptyMemberCalls(String expression) {
+    // Replace all occurrences like .name() -> .name (zero-arg member calls)
+    // This aims to support record component access written as method calls in templates.
+    return expression.replaceAll("\\.([A-Za-z_$][A-Za-z0-9_$]*)\\(\\)", ".$1");
   }
 
   @Override
