@@ -156,29 +156,6 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     }
   }
 
-  private static String extractNotAFunctionTarget(String typeErrorMessage) {
-    // Examples:
-    // "TypeError: person.name is not a function"
-    // "TypeError: person.address.city is not a function"
-    try {
-      int start = typeErrorMessage.indexOf(":");
-      int end = typeErrorMessage.indexOf(" is not a function");
-      if (start >= 0 && end > start) {
-        String expr = typeErrorMessage.substring(start + 1, end).trim();
-        return expr;
-      }
-    } catch (Exception ignored) {
-    }
-    return null;
-  }
-
-  private static String removeEmptyCallForTarget(String expression, String target) {
-    // Replace exact occurrences of target followed by () with target
-    // Also handle cases like ... target() ... within longer expressions.
-    String needle = target + "()";
-    return expression.replace(needle, target);
-  }
-
   private static String removeAllEmptyMemberCalls(String expression) {
     // Replace all occurrences like .name() -> .name (zero-arg member calls)
     // This aims to support record component access written as method calls in templates.
