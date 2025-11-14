@@ -22,6 +22,7 @@ public class RecordModelRenderTest {
     public String bla() {
       return name + age;
     }
+    public String name() {return name+"!";}
   }
 
   record PersonWithAddress(String name, int age, Address address) {}
@@ -36,7 +37,7 @@ public class RecordModelRenderTest {
   }
 
   @Test
-  public void rendersRecordComponentsWithDotAccess() throws Exception {
+  public void graalRendersRecordComponentsWithDotAccess() throws Exception {
     String pug = "h1= person.name\np= person.age";
     PugEngine engine = newGraalEngine(pug);
     PugTemplate template = engine.getTemplate("inline");
@@ -47,7 +48,7 @@ public class RecordModelRenderTest {
     String html = engine.render(template, model);
     // Depending on GraalJS member resolution, this may or may not work; keep as documentation of
     // desired behavior
-    assertEquals("<h1>Alice</h1><p>42</p>", html);
+    assertEquals("<h1>Alice!</h1><p>42</p>", html);
   }
 
   @Test
@@ -64,9 +65,8 @@ public class RecordModelRenderTest {
   }
 
   @Test
-  @Ignore(
-      "GraalJS does not support method call syntax for record components - use property access instead (person.name not person.name())")
-  public void rendersRecordComponentsWithMethodCalls() throws Exception {
+//  @Test(expected = RuntimeException.class)
+  public void graalRendersRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.name()\np= person.age()";
     PugEngine engine = newGraalEngine(pug);
     PugTemplate template = engine.getTemplate("inline");
@@ -75,13 +75,11 @@ public class RecordModelRenderTest {
     model.put("person", new Person("Alice", 42));
 
     String html = engine.render(template, model);
-    assertEquals("<h1>Alice</h1><p>42</p>", html);
+    assertEquals("<h1>Alice!</h1><p>42</p>", html);
   }
 
   @Test
-  @Ignore(
-      "GraalJS does not support method call syntax for records - use property access instead (person.address.city not person.address().city())")
-  public void rendersNestedRecordComponentsWithMethodCalls() throws Exception {
+  public void graalRendersNestedRecordComponentsWithMethodCalls() throws Exception {
     String pug = "h1= person.address().city()\np= person.address().zip()";
     PugEngine engine = newGraalEngine(pug);
     PugTemplate template = engine.getTemplate("inline");
@@ -105,7 +103,7 @@ public class RecordModelRenderTest {
     String html = engine.render(template, model);
     // Depending on GraalJS member resolution, this may or may not work; keep as documentation of
     // desired behavior
-    assertEquals("<h1>Alice</h1><p>42</p>", html);
+    assertEquals("<h1>Alice!</h1><p>42</p>", html);
   }
 
   @Test
@@ -131,7 +129,7 @@ public class RecordModelRenderTest {
     model.put("person", new Person("Alice", 42));
 
     String html = engine.render(template, model);
-    assertEquals("<h1>Alice</h1><p>42</p>", html);
+    assertEquals("<h1>Alice!</h1><p>42</p>", html);
   }
 
   @Test
@@ -253,7 +251,7 @@ public class RecordModelRenderTest {
 
   @Test
   public void jexlHandlesRecordInInterpolation() throws Exception {
-    String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
+    String pug = "p Hello, #{person.name} You are #{person.age} years old.";
     PugEngine engine = newJexlEngine(pug);
     PugTemplate template = engine.getTemplate("inline");
 
@@ -266,7 +264,7 @@ public class RecordModelRenderTest {
 
   @Test
   public void graalHandlesRecordInInterpolation() throws Exception {
-    String pug = "p Hello, #{person.name}! You are #{person.age} years old.";
+    String pug = "p Hello, #{person.name} You are #{person.age} years old.";
     PugEngine engine = newGraalEngine(pug);
     PugTemplate template = engine.getTemplate("inline");
 
