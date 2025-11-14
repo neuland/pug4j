@@ -1,5 +1,6 @@
 # History
-
+## 3.0.0-alpha-2 / 2025-11-14
+* Extended support records in GraalsJSExpressionHandler and method syntax like person.name()  
 ## 3.0.0-alpha.1 / 2025-11-13
 Alpha pre-release of the 3.x line. Summary of key changes since 2.x:
 
