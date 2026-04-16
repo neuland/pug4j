@@ -19,16 +19,15 @@ public class FilterNode extends AttrsNode {
       LinkedList<Attr> attributes) {
     Map<String, Object> evaluatedAttributes = new HashMap<>();
     for (Attr attribute : attributes) {
-      if (attribute.getValue() instanceof ExpressionString) {
+      if (attribute.value() instanceof ExpressionString expr) {
         try {
           evaluatedAttributes.put(
-              attribute.getName(),
-              expressionHandler.evaluateExpression(
-                  ((ExpressionString) attribute.getValue()).getValue(), model));
+              attribute.name(),
+              expressionHandler.evaluateExpression(expr.getValue(), model));
         } catch (ExpressionException e) {
           throw new PugCompilerException(this, templateLoader, e);
         }
-      } else evaluatedAttributes.put(attribute.getName(), attribute.getValue());
+      } else evaluatedAttributes.put(attribute.name(), attribute.value());
     }
     return evaluatedAttributes;
   }

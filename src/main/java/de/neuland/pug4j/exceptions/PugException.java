@@ -80,7 +80,7 @@ public abstract class PugException extends RuntimeException {
       int start = Math.max(line - 3, 0);
       int end = Math.min(lines.size(), line + 3);
       // Error context
-      StringBuffer context = new StringBuffer();
+      StringBuilder context = new StringBuilder();
       for (int i = start; i < end; i++) {
         String text = lines.get(i);
         int curr = i + 1;

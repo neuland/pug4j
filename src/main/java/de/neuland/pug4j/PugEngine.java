@@ -49,8 +49,8 @@ public class PugEngine {
 
     // Configure expression handler caching
     if (builder.caching) {
-      if (expressionHandler instanceof JexlExpressionHandler) {
-        ((JexlExpressionHandler) expressionHandler).setCacheSize(builder.expressionCacheSize);
+      if (expressionHandler instanceof JexlExpressionHandler jexlHandler) {
+        jexlHandler.setCacheSize(builder.expressionCacheSize);
       } else {
         expressionHandler.setCache(true);
       }

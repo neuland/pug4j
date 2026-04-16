@@ -818,9 +818,7 @@ public class Parser {
     expect(StartAttributes.class);
 
     Token token = advance();
-    while (token instanceof Attribute) {
-
-      Attribute attr = (Attribute) token;
+    while (token instanceof Attribute attr) {
       String name = attr.getName();
       Object value = attr.getAttributeValue();
       attrsNode.setAttribute(name, value, attr.mustEscape());

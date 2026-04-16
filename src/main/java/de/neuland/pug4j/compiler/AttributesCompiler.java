@@ -60,9 +60,8 @@ public class AttributesCompiler {
     } catch (ExpressionException e) {
       throw new PugCompilerException(node, getTemplateLoader(), e);
     }
-    if (attributesBlock instanceof Map) {
-      Map<String, Object> map = (Map<String, Object>) attributesBlock;
-      for (Map.Entry<String, Object> entry : map.entrySet()) {
+    if (attributesBlock instanceof Map<?, ?> map) {
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
         // Attributes applied using &attributes are not automatically escaped. You must be sure to
         // sanitize any user inputs to avoid cross-site scripting (XSS). If passing in attributes
         // from a mixin call, this is done automatically.
@@ -136,13 +135,12 @@ public class AttributesCompiler {
       PugModel model,
       final AttrsNode node,
       boolean terse) {
-    final String name = attribute.getName();
-    boolean escaped = attribute.isEscaped();
+    final String name = attribute.name();
+    boolean escaped = attribute.escaped();
 
     String value = null;
-    Object attributeValue = attribute.getValue();
-    if (attributeValue instanceof ExpressionString) {
-      ExpressionString expressionString = (ExpressionString) attributeValue;
+    Object attributeValue = attribute.value();
+    if (attributeValue instanceof ExpressionString expressionString) {
       attributeValue = evaluateExpression(expressionString, model, node);
     }
 
@@ -165,35 +163,29 @@ public class AttributesCompiler {
   }
 
   private Boolean skipAttribute(final Object attributeValue) {
-    boolean skipAttribute = attributeValue == null;
-    if (attributeValue instanceof Boolean) {
-      if (!(Boolean) attributeValue) {
-        skipAttribute = true;
-      }
-    }
-    return skipAttribute;
+    if (attributeValue == null) return true;
+    if (attributeValue instanceof Boolean b) return !b;
+    return false;
   }
 
   private String renderNormalValue(final Object attributeValue, final String name, boolean terse) {
     String value = null;
-    if (attributeValue instanceof Boolean) {
-      Boolean booleanValue = (Boolean) attributeValue;
+    if (attributeValue instanceof Boolean booleanValue) {
       if (booleanValue) {
         value = name;
       }
       if (terse) {
         value = null;
       }
-    } else if (attributeValue instanceof Instant) {
-      Instant instantValue = (Instant) attributeValue;
+    } else if (attributeValue instanceof Instant instantValue) {
       value = instantValue.toString();
     } else if (attributeValue != null
         && (attributeValue.getClass().isArray()
             || attributeValue instanceof Map
             || attributeValue instanceof List)) {
       value = StringEscapeUtils.unescapeJava(gson.toJson(attributeValue));
-    } else if (attributeValue instanceof String) {
-      value = (String) attributeValue;
+    } else if (attributeValue instanceof String s) {
+      value = s;
     } else if (attributeValue != null) {
       value = attributeValue.toString();
     }
@@ -207,8 +199,7 @@ public class AttributesCompiler {
       final boolean escaped) {
     // List to String
     String value = null;
-    if (attributeValue instanceof List) {
-      List list = (List) attributeValue;
+    if (attributeValue instanceof List<?> list) {
       for (Object o : list) {
         classes.add(o.toString());
         classEscaping.add(escaped);
@@ -227,18 +218,17 @@ public class AttributesCompiler {
           classEscaping.add(escaped);
         }
       }
-    } else if (attributeValue instanceof Map) {
-      Map<String, Object> map = (Map<String, Object>) attributeValue;
-      for (Map.Entry<String, Object> entry : map.entrySet()) {
-        if (entry.getValue() instanceof Boolean) {
-          if (((Boolean) entry.getValue())) {
-            classes.add(entry.getKey());
+    } else if (attributeValue instanceof Map<?, ?> map) {
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        if (entry.getValue() instanceof Boolean b) {
+          if (b) {
+            classes.add(String.valueOf(entry.getKey()));
             classEscaping.add(false);
           }
         }
       }
-    } else if (attributeValue instanceof Boolean) {
-      if ((Boolean) attributeValue) {
+    } else if (attributeValue instanceof Boolean b) {
+      if (b) {
         value = attributeValue.toString();
       }
     } else if (attributeValue != null) {
@@ -251,13 +241,13 @@ public class AttributesCompiler {
   }
 
   private String renderStyleValue(Object value) {
-    if (value instanceof Boolean && !(Boolean) value) {
+    if (value instanceof Boolean b && !b) {
       return "";
     }
-    if (value instanceof Map) {
+    if (value instanceof Map<?, ?> map) {
       StringBuilder out = new StringBuilder();
-      Set<Map.Entry<String, String>> entries = ((Map<String, String>) value).entrySet();
-      for (Map.Entry<String, String> style : entries) {
+      Set<? extends Map.Entry<?, ?>> entries = map.entrySet();
+      for (Map.Entry<?, ?> style : entries) {
         out.append(style.getKey()).append(":").append(style.getValue()).append(";");
       }
       return out.toString();

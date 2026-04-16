@@ -2,6 +2,8 @@ package de.neuland.pug4j.lexer.token;
 
 import java.util.ArrayList;
 
+// TODO: Java 21 — make this a sealed class and convert the instanceof chains
+//  in Parser.parseExpr() to exhaustive pattern matching switch expressions (JEP 441).
 public abstract class Token implements Cloneable {
 
   private String value;
