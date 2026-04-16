@@ -8,22 +8,22 @@ public class BooleanUtil {
   public static Boolean convert(Object in) {
     if (in == null) {
       return Boolean.FALSE;
-    } else if (in instanceof List) {
-      return !((List<?>) in).isEmpty();
-    } else if (in instanceof Boolean) {
-      return (Boolean) in;
-    } else if (in instanceof int[]) {
-      return ((int[]) in).length != 0;
-    } else if (in instanceof double[]) {
-      return ((double[]) in).length != 0;
-    } else if (in instanceof float[]) {
-      return ((float[]) in).length != 0;
-    } else if (in instanceof Object[]) {
-      return ((Object[]) in).length != 0;
-    } else if (in instanceof Number) {
-      return ((Number) in).doubleValue() != 0;
-    } else if (in instanceof String) {
-      return !StringUtils.isEmpty((String) in);
+    } else if (in instanceof List<?> list) {
+      return !list.isEmpty();
+    } else if (in instanceof Boolean b) {
+      return b;
+    } else if (in instanceof int[] arr) {
+      return arr.length != 0;
+    } else if (in instanceof double[] arr) {
+      return arr.length != 0;
+    } else if (in instanceof float[] arr) {
+      return arr.length != 0;
+    } else if (in instanceof Object[] arr) {
+      return arr.length != 0;
+    } else if (in instanceof Number n) {
+      return n.doubleValue() != 0;
+    } else if (in instanceof String s) {
+      return !StringUtils.isEmpty(s);
     } else {
       return true;
     }

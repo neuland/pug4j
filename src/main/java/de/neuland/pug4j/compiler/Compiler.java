@@ -144,10 +144,9 @@ public class Compiler implements NodeVisitor {
 
       // If multiple expressions in a row evaluate buffered code
       if (bufferedExpressionString.isEmpty()
-          || (nextChildNode != null
-              && (nextChildNode instanceof ExpressionNode
-                  && (nextChildNode.hasBlock()
-                      || nextChildNode.getValue().trim().startsWith("}"))))) {
+          || (nextChildNode instanceof ExpressionNode
+              && (nextChildNode.hasBlock()
+                  || nextChildNode.getValue().trim().startsWith("}")))) {
         continue;
       }
 
@@ -328,7 +327,7 @@ public class Compiler implements NodeVisitor {
             };
         final String runnableKey = PUG4J_MODEL_PREFIX + "runnable_" + node.getNodeId();
         model.put(runnableKey, runnable);
-        StringBuilder stringBuilder = new StringBuilder().append(value);
+        StringBuilder stringBuilder = new StringBuilder(value);
         if (!value.trim().endsWith("{")) {
           stringBuilder.append("{");
         }
@@ -352,11 +351,10 @@ public class Compiler implements NodeVisitor {
       if (result.getClass().isArray()) {
         Object[] resultArray = (Object[]) result;
         expressionValue = StringUtils.joinWith(",", resultArray);
-      } else if (result instanceof List) {
-        List resultArray = (List) result;
-        expressionValue = StringUtils.joinWith(",", resultArray.toArray());
-      } else if (result instanceof Map) {
-        expressionValue = new LinkedHashMap<>((Map) result).toString();
+      } else if (result instanceof List<?> resultList) {
+        expressionValue = StringUtils.joinWith(",", resultList.toArray());
+      } else if (result instanceof Map<?, ?> resultMap) {
+        expressionValue = new LinkedHashMap<>(resultMap).toString();
       } else {
         expressionValue = result.toString();
       }
@@ -374,8 +372,7 @@ public class Compiler implements NodeVisitor {
     LinkedList<FilterNode> nestedFilterNodes = new LinkedList<>();
 
     // Find deepest FilterNode and get its nodes
-    while (!nodes.isEmpty() && nodes.get(0) instanceof FilterNode) {
-      FilterNode node1 = (FilterNode) nodes.get(0);
+    while (!nodes.isEmpty() && nodes.get(0) instanceof FilterNode node1) {
       nestedFilterNodes.push(node1);
       nodes = node1.getBlock().getNodes();
     }

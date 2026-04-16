@@ -71,26 +71,28 @@ public class PugConfigurationCacheTest {
     assertEquals(3000, config.getExpressionCacheSize());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testSetExpressionCacheSizeWithNonJexlHandler() {
     PugConfiguration config = new PugConfiguration();
 
     // Set a custom expression handler that is not JexlExpressionHandler
     config.setExpressionHandler(new de.neuland.pug4j.expression.GraalJsExpressionHandler());
 
-    // This should throw IllegalStateException
+    // Now works with any handler since PugConfiguration stores the value
+    // and passes it to PugEngine.Builder
     config.setExpressionCacheSize(1000);
+    assertEquals(1000, config.getExpressionCacheSize());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testGetExpressionCacheSizeWithNonJexlHandler() {
     PugConfiguration config = new PugConfiguration();
 
     // Set a custom expression handler that is not JexlExpressionHandler
     config.setExpressionHandler(new de.neuland.pug4j.expression.GraalJsExpressionHandler());
 
-    // This should throw IllegalStateException
-    config.getExpressionCacheSize();
+    // Should return the default value
+    assertEquals(5000, config.getExpressionCacheSize());
   }
 
   @Test

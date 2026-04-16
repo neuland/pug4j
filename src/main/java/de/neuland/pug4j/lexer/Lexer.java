@@ -1253,26 +1253,26 @@ public class Lexer {
 
     AttributeValueResponse valueResponse = this.attributeValue(str.substring(i));
 
-    if (valueResponse.getValue() != null) {
-      if ("".equals(valueResponse.getValue())) {
+    if (valueResponse.value() != null) {
+      if ("".equals(valueResponse.value())) {
         tok.setAttributeValue(true);
         tok.setMustEscape(false);
-      } else if (doubleQuotedRe.matcher(valueResponse.getValue()).matches()
-          || quotedRe.matcher(valueResponse.getValue()).matches()) {
+      } else if (doubleQuotedRe.matcher(valueResponse.value()).matches()
+          || quotedRe.matcher(valueResponse.value()).matches()) {
         // toConstant
-        String val = valueResponse.getValue();
+        String val = valueResponse.value();
         val = val.trim();
         val = val.replaceAll("\\n", "");
         val = StringEscapeUtils.unescapeEcmaScript(val);
         String cleanValue = cleanRe.matcher(val).replaceAll("");
 
         tok.setAttributeValue(cleanValue);
-        tok.setMustEscape(valueResponse.isMustEscape());
+        tok.setMustEscape(valueResponse.mustEscape());
       } else {
-        ExpressionString expressionString = new ExpressionString(valueResponse.getValue());
-        assertExpression(valueResponse.getValue());
+        ExpressionString expressionString = new ExpressionString(valueResponse.value());
+        assertExpression(valueResponse.value());
         tok.setAttributeValue(expressionString);
-        tok.setMustEscape(valueResponse.isMustEscape());
+        tok.setMustEscape(valueResponse.mustEscape());
       }
     } else {
       // was a boolean attribute (ex: `input(disabled)`)
@@ -1280,7 +1280,7 @@ public class Lexer {
       tok.setMustEscape(true);
     }
 
-    str = valueResponse.getRemainingSource();
+    str = valueResponse.remainingSource();
 
     pushToken(this.tokEnd(tok));
 

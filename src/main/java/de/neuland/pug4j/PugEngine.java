@@ -49,8 +49,8 @@ public class PugEngine {
 
     // Configure expression handler caching
     if (builder.caching) {
-      if (expressionHandler instanceof JexlExpressionHandler) {
-        ((JexlExpressionHandler) expressionHandler).setCacheSize(builder.expressionCacheSize);
+      if (expressionHandler instanceof JexlExpressionHandler jexlHandler) {
+        jexlHandler.setCacheSize(builder.expressionCacheSize);
       } else {
         expressionHandler.setCache(true);
       }
@@ -125,8 +125,8 @@ public class PugEngine {
    * @return true if the template exists, false otherwise
    */
   public boolean templateExists(String name) {
-    try {
-      return templateLoader.getReader(name) != null;
+    try (var reader = templateLoader.getReader(name)) {
+      return reader != null;
     } catch (IOException e) {
       return false;
     }
@@ -268,6 +268,38 @@ public class PugEngine {
   public String render(PugTemplate template, Map<String, Object> model)
       throws PugCompilerException {
     return render(template, model, RenderContext.defaults());
+  }
+
+  /**
+   * Loads a template by name and renders it with the given model and render context.
+   *
+   * @param templateName the template name/path
+   * @param model the model data
+   * @param context the render context
+   * @return the rendered HTML as a String
+   * @throws IOException if the template cannot be loaded
+   * @throws PugCompilerException if rendering fails
+   * @since 3.0.0
+   */
+  public String render(String templateName, Map<String, Object> model, RenderContext context)
+      throws IOException, PugCompilerException {
+    PugTemplate template = getTemplate(templateName);
+    return render(template, model, context);
+  }
+
+  /**
+   * Loads a template by name and renders it with the given model using default render settings.
+   *
+   * @param templateName the template name/path
+   * @param model the model data
+   * @return the rendered HTML as a String
+   * @throws IOException if the template cannot be loaded
+   * @throws PugCompilerException if rendering fails
+   * @since 3.0.0
+   */
+  public String render(String templateName, Map<String, Object> model)
+      throws IOException, PugCompilerException {
+    return render(templateName, model, RenderContext.defaults());
   }
 
   private PugTemplate createTemplate(String name) throws PugException, IOException {
