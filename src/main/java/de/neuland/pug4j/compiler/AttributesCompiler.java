@@ -164,14 +164,14 @@ public class AttributesCompiler {
 
   private Boolean skipAttribute(final Object attributeValue) {
     if (attributeValue == null) return true;
-    if (attributeValue instanceof Boolean b) return !b;
+    if (Boolean.FALSE.equals(attributeValue)) return true;
     return false;
   }
 
   private String renderNormalValue(final Object attributeValue, final String name, boolean terse) {
     String value = null;
-    if (attributeValue instanceof Boolean booleanValue) {
-      if (booleanValue) {
+    if (attributeValue instanceof Boolean) {
+      if (Boolean.TRUE.equals(attributeValue)) {
         value = name;
       }
       if (terse) {
@@ -220,17 +220,13 @@ public class AttributesCompiler {
       }
     } else if (attributeValue instanceof Map<?, ?> map) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
-        if (entry.getValue() instanceof Boolean b) {
-          if (b) {
-            classes.add(String.valueOf(entry.getKey()));
-            classEscaping.add(false);
-          }
+        if (Boolean.TRUE.equals(entry.getValue())) {
+          classes.add(String.valueOf(entry.getKey()));
+          classEscaping.add(false);
         }
       }
-    } else if (attributeValue instanceof Boolean b) {
-      if (b) {
-        value = attributeValue.toString();
-      }
+    } else if (Boolean.TRUE.equals(attributeValue)) {
+      value = attributeValue.toString();
     } else if (attributeValue != null) {
       value = attributeValue.toString();
     }
@@ -241,7 +237,7 @@ public class AttributesCompiler {
   }
 
   private String renderStyleValue(Object value) {
-    if (value instanceof Boolean b && !b) {
+    if (Boolean.FALSE.equals(value)) {
       return "";
     }
     if (value instanceof Map<?, ?> map) {
