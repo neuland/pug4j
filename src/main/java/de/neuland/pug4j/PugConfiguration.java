@@ -55,8 +55,6 @@ import java.util.Map;
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
 @SuppressWarnings("deprecation")
-// Note: This class is not thread-safe. Concurrent mutation (e.g. setTemplateLoader)
-// while calling getTemplate may cause race conditions on the lazily created engine.
 public class PugConfiguration {
 
   private static final String FILTER_CDATA = "cdata";
@@ -71,7 +69,7 @@ public class PugConfiguration {
   private Map<String, Object> sharedVariables = new HashMap<>();
   private TemplateLoader templateLoader = new FileTemplateLoader();
   private ExpressionHandler expressionHandler = new JexlExpressionHandler();
-  private PugEngine engine = null; // Cached engine instance
+  private volatile PugEngine engine = null; // Cached engine instance
   protected static final long MAX_ENTRIES = 1000L;
   private long maxCacheSize = MAX_ENTRIES;
   private int expressionCacheSize = 5000;
@@ -89,17 +87,24 @@ public class PugConfiguration {
    * @return the PugEngine instance
    */
   public PugEngine getOrCreateEngine() {
-    if (engine == null) {
-      engine = PugEngine.builder()
-          .templateLoader(templateLoader)
-          .expressionHandler(expressionHandler)
-          .caching(caching)
-          .maxCacheSize(maxCacheSize)
-          .expressionCacheSize(expressionCacheSize)
-          .filters(filters)
-          .build();
+    PugEngine result = engine;
+    if (result == null) {
+      synchronized (this) {
+        result = engine;
+        if (result == null) {
+          result = PugEngine.builder()
+              .templateLoader(templateLoader)
+              .expressionHandler(expressionHandler)
+              .caching(caching)
+              .maxCacheSize(maxCacheSize)
+              .expressionCacheSize(expressionCacheSize)
+              .filters(filters)
+              .build();
+          engine = result;
+        }
+      }
     }
-    return engine;
+    return result;
   }
 
   public PugTemplate getTemplate(String name) throws IOException, PugException {
@@ -208,7 +213,7 @@ public class PugConfiguration {
     }
   }
 
-  public void clearCache() {
+  public synchronized void clearCache() {
     if (engine != null) {
       engine.clearCache();
     } else {
