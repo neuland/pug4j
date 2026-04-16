@@ -56,9 +56,16 @@ public class PugTemplate {
   }
 
   /**
-   * Deprecated in favor of rendering via PugEngine/RenderContext.
-   *
-   * @deprecated Since 3.0.0, forRemoval = true. Use PugEngine#render instead.
+   * @deprecated Since 3.0.0, forRemoval = true. Use {@link PugEngine#render} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
+  @SuppressWarnings("deprecation")
+  public void process(PugModel model, Writer writer) throws PugCompilerException {
+    process(model, writer, new PugConfiguration());
+  }
+
+  /**
+   * @deprecated Since 3.0.0, forRemoval = true. Use {@link PugEngine#render} instead.
    */
   @Deprecated(since = "3.0.0", forRemoval = true)
   @SuppressWarnings("deprecation")

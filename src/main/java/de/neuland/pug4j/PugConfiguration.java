@@ -1,7 +1,5 @@
 package de.neuland.pug4j;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import de.neuland.pug4j.Pug4J.Mode;
 import de.neuland.pug4j.exceptions.PugCompilerException;
 import de.neuland.pug4j.exceptions.PugException;
@@ -11,14 +9,11 @@ import de.neuland.pug4j.filter.CDATAFilter;
 import de.neuland.pug4j.filter.CssFilter;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.filter.JsFilter;
-import de.neuland.pug4j.parser.Parser;
-import de.neuland.pug4j.parser.node.Node;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import de.neuland.pug4j.template.PugTemplate;
 import de.neuland.pug4j.template.TemplateLoader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,8 +71,7 @@ public class PugConfiguration {
   private PugEngine engine = null; // Cached engine instance
   protected static final long MAX_ENTRIES = 1000L;
   private long maxCacheSize = MAX_ENTRIES;
-  private Cache<String, PugTemplate> cache =
-      Caffeine.newBuilder().maximumSize(maxCacheSize).build();
+  private int expressionCacheSize = 5000;
 
   public PugConfiguration() {
     setFilter(FILTER_CDATA, new CDATAFilter());
@@ -97,6 +91,8 @@ public class PugConfiguration {
           .templateLoader(templateLoader)
           .expressionHandler(expressionHandler)
           .caching(caching)
+          .maxCacheSize(maxCacheSize)
+          .expressionCacheSize(expressionCacheSize)
           .filters(filters)
           .build();
     }
@@ -104,26 +100,7 @@ public class PugConfiguration {
   }
 
   public PugTemplate getTemplate(String name) throws IOException, PugException {
-
-    if (caching) {
-
-      long lastModified = templateLoader.getLastModified(name);
-      return cache.get(
-          getKeyValue(name, lastModified),
-          value -> {
-            try {
-              return createTemplate(name);
-            } catch (IOException e) {
-              throw new UncheckedIOException(e);
-            }
-          });
-    }
-
-    return createTemplate(name);
-  }
-
-  private String getKeyValue(String name, long lastModified) {
-    return name + "-" + lastModified;
+    return getOrCreateEngine().getTemplate(name);
   }
 
   public void renderTemplate(PugTemplate template, Map<String, Object> model, Writer writer)
@@ -148,13 +125,6 @@ public class PugConfiguration {
     return writer.toString();
   }
 
-  private PugTemplate createTemplate(String name) throws PugException, IOException {
-
-    Parser parser = new Parser(name, templateLoader, expressionHandler);
-    Node root = parser.parse();
-    PugTemplate template = new PugTemplate(root, getMode());
-    return template;
-  }
 
   public boolean isPrettyPrint() {
     return prettyPrint;
@@ -218,8 +188,8 @@ public class PugConfiguration {
   }
 
   public boolean templateExists(String url) {
-    try {
-      return templateLoader.getReader(url) != null;
+    try (var reader = templateLoader.getReader(url)) {
+      return reader != null;
     } catch (IOException e) {
       return false;
     }
@@ -238,8 +208,11 @@ public class PugConfiguration {
   }
 
   public void clearCache() {
-    expressionHandler.clearCache();
-    cache.invalidateAll();
+    if (engine != null) {
+      engine.clearCache();
+    } else {
+      expressionHandler.clearCache();
+    }
   }
 
   /**
@@ -264,52 +237,26 @@ public class PugConfiguration {
     }
     if (this.maxCacheSize != maxCacheSize) {
       this.maxCacheSize = maxCacheSize;
-      rebuildCache();
+      this.engine = null; // Invalidate cached engine
     }
   }
 
   /**
-   * Rebuilds the template cache with the current maxCacheSize. This will clear all existing cached
-   * templates.
-   */
-  private void rebuildCache() {
-    cache = Caffeine.newBuilder().maximumSize(maxCacheSize).build();
-  }
-
-  /**
-   * Sets the expression handler cache size. This method only works if the expression handler is a
-   * {@link JexlExpressionHandler}. If a different expression handler is used, this method will
-   * throw an {@link IllegalStateException}.
+   * Sets the expression handler cache size.
    *
    * @param cacheSize the cache size (0 to disable, positive value to enable with specific size)
-   * @throws IllegalStateException if the expression handler is not a JexlExpressionHandler
-   * @throws IllegalArgumentException if cacheSize is negative
    */
   public void setExpressionCacheSize(int cacheSize) {
-    if (expressionHandler instanceof JexlExpressionHandler) {
-      ((JexlExpressionHandler) expressionHandler).setCacheSize(cacheSize);
-    } else {
-      throw new IllegalStateException(
-          "setExpressionCacheSize() only works with JexlExpressionHandler, current handler is: "
-              + expressionHandler.getClass().getName());
-    }
+    this.expressionCacheSize = cacheSize;
+    this.engine = null; // Invalidate cached engine
   }
 
   /**
-   * Gets the expression handler cache size. This method only works if the expression handler is a
-   * {@link JexlExpressionHandler}. If a different expression handler is used, this method will
-   * throw an {@link IllegalStateException}.
+   * Gets the expression handler cache size.
    *
    * @return the cache size
-   * @throws IllegalStateException if the expression handler is not a JexlExpressionHandler
    */
   public int getExpressionCacheSize() {
-    if (expressionHandler instanceof JexlExpressionHandler) {
-      return ((JexlExpressionHandler) expressionHandler).getCacheSize();
-    } else {
-      throw new IllegalStateException(
-          "getExpressionCacheSize() only works with JexlExpressionHandler, current handler is: "
-              + expressionHandler.getClass().getName());
-    }
+    return expressionCacheSize;
   }
 }
