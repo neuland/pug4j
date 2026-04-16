@@ -55,6 +55,12 @@ public class PugConfigurationCacheTest {
     assertEquals(2000, config.getExpressionCacheSize());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetExpressionCacheSizeNegative() {
+    PugConfiguration config = new PugConfiguration();
+    config.setExpressionCacheSize(-1);
+  }
+
   @Test
   public void testExpressionCacheSizeWithJexlHandler() {
     PugConfiguration config = new PugConfiguration();

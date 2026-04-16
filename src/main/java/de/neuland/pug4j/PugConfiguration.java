@@ -54,6 +54,9 @@ import java.util.Map;
  * @see RenderContext
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("deprecation")
+// Note: This class is not thread-safe. Concurrent mutation (e.g. setTemplateLoader)
+// while calling getTemplate may cause race conditions on the lazily created engine.
 public class PugConfiguration {
 
   private static final String FILTER_CDATA = "cdata";
@@ -124,7 +127,6 @@ public class PugConfiguration {
     renderTemplate(template, model, writer);
     return writer.toString();
   }
-
 
   public boolean isPrettyPrint() {
     return prettyPrint;
@@ -201,7 +203,6 @@ public class PugConfiguration {
 
   public void setCaching(boolean cache) {
     if (cache != this.caching) {
-      expressionHandler.setCache(cache);
       this.caching = cache;
       this.engine = null; // Invalidate cached engine
     }
@@ -247,6 +248,9 @@ public class PugConfiguration {
    * @param cacheSize the cache size (0 to disable, positive value to enable with specific size)
    */
   public void setExpressionCacheSize(int cacheSize) {
+    if (cacheSize < 0) {
+      throw new IllegalArgumentException("expressionCacheSize must be non-negative");
+    }
     this.expressionCacheSize = cacheSize;
     this.engine = null; // Invalidate cached engine
   }
