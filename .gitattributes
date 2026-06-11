@@ -1,0 +1,4 @@
+# Normalize all text files to LF on checkout, regardless of platform.
+# Rendered template output is always LF (the scanner normalizes line endings),
+# so snapshot fixtures must check out with LF on Windows runners too.
+* text=auto eol=lf
