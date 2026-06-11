@@ -113,8 +113,8 @@ public class PugEngine {
    * @return true if the template exists, false otherwise
    */
   public boolean templateExists(String name) {
-    try {
-      return templateLoader.getReader(name) != null;
+    try (java.io.Reader reader = templateLoader.getReader(name)) {
+      return reader != null;
     } catch (IOException e) {
       return false;
     }

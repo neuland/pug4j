@@ -220,8 +220,8 @@ public class PugConfiguration {
   }
 
   public boolean templateExists(String url) {
-    try {
-      return templateLoader.getReader(url) != null;
+    try (java.io.Reader reader = templateLoader.getReader(url)) {
+      return reader != null;
     } catch (IOException e) {
       return false;
     }
