@@ -1,6 +1,7 @@
 package de.neuland.pug4j.parser;
 
 import de.neuland.pug4j.exceptions.PugParserException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.lexer.Lexer;
 import de.neuland.pug4j.lexer.token.*;
@@ -55,14 +56,18 @@ public class Parser {
     getContexts().push(this);
   }
 
+  private List<String> templateLines() {
+    return TemplateSource.readLines(templateLoader, filename);
+  }
+
   private PugParserException error(String code, String message, Token token) {
     return new PugParserException(
         this.filename,
         token.getStartLineNumber(),
         token.getStartColumn(),
-        templateLoader,
         message,
-        code);
+        code,
+        templateLines());
   }
 
   private BlockNode emptyBlock() {
@@ -184,7 +189,7 @@ public class Parser {
   private BlockNode initBlock(int startLineNumber, LinkedList<Node> nodes) {
     if (nodes == null) {
       throw new PugParserException(
-          this.filename, this.line(), lexer.getColno(), templateLoader, "`nodes` is not an array");
+          this.filename, this.line(), lexer.getColno(), "`nodes` is not an array", templateLines());
     }
     BlockNode blockNode = new BlockNode();
     blockNode.setNodes(nodes);
@@ -408,8 +413,8 @@ public class Parser {
           this.filename,
           lexer.getLineno(),
           lexer.getColno(),
-          templateLoader,
-          "The template [" + templateName + "] could not be opened. Maybe outside template path.");
+          "The template [" + templateName + "] could not be opened. Maybe outside template path.",
+          templateLines());
     }
 
     try {
@@ -504,10 +509,10 @@ public class Parser {
             this.filename,
             lexer.getLineno(),
             lexer.getColno(),
-            templateLoader,
             "The template ["
                 + templateName
-                + "] could not be opened. Maybe outside template path.");
+                + "] could not be opened. Maybe outside template path.",
+            templateLines());
       }
       return new Parser(resolvedPath, templateLoader, expressionHandler);
     } catch (IOException e) {
@@ -515,8 +520,8 @@ public class Parser {
           this.filename,
           lexer.getLineno(),
           lexer.getColno(),
-          templateLoader,
-          "The template [" + templateName + "] could not be opened. \n" + e.getMessage());
+          "The template [" + templateName + "] could not be opened. \n" + e.getMessage(),
+          templateLines());
     }
   }
 
@@ -751,11 +756,11 @@ public class Parser {
               filename,
               line(),
               lexer.getColno(),
-              templateLoader,
               this.filename
                   + ", line "
                   + this.peek().getStartLineNumber()
-                  + ":\nYou should not have jade tags with multiple attributes.");
+                  + ":\nYou should not have jade tags with multiple attributes.",
+              templateLines());
         }
         seenAttrs = true;
         parseAttributes(tagNode);

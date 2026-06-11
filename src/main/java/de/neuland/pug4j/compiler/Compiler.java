@@ -5,6 +5,7 @@ import static de.neuland.pug4j.model.PugModel.PUG4J_MODEL_PREFIX;
 import de.neuland.pug4j.RenderContext;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.filter.Filter;
 import de.neuland.pug4j.model.PugModel;
@@ -50,6 +51,11 @@ public class Compiler implements NodeVisitor {
 
   private TemplateLoader getTemplateLoader() {
     return engine.getTemplateLoader();
+  }
+
+  // Lines of the file the node came from (includes/mixins may live in another file).
+  private List<String> templateLines(Node node) {
+    return TemplateSource.readLines(getTemplateLoader(), node.getFileName());
   }
 
   public String compileToString(PugModel model) throws PugCompilerException {
@@ -167,7 +173,7 @@ public class Compiler implements NodeVisitor {
       try {
         getExpressionHandler().evaluateExpression(bufferedExpressionString, model);
       } catch (ExpressionException e) {
-        throw new PugCompilerException(node, getTemplateLoader(), e);
+        throw new PugCompilerException(node, templateLines(node), e);
       }
       bufferedExpressionString = "";
     }
@@ -200,7 +206,7 @@ public class Compiler implements NodeVisitor {
     try {
       newname = (String) getExpressionHandler().evaluateExpression(newname, model);
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
 
     MixinNode mixin;
@@ -209,7 +215,7 @@ public class Compiler implements NodeVisitor {
 
     if (mixin == null) {
       throw new PugCompilerException(
-          node, getTemplateLoader(), "mixin " + node.getName() + " is not defined");
+          node, templateLines(node), "mixin " + node.getName() + " is not defined");
     }
 
     // Clone mixin
@@ -260,7 +266,7 @@ public class Compiler implements NodeVisitor {
         }
       }
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
   }
 
@@ -288,7 +294,7 @@ public class Compiler implements NodeVisitor {
           return;
         }
       } catch (ExpressionException e) {
-        throw new PugCompilerException(conditionNode, getTemplateLoader(), e);
+        throw new PugCompilerException(conditionNode, templateLines(conditionNode), e);
       }
     }
   }
@@ -304,11 +310,11 @@ public class Compiler implements NodeVisitor {
     try {
       result = getExpressionHandler().evaluateExpression(node.getCode(), model);
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
     if (result == null) {
       throw new PugCompilerException(
-          node, getTemplateLoader(), "[" + node.getCode() + "] has to be iterable but was null");
+          node, templateLines(node), "[" + node.getCode() + "] has to be iterable but was null");
     }
     model.pushScope();
     final Consumer<Node> nodeConsumer = (Node lambdaNode) -> visit(writer, model, lambdaNode);
@@ -359,7 +365,7 @@ public class Compiler implements NodeVisitor {
       try {
         result = getExpressionHandler().evaluateExpression(value, model);
       } catch (ExpressionException e) {
-        throw new PugCompilerException(node, getTemplateLoader(), e);
+        throw new PugCompilerException(node, templateLines(node), e);
       }
       if (result == null || !node.isBuffer()) {
         return;
@@ -496,7 +502,7 @@ public class Compiler implements NodeVisitor {
       }
       model.popScope();
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
   }
 }

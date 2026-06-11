@@ -2,6 +2,7 @@ package de.neuland.pug4j.lexer;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugLexerException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.lexer.token.*;
 import de.neuland.pug4j.parser.CharacterParserOptions;
@@ -153,9 +154,13 @@ public class Lexer {
     characterParser = new CharacterParser();
   }
 
+  private List<String> templateLines() {
+    return TemplateSource.readLines(templateLoader, filename);
+  }
+
   private PugLexerException error(String code, String message) {
     return new PugLexerException(
-        "PUG:" + code, message, this.filename, this.lineno, this.colno, templateLoader);
+        "PUG:" + code, message, this.filename, this.lineno, this.colno, templateLines());
   }
 
   public boolean next() {
@@ -288,7 +293,7 @@ public class Lexer {
           this.filename,
           this.lineno,
           this.colno,
-          templateLoader);
+          templateLines());
     }
     return this.tokens.get(index);
   }
@@ -359,7 +364,7 @@ public class Lexer {
 
   private void assertIf(boolean assertion, String message) {
     if (!assertion) {
-      throw new PugLexerException(message, filename, getLineno(), this.colno, templateLoader);
+      throw new PugLexerException(message, filename, getLineno(), this.colno, templateLines());
     }
   }
 
@@ -794,7 +799,7 @@ public class Lexer {
                 true);
       } catch (IOException e) {
         throw new PugLexerException(
-            e.getMessage(), this.filename, this.lineno, this.colno, templateLoader);
+            e.getMessage(), this.filename, this.lineno, this.colno, templateLines());
       }
       LinkedList<Token> interpolated = child.getTokens(); // TODO: try catch
 
@@ -1552,7 +1557,7 @@ public class Lexer {
       return newToken;
     } catch (CloneNotSupportedException e) {
       throw new PugLexerException(
-          "Clone Not Supported", this.filename, this.lineno, this.colno, templateLoader);
+          "Clone Not Supported", this.filename, this.lineno, this.colno, templateLines());
     }
   }
 

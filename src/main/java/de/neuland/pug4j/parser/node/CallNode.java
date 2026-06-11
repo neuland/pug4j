@@ -4,6 +4,7 @@ import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.ArgumentSplitter;
 import java.util.*;
@@ -52,7 +53,7 @@ public class CallNode extends AttrsNode {
         try {
           value = expressionHandler.evaluateExpression(valueExpression, model);
         } catch (Throwable e) {
-          throw new PugCompilerException(this, templateLoader, e);
+          throw new PugCompilerException(this, TemplateSource.readLines(templateLoader, getFileName()), e);
         }
       }
       if (key != null) {
@@ -70,7 +71,7 @@ public class CallNode extends AttrsNode {
           try {
             value = expressionHandler.evaluateExpression(values.get(i), model);
           } catch (Throwable e) {
-            throw new PugCompilerException(this, templateLoader, e);
+            throw new PugCompilerException(this, TemplateSource.readLines(templateLoader, getFileName()), e);
           }
         }
         restArguments.add(value);

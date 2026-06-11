@@ -5,6 +5,7 @@ import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.TemplateLoader;
@@ -101,7 +102,7 @@ public class TagNode extends AttrsNode {
       try {
         return expressionHandler.evaluateStringExpression(name, model);
       } catch (ExpressionException e) {
-        throw new PugCompilerException(this, templateLoader, e);
+        throw new PugCompilerException(this, TemplateSource.readLines(templateLoader, getFileName()), e);
       }
     } else {
       return name;

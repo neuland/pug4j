@@ -1,46 +1,63 @@
 package de.neuland.pug4j.exceptions;
 
-import de.neuland.pug4j.Pug4J;
 import de.neuland.pug4j.template.TemplateLoader;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class PugException extends RuntimeException {
 
-  private static final Logger logger = LoggerFactory.getLogger(PugException.class);
   private static final long serialVersionUID = -8189536050437574552L;
   private String filename;
   private int lineNumber;
   private int colNumber;
-  private TemplateLoader templateLoader;
+  private final List<String> templateLines;
 
   /**
-   * Just use protected for constructor of abstract class See more at <a
-   * href="https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993">https://rules.sonarsource.com/java/type/Code%20Smell/RSPEC-5993</a>
+   * Creates an exception carrying a snapshot of the template source for error reporting.
    *
    * @param message Description message of exception
    * @param filename Filename where exception was thrown
    * @param lineNumber Linenumber where exception was thrown
-   * @param templateLoader TemplateLoader to load templates
-   * @param e Thrown exception
+   * @param colNumber Column where exception was thrown
+   * @param templateLines Snapshot of the template source lines, may be null
+   * @param cause Thrown exception
    */
   protected PugException(
-      String message, String filename, int lineNumber, TemplateLoader templateLoader, Throwable e) {
-    super(message, e);
+      String message,
+      String filename,
+      int lineNumber,
+      int colNumber,
+      List<String> templateLines,
+      Throwable cause) {
+    super(message, cause);
     this.filename = filename;
     this.lineNumber = lineNumber;
-    this.templateLoader = templateLoader;
+    this.colNumber = colNumber;
+    this.templateLines =
+        templateLines == null
+            ? Collections.emptyList()
+            : Collections.unmodifiableList(new ArrayList<>(templateLines));
   }
 
+  /**
+   * @deprecated As of 3.0.0, replaced by {@link #PugException(String, String, int, int, List,
+   *     Throwable)}. Exceptions no longer hold a TemplateLoader; the template source is captured
+   *     at construction time instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
+  protected PugException(
+      String message, String filename, int lineNumber, TemplateLoader templateLoader, Throwable e) {
+    this(message, filename, lineNumber, 0, TemplateSource.readLines(templateLoader, filename), e);
+  }
+
+  /**
+   * @deprecated As of 3.0.0, replaced by {@link #PugException(String, String, int, int, List,
+   *     Throwable)}. Exceptions no longer hold a TemplateLoader; the template source is captured
+   *     at construction time instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   protected PugException(
       String message,
       String filename,
@@ -48,15 +65,13 @@ public abstract class PugException extends RuntimeException {
       int column,
       TemplateLoader templateLoader,
       Throwable e) {
-    super(message, e);
-    this.filename = filename;
-    this.lineNumber = lineNumber;
-    this.colNumber = column;
-    this.templateLoader = templateLoader;
+    this(
+        message, filename, lineNumber, column, TemplateSource.readLines(templateLoader, filename), e);
   }
 
   protected PugException(String message) {
     super(message);
+    this.templateLines = Collections.emptyList();
   }
 
   public String getFilename() {
@@ -103,19 +118,15 @@ public abstract class PugException extends RuntimeException {
     return fullMessage;
   }
 
+  /**
+   * Returns the template source lines captured when this exception was constructed. Unlike in
+   * 2.x, the lines are a snapshot taken at construction time and are not re-read from the
+   * template loader.
+   *
+   * @return the template lines, or an empty list if the source could not be read
+   */
   public List<String> getTemplateLines() {
-    List<String> result = new ArrayList<>();
-    try (Reader reader = templateLoader.getReader(filename);
-        BufferedReader in = new BufferedReader(reader)) {
-      String line;
-      while ((line = in.readLine()) != null) {
-        result.add(line);
-      }
-      return result;
-    } catch (IOException e) {
-      logger.warn("Failed to read template lines from file: {}", filename, e);
-      return result;
-    }
+    return templateLines;
   }
 
   @Override
@@ -123,32 +134,21 @@ public abstract class PugException extends RuntimeException {
     return getClass() + ": " + createErrorMessage(getMessage(), lineNumber, colNumber, filename);
   }
 
+  /**
+   * @deprecated As of 3.0.0, use {@link de.neuland.pug4j.PugErrorRenderer#renderHtml(PugException)}
+   *     instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public String toHtmlString() {
     return toHtmlString(null);
   }
 
+  /**
+   * @deprecated As of 3.0.0, use {@link de.neuland.pug4j.PugErrorRenderer#renderHtml(PugException,
+   *     String)} instead.
+   */
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public String toHtmlString(String generatedHtml) {
-    Map<String, Object> model = new HashMap<>();
-    model.put("filename", filename);
-    model.put("linenumber", lineNumber);
-    model.put("column", colNumber);
-    model.put("message", getMessage());
-    model.put("lines", getTemplateLines());
-    model.put("exception", getName());
-    if (generatedHtml != null) {
-      model.put("html", generatedHtml);
-    }
-
-    try {
-      URL url = PugException.class.getResource("/error.jade");
-      return Pug4J.render(url, model, true);
-    } catch (IOException | PugException e) {
-      logger.error("Failed to render error template for exception: {}", getName(), e);
-      return null;
-    }
-  }
-
-  private String getName() {
-    return this.getClass().getSimpleName().replaceAll("([A-Z])", " $1").trim();
+    return de.neuland.pug4j.PugErrorRenderer.renderHtml(this, generatedHtml);
   }
 }

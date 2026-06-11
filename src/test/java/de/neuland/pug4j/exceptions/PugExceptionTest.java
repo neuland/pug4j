@@ -59,6 +59,27 @@ public class PugExceptionTest {
     }
   }
 
+  @Test
+  public void leanConstructorProducesSameToStringAsLoaderConstructor() throws Exception {
+    FileTemplateLoader loader =
+        new FileTemplateLoader(TestFileHelper.getLexerResourcePath(""));
+    String filename = "attribute_1.jade";
+
+    PugLexerException loaderBased =
+        new PugLexerException("boom", filename, 1, 3, loader);
+    PugLexerException lean =
+        new PugLexerException(
+            "boom",
+            filename,
+            1,
+            3,
+            de.neuland.pug4j.exceptions.TemplateSource.readLines(loader, filename));
+
+    assertEquals(loaderBased.toString(), lean.toString());
+    assertTrue("context frame with caret expected", lean.toString().contains("> 1|"));
+    assertEquals(loaderBased.getTemplateLines(), lean.getTemplateLines());
+  }
+
   private String removeAbsolutePath(String html) {
     // JEXL embeds the Java source position of the createScript call into its error message;
     // normalize it so the test does not break whenever JexlExpressionHandler shifts lines.

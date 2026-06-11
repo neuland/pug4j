@@ -3,6 +3,7 @@ package de.neuland.pug4j.compiler;
 import com.google.gson.Gson;
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.exceptions.PugCompilerException;
+import de.neuland.pug4j.exceptions.TemplateSource;
 import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.parser.node.Attr;
@@ -29,6 +30,11 @@ public class AttributesCompiler {
 
   private TemplateLoader getTemplateLoader() {
     return engine.getTemplateLoader();
+  }
+
+  // Lines of the file the node came from (includes/mixins may live in another file).
+  private List<String> templateLines(de.neuland.pug4j.parser.node.Node node) {
+    return TemplateSource.readLines(getTemplateLoader(), node.getFileName());
   }
 
   protected String visitAttributes(PugModel model, final AttrsNode node, boolean terse) {
@@ -59,7 +65,7 @@ public class AttributesCompiler {
     try {
       attributesBlock = getExpressionHandler().evaluateExpression(attributeBlockExpression, model);
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
     if (attributesBlock instanceof Map) {
       Map<String, Object> map = (Map<String, Object>) attributesBlock;
@@ -73,7 +79,7 @@ public class AttributesCompiler {
     } else {
       throw new PugCompilerException(
           node,
-          getTemplateLoader(),
+          templateLines(node),
           "attribute block '" + attributeBlockExpression + "' is not a Map");
     }
   }
@@ -273,7 +279,7 @@ public class AttributesCompiler {
     try {
       return getExpressionHandler().evaluateExpression(expression, model);
     } catch (ExpressionException e) {
-      throw new PugCompilerException(node, getTemplateLoader(), e);
+      throw new PugCompilerException(node, templateLines(node), e);
     }
   }
 }
