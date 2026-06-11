@@ -32,7 +32,6 @@ public class PugEngine {
   private static final String FILTER_CSS = "css";
   private static final String FILTER_JS = "js";
   private static final long DEFAULT_MAX_CACHE_ENTRIES = 1000L;
-  private static final int DEFAULT_EXPRESSION_CACHE_SIZE = 5000;
 
   private final TemplateLoader templateLoader;
   private final ExpressionHandler expressionHandler;
@@ -46,17 +45,6 @@ public class PugEngine {
     this.caching = builder.caching;
     this.filters = Collections.unmodifiableMap(new HashMap<>(builder.filters));
     this.cache = Caffeine.newBuilder().maximumSize(builder.maxCacheSize).build();
-
-    // Configure expression handler caching
-    if (builder.caching) {
-      if (expressionHandler instanceof JexlExpressionHandler) {
-        ((JexlExpressionHandler) expressionHandler).setCacheSize(builder.expressionCacheSize);
-      } else {
-        expressionHandler.setCache(true);
-      }
-    } else {
-      expressionHandler.setCache(false);
-    }
   }
 
   /**
@@ -286,7 +274,6 @@ public class PugEngine {
     private ExpressionHandler expressionHandler = new JexlExpressionHandler();
     private boolean caching = true;
     private long maxCacheSize = DEFAULT_MAX_CACHE_ENTRIES;
-    private int expressionCacheSize = DEFAULT_EXPRESSION_CACHE_SIZE;
     private Map<String, Filter> filters = new HashMap<>();
 
     private Builder() {
@@ -313,6 +300,10 @@ public class PugEngine {
     /**
      * Sets the expression handler to use for evaluating expressions in templates.
      *
+     * <p>The handler is used as given — configure expression caching on the handler itself, e.g.
+     * {@code new JexlExpressionHandler(cacheSize)}. The engine's {@link #caching(boolean)} setting
+     * only controls the template cache.
+     *
      * @param expressionHandler the expression handler
      * @return this builder for method chaining
      */
@@ -325,7 +316,8 @@ public class PugEngine {
     }
 
     /**
-     * Sets whether to enable template caching.
+     * Sets whether to enable template caching. This only affects the template cache; expression
+     * caching is configured on the {@link ExpressionHandler} itself.
      *
      * @param caching true to enable caching
      * @return this builder for method chaining
@@ -348,22 +340,6 @@ public class PugEngine {
         throw new IllegalArgumentException("maxCacheSize must be positive");
       }
       this.maxCacheSize = maxCacheSize;
-      return this;
-    }
-
-    /**
-     * Sets the expression handler cache size. Only applies when caching is enabled and the
-     * expression handler is a {@link JexlExpressionHandler}.
-     *
-     * @param expressionCacheSize the cache size (0 to disable, positive value to enable)
-     * @return this builder for method chaining
-     * @throws IllegalArgumentException if expressionCacheSize is negative
-     */
-    public Builder expressionCacheSize(int expressionCacheSize) {
-      if (expressionCacheSize < 0) {
-        throw new IllegalArgumentException("expressionCacheSize must be non-negative");
-      }
-      this.expressionCacheSize = expressionCacheSize;
       return this;
     }
 

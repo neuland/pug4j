@@ -15,7 +15,7 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
 
   private static final int MAX_ENTRIES = 5000;
   private JexlEngine jexl;
-  private final JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
+  private final JexlExpressionHandlerOptions options;
   private final RecordWrapperUberspect pugUberspect =
       new RecordWrapperUberspect(
           LogFactory.getLog(JexlExpressionHandler.class),
@@ -41,11 +41,31 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
   private final PugJexlArithmetic pugJexlArithmetic = new PugJexlArithmetic(false);
 
   public JexlExpressionHandler() {
-    jexl = getJexlEngine(options);
+    this(new JexlExpressionHandlerOptions());
+  }
+
+  /**
+   * Creates a handler with a specific expression cache size.
+   *
+   * @param cacheSize the cache size (0 to disable, positive value to enable with specific size)
+   * @throws IllegalArgumentException if cacheSize is negative
+   */
+  public JexlExpressionHandler(int cacheSize) {
+    this(optionsWithCacheSize(cacheSize));
   }
 
   public JexlExpressionHandler(JexlExpressionHandlerOptions options) {
+    this.options = options;
     jexl = getJexlEngine(options);
+  }
+
+  private static JexlExpressionHandlerOptions optionsWithCacheSize(int cacheSize) {
+    if (cacheSize < 0) {
+      throw new IllegalArgumentException("cacheSize must be non-negative");
+    }
+    JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
+    options.setCache(cacheSize);
+    return options;
   }
 
   private JexlEngine getJexlEngine(JexlExpressionHandlerOptions options) {

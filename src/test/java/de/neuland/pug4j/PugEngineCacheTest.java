@@ -2,7 +2,6 @@ package de.neuland.pug4j;
 
 import static org.junit.Assert.*;
 
-import de.neuland.pug4j.expression.GraalJsExpressionHandler;
 import de.neuland.pug4j.expression.JexlExpressionHandler;
 import de.neuland.pug4j.template.FileTemplateLoader;
 import org.junit.Test;
@@ -35,32 +34,36 @@ public class PugEngineCacheTest {
   }
 
   @Test
-  public void testCustomExpressionCacheSize() {
-    PugEngine engine = PugEngine.builder().expressionCacheSize(10000).build();
+  public void testCustomExpressionCacheSizeOnHandler() {
+    PugEngine engine =
+        PugEngine.builder().expressionHandler(new JexlExpressionHandler(10000)).build();
 
-    assertTrue(engine.isCaching());
-
-    // Verify the expression handler cache size was set
-    if (engine.getExpressionHandler() instanceof JexlExpressionHandler) {
-      JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
-      assertEquals(10000, handler.getCacheSize());
-    }
+    JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
+    assertEquals(10000, handler.getCacheSize());
   }
 
   @Test
-  public void testExpressionCacheSizeDisabled() {
-    PugEngine engine = PugEngine.builder().expressionCacheSize(0).build();
+  public void testExpressionCacheDisabledOnHandler() {
+    PugEngine engine =
+        PugEngine.builder().expressionHandler(new JexlExpressionHandler(0)).build();
 
-    // Verify the expression cache is disabled
-    if (engine.getExpressionHandler() instanceof JexlExpressionHandler) {
-      JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
-      assertEquals(0, handler.getCacheSize());
-    }
+    JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
+    assertEquals(0, handler.getCacheSize());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testExpressionCacheSizeNegative() {
-    PugEngine.builder().expressionCacheSize(-1).build();
+    new JexlExpressionHandler(-1);
+  }
+
+  @Test
+  public void testEngineDoesNotReconfigureHandlerCache() {
+    JexlExpressionHandler handler = new JexlExpressionHandler(123);
+    PugEngine.builder().expressionHandler(handler).caching(true).build();
+    PugEngine.builder().expressionHandler(handler).caching(false).build();
+
+    // The engine must use the handler as given, regardless of its own caching setting
+    assertEquals(123, handler.getCacheSize());
   }
 
   @Test
@@ -73,27 +76,16 @@ public class PugEngineCacheTest {
   @Test
   public void testCombinedCacheConfiguration() {
     PugEngine engine =
-        PugEngine.builder().maxCacheSize(3000).expressionCacheSize(8000).caching(true).build();
+        PugEngine.builder()
+            .maxCacheSize(3000)
+            .expressionHandler(new JexlExpressionHandler(8000))
+            .caching(true)
+            .build();
 
     assertTrue(engine.isCaching());
 
-    if (engine.getExpressionHandler() instanceof JexlExpressionHandler) {
-      JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
-      assertEquals(8000, handler.getCacheSize());
-    }
-  }
-
-  @Test
-  public void testExpressionCacheSizeWithNonJexlHandler() {
-    // This should not throw an exception; the expressionCacheSize setting
-    // is simply ignored for non-JexlExpressionHandler implementations
-    PugEngine engine =
-        PugEngine.builder()
-            .expressionHandler(new GraalJsExpressionHandler())
-            .expressionCacheSize(1000)
-            .build();
-
-    assertNotNull(engine);
+    JexlExpressionHandler handler = (JexlExpressionHandler) engine.getExpressionHandler();
+    assertEquals(8000, handler.getCacheSize());
   }
 
   @Test
@@ -101,10 +93,9 @@ public class PugEngineCacheTest {
     PugEngine engine =
         PugEngine.builder()
             .templateLoader(new FileTemplateLoader())
-            .expressionHandler(new JexlExpressionHandler())
+            .expressionHandler(new JexlExpressionHandler(4000))
             .caching(true)
             .maxCacheSize(2000)
-            .expressionCacheSize(4000)
             .build();
 
     assertTrue(engine.isCaching());
@@ -114,7 +105,11 @@ public class PugEngineCacheTest {
 
   @Test
   public void testClearCacheDoesNotAffectConfiguration() {
-    PugEngine engine = PugEngine.builder().maxCacheSize(3000).expressionCacheSize(2000).build();
+    PugEngine engine =
+        PugEngine.builder()
+            .maxCacheSize(3000)
+            .expressionHandler(new JexlExpressionHandler(2000))
+            .build();
 
     // Clear cache
     engine.clearCache();

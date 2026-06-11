@@ -29,6 +29,20 @@ public class JexlExpressionHandlerTest {
   }
 
   @Test
+  public void optionsConstructorReflectsCacheSize() {
+    JexlExpressionHandlerOptions options = new JexlExpressionHandlerOptions();
+    options.setCache(42);
+    JexlExpressionHandler handler = new JexlExpressionHandler(options);
+
+    assertEquals(42, handler.getCacheSize());
+  }
+
+  @Test
+  public void cacheSizeConstructorReflectsCacheSize() {
+    assertEquals(42, new JexlExpressionHandler(42).getCacheSize());
+  }
+
+  @Test
   public void evaluateBooleanExpression() throws Exception {
 
     Boolean aBoolean = jexlExpressionHandler.evaluateBooleanExpression("1<5", pugModel);

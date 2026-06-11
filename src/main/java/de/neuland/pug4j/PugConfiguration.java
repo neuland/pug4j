@@ -93,12 +93,14 @@ public class PugConfiguration {
    */
   public PugEngine getOrCreateEngine() {
     if (engine == null) {
-      engine = PugEngine.builder()
-          .templateLoader(templateLoader)
-          .expressionHandler(expressionHandler)
-          .caching(caching)
-          .filters(filters)
-          .build();
+      engine =
+          PugEngine.builder()
+              .templateLoader(templateLoader)
+              .expressionHandler(expressionHandler)
+              .caching(caching)
+              .filters(filters)
+              .maxCacheSize(maxCacheSize)
+              .build();
     }
     return engine;
   }

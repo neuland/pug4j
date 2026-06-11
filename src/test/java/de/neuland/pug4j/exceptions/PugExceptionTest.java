@@ -60,6 +60,9 @@ public class PugExceptionTest {
   }
 
   private String removeAbsolutePath(String html) {
+    // JEXL embeds the Java source position of the createScript call into its error message;
+    // normalize it so the test does not break whenever JexlExpressionHandler shifts lines.
+    html = html.replaceAll("evaluateExpression@\\d+:\\d+", "evaluateExpression@0:0");
     html =
         html.replaceAll(
             "(<h2>In ).*(compiler/exceptions/error\\.jade at line 9, column 0\\.</h2>)",
