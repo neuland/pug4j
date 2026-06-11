@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public class CharacterParser {
 
-  private final Pattern pattern = Pattern.compile("^\\w+\\b");
+  private static final Pattern pattern = Pattern.compile("^\\w+\\b");
 
   //    function parse(src, state, options) {
   //      options = options || {};

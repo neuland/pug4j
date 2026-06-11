@@ -75,6 +75,10 @@ public class ArgumentSplitter {
   }
 
   private void addArgument(String argument) {
-    argList.add(argument.trim().replaceAll("^,", "").trim());
+    String trimmed = argument.trim();
+    if (!trimmed.isEmpty() && trimmed.charAt(0) == ARGUMENT_DELIMITER) {
+      trimmed = trimmed.substring(1).trim();
+    }
+    argList.add(trimmed);
   }
 }

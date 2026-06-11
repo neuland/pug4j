@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 public class Parser {
 
   public static final Pattern PATTERN_REST = Pattern.compile("^\\.\\.\\.");
+  private static final Pattern PATTERN_DEFAULT_VALUE_ARGUMENT =
+      Pattern.compile("^([a-zA-Z][a-zA-Z0-9]*)=(.*)$");
   private final Lexer lexer;
   private LinkedHashMap<String, BlockNode> blocks = new LinkedHashMap<>();
   private final TemplateLoader templateLoader;
@@ -276,7 +278,7 @@ public class Parser {
       HashMap<String, String> defaultValues = new HashMap<>();
       for (String arg : args) {
         String key;
-        Matcher matcher = Pattern.compile("^([a-zA-Z][a-zA-Z0-9]*)=(.*)$").matcher(arg);
+        Matcher matcher = PATTERN_DEFAULT_VALUE_ARGUMENT.matcher(arg);
         if (matcher.find(0) && matcher.groupCount() > 1) {
           key = matcher.group(1);
           defaultValues.put(key, matcher.group(2));

@@ -1262,7 +1262,7 @@ public class Lexer {
         // toConstant
         String val = valueResponse.getValue();
         val = val.trim();
-        val = val.replaceAll("\\n", "");
+        val = StringUtils.remove(val, '\n');
         val = StringEscapeUtils.unescapeEcmaScript(val);
         String cleanValue = cleanRe.matcher(val).replaceAll("");
 

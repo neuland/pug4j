@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 public class Scanner {
 
   private static final Logger logger = LoggerFactory.getLogger(Scanner.class);
+  private static final Pattern LINE_ENDINGS = Pattern.compile("\\r\\n|\\r");
   private String input;
   private String originalInput;
   public static final String UTF8_BOM = "\uFEFF";
@@ -31,17 +32,15 @@ public class Scanner {
   private void initFromReader(Reader reader) {
     try (BufferedReader in = new BufferedReader(reader)) {
       StringBuilder sb = new StringBuilder();
-      String s = "";
-      int data = in.read();
-      while (data != -1) {
-        char theChar = (char) data;
-        sb.append(theChar);
-        data = in.read();
+      char[] buffer = new char[8192];
+      int read;
+      while ((read = in.read(buffer)) != -1) {
+        sb.append(buffer, 0, read);
       }
       input = sb.toString();
       if (StringUtils.isNotBlank(input)) {
         input = removeUTF8BOM(input);
-        input = input.replaceAll("\\r\\n|\\r", "\n");
+        input = LINE_ENDINGS.matcher(input).replaceAll("\n");
       }
       originalInput = input;
     } catch (IOException e) {
