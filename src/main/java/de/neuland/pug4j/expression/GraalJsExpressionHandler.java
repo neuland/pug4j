@@ -5,15 +5,17 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
+import de.neuland.pug4j.model.RecordWrapper;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.graalvm.polyglot.*;
+import org.graalvm.polyglot.proxy.ProxyObject;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
   final HostAccess all =
@@ -51,6 +53,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
               return new ConcurrentHashMap<String, Value>();
             }
           });
+  final ThreadLocal<PugModelProxy> modelProxyThreadLocal =
+      ThreadLocal.withInitial(PugModelProxy::new);
   final ThreadLocal<Context> contextThreadLocal =
       ThreadLocal.withInitial(
           new Supplier<Context>() {
@@ -68,11 +72,66 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
                       .allowPolyglotAccess(PolyglotAccess.ALL)
                       .build();
               context.initialize("js");
+              context.getBindings("js").putMember(MODEL_SCOPE_BINDING, modelProxyThreadLocal.get());
               return context;
             }
           });
   final ThreadLocal<ArrayDeque<Value>> resolverStack =
       ThreadLocal.withInitial(ArrayDeque::new);
+
+  static final String MODEL_SCOPE_BINDING = PUG4J_MODEL_PREFIX + "scope";
+
+  /**
+   * Bound once per context as the {@code with}-scope for every expression. Delegates variable
+   * resolution directly to the current PugModel, so reads cost one proxy call per referenced
+   * variable and writes hit the model immediately — replacing the former per-expression copy of
+   * the whole model into the global bindings and the write-back afterwards. The model reference is
+   * swapped per evaluation (and restored afterwards) because nested block rendering evaluates
+   * against nested model scopes mid-execution.
+   */
+  static final class PugModelProxy implements ProxyObject {
+    private PugModel model;
+
+    PugModel swap(PugModel newModel) {
+      PugModel previous = this.model;
+      this.model = newModel;
+      return previous;
+    }
+
+    @Override
+    public Object getMember(String key) {
+      Object value = model.get(key);
+      // GraalJS treats objects implementing Map specially, ignoring their ProxyObject
+      // implementation, so RecordWrapper needs its pure-proxy view
+      if (value instanceof RecordWrapper wrapper) {
+        return wrapper.asGraalProxy();
+      }
+      return value;
+    }
+
+    @Override
+    public Object getMemberKeys() {
+      List<String> keys = new ArrayList<>();
+      for (String key : model.keySet()) {
+        if (!PugModel.LOCAL_VARS.equals(key)) {
+          keys.add(key);
+        }
+      }
+      return keys.toArray();
+    }
+
+    @Override
+    public boolean hasMember(String key) {
+      // knowsKey includes declared-but-unset locals registered by saveLocalVariableName, so
+      // assignments from rewritten declarations resolve to the model instead of the JS global
+      return !PugModel.LOCAL_VARS.equals(key) && model.knowsKey(key);
+    }
+
+    @Override
+    public void putMember(String key, Value value) {
+      model.put(key, value == null ? null : value.as(Object.class));
+    }
+  }
 
   /**
    * Callback exposed to buffered JS code that contains a nested pug block. The generated code
@@ -88,18 +147,14 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
    */
   public final class NestedBlockCallback {
     private final Runnable blockRenderer;
-    private final PugModel model;
 
-    NestedBlockCallback(Runnable blockRenderer, PugModel model) {
+    NestedBlockCallback(Runnable blockRenderer) {
       this.blockRenderer = blockRenderer;
-      this.model = model;
     }
 
     public void accept(Value resolver) {
-      // Sync globals mutated by the outer JS code earlier in this iteration into the model, so
-      // the nested model->bindings copy does not clobber them with stale values.
-      Value bindings = contextThreadLocal.get().getBindings("js");
-      writeBackBindingsToModel(bindings, model, false);
+      // Mutations of model variables by the outer JS code already reached the model live through
+      // the with-scope proxy, so no bindings sync is needed before rendering the nested block.
       ArrayDeque<Value> stack = resolverStack.get();
       stack.push(resolver);
       try {
@@ -112,7 +167,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
 
   @Override
   public Object createBlockCallback(Runnable blockRenderer, PugModel model) {
-    return new NestedBlockCallback(blockRenderer, model);
+    return new NestedBlockCallback(blockRenderer);
   }
 
   @Override
@@ -130,44 +185,29 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
   public Object evaluateExpression(String expression, PugModel model) throws ExpressionException {
     Context context = contextThreadLocal.get();
     Map<String, Value> cache = cacheThreadLocal.get();
+    PugModelProxy modelProxy = modelProxyThreadLocal.get();
     context.enter();
+    PugModel previousModel = modelProxy.swap(model);
     try {
       saveLocalVariableName(expression, model);
-      Value jsContextBindings = context.getBindings("js");
-      for (Map.Entry<String, Object> objectEntry : model.entrySet()) {
-        String key = objectEntry.getKey();
-        if (!PugModel.LOCAL_VARS.equals(key)) {
-          Object value = objectEntry.getValue();
-
-          // If the value is a RecordWrapper, we need to convert it to a pure ProxyObject
-          // because GraalJS treats objects implementing Map specially, ignoring their ProxyObject
-          // implementation
-          if (value instanceof de.neuland.pug4j.model.RecordWrapper wrapper) {
-            value = wrapper.asGraalProxy();
-          }
-
-          jsContextBindings.putMember(key, value);
-        }
-      }
 
       Value eval;
       ArrayDeque<Value> stack = resolverStack.get();
       boolean nested = !stack.isEmpty();
       if (nested) {
         // Evaluate via direct eval in the lexical scope of the enclosing JS function, so
-        // function-local variables resolve. Eval'd strings cannot be pre-parsed against a scope,
-        // therefore the source cache is bypassed here.
+        // function-local variables resolve. The enclosing buffered code already runs inside the
+        // model with-scope, so the eval'd string sees model variables through the scope chain.
+        // Eval'd strings cannot be pre-parsed against a scope, so the source cache is bypassed.
         eval = stack.peek().execute(rewriteLeadingDeclaration(expression));
-        writeBackBindingsToModel(jsContextBindings, model, false);
       } else {
         Value parsed = cache.get(expression);
         if (parsed == null) {
-          Source js = Source.create("js", rewriteLeadingDeclaration(expression));
+          Source js = Source.create("js", wrapInModelScope(rewriteLeadingDeclaration(expression)));
           parsed = context.parse(js);
           cache.put(expression, parsed);
         }
         eval = parsed.execute();
-        writeBackBindingsToModel(jsContextBindings, model, true);
       }
       return eval.as(Object.class);
     } catch (PolyglotException ex) {
@@ -186,7 +226,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         // fails with a TypeError. Retry with the offending zero-arg member calls rewritten to
         // property access.
         if (resolverStack.get().isEmpty() && isNotInvocable(msg)) {
-          Object result = retryWithPropertyAccessRewrite(expression, context, cache, model);
+          Object result = retryWithPropertyAccessRewrite(expression, context, cache);
           if (result != RETRY_FAILED) {
             return result;
           }
@@ -194,18 +234,32 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
       }
       throw new ExpressionException(expression, ex);
     } finally {
+      modelProxy.swap(previousModel);
       context.leave();
     }
   }
 
   /**
-   * Rewrites a leading var/let/const declaration into a plain assignment. Declarations become
-   * configurable global-object properties, so the writeback can sync and remove them, and the
-   * persistent thread-local context accumulates no global lexical bindings (re-evaluating a cached
-   * {@code let x = ...} Source would otherwise throw "has already been declared" on the next
-   * render; {@code const} bindings additionally are neither removable nor writable). Tradeoff:
-   * {@code const} reassignment no longer errors. Non-declarations are returned unchanged, except
-   * for the object-literal paren wrap.
+   * Wraps an expression in the model with-scope, so identifier resolution goes through {@link
+   * PugModelProxy}. The trailing newline guards against expressions ending in a line comment. The
+   * statement completion value of the with-body is the evaluation result, matching the previous
+   * bare-program semantics. Note: {@code with} is illegal in strict-mode code; expressions
+   * declaring {@code 'use strict'} at program level are not supported (function-level strict mode
+   * is fine).
+   */
+  private static String wrapInModelScope(String expression) {
+    return "with(" + MODEL_SCOPE_BINDING + "){ " + expression + "\n}";
+  }
+
+  /**
+   * Rewrites a leading var/let/const declaration into a plain assignment. The assignment then
+   * resolves through the model with-scope (saveLocalVariableName registers the name in the model
+   * first), so declared values land in the PugModel instead of the persistent thread-local
+   * context, which would otherwise accumulate global lexical bindings (re-evaluating a cached
+   * {@code let x = ...} Source would throw "has already been declared" on the next render;
+   * {@code const} bindings additionally are neither removable nor writable). Tradeoff: {@code
+   * const} reassignment no longer errors. Non-declarations are returned unchanged, except for the
+   * object-literal paren wrap.
    */
   static String rewriteLeadingDeclaration(String expression) {
     DeclarationScanner.Result declaration = DeclarationScanner.scan(expression);
@@ -228,31 +282,6 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
       statementString = "(" + statementString + ")";
     }
     return statementString + expression.substring(declaration.boundary);
-  }
-
-  private void writeBackBindingsToModel(
-      Value jsContextBindings, PugModel model, boolean removeFromBindings) {
-    Set<String> memberKeys = jsContextBindings.getMemberKeys();
-    for (String memberKey : memberKeys) {
-      if (model.knowsKey(memberKey)) {
-        if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
-          Value member = jsContextBindings.getMember(memberKey);
-          model.put(memberKey, member.as(Object.class));
-          if (removeFromBindings) {
-            try {
-              jsContextBindings.removeMember(memberKey);
-            } catch (UnsupportedOperationException e) {
-              try {
-                jsContextBindings.putMember(memberKey, null);
-              } catch (UnsupportedOperationException e2) {
-                // non-removable, non-writable binding (e.g. a const or function declared inside a
-                // multi-statement expression): leave it in the context
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   private static final Pattern EMPTY_MEMBER_CALL =
@@ -280,7 +309,7 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
    * entirely.
    */
   private Object retryWithPropertyAccessRewrite(
-      String expression, Context context, Map<String, Value> cache, PugModel model) {
+      String expression, Context context, Map<String, Value> cache) {
     String rewritten = rewriteLeadingDeclaration(expression);
     Matcher matcher = EMPTY_MEMBER_CALL.matcher(rewritten);
     while (matcher.find()) {
@@ -290,10 +319,9 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
               + matcher.group(1)
               + rewritten.substring(matcher.end());
       try {
-        Value parsed = context.parse(Source.create("js", rewritten));
+        Value parsed = context.parse(Source.create("js", wrapInModelScope(rewritten)));
         Value eval = parsed.execute();
         cache.put(expression, parsed);
-        writeBackBindingsToModel(context.getBindings("js"), model, true);
         return eval.as(Object.class);
       } catch (PolyglotException retryEx) {
         if (retryEx.isHostException() && retryEx.asHostException() instanceof RuntimeException re) {

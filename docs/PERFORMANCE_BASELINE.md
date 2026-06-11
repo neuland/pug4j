@@ -34,11 +34,14 @@ mvn test -Dtest=KitchenSinkIntegrationTest -Dpug4j.kitchensink.perf=true
 | JexlExpressionHandler | 149 ms | ~0.15 ms | 1× |
 | GraalJsExpressionHandler | 27,610 ms | ~27.6 ms | ~185× slower |
 
-After rework (fill in):
+After rework (with-scope ProxyObject model binding, 2026-06-11):
 
 | Handler | 1000 renders | per render | vs baseline |
 |---|---:|---:|---:|
-| GraalJsExpressionHandler | | | |
+| GraalJsExpressionHandler | 577 ms | ~0.58 ms | **~48× faster** |
+| JexlExpressionHandler (re-run, unchanged) | 151 ms | ~0.15 ms | — |
+
+GraalJS goes from ~185× slower than JEXL to ~3.8× slower.
 
 ## Workload 2: Single-expression templates (GraalJS, micro)
 
@@ -47,11 +50,11 @@ After rework (fill in):
 kitchen-sink perf smoke). Model: one record (3 components, nested record),
 list of 20 records.
 
-| Template | Baseline (9e954c0) |
-|---|---:|
-| `p= person.name` (property) | 986 ms |
-| `p= person.name()` (rewritten accessor call, cached) | 905 ms |
-| `each` over 20 records, 1,000 renders | 2,585 ms |
+| Template | Baseline (9e954c0) | After rework | Speedup |
+|---|---:|---:|---:|
+| `p= person.name` (property) | 986 ms | 255 ms | 3.9× |
+| `p= person.name()` (rewritten accessor call, cached) | 905 ms | 159 ms | 5.7× |
+| `each` over 20 records, 1,000 renders | 2,585 ms | 208 ms | 12.4× |
 
 ≈100 µs per single-expression render; profiling attributes most of it to the
 per-expression model→bindings copy (`GraalJsExpressionHandler.evaluateExpression`,
