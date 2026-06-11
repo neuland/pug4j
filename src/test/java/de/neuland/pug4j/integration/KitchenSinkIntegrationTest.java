@@ -96,7 +96,8 @@ public class KitchenSinkIntegrationTest {
 
   private String expected() throws Exception {
     File file = new File(TestFileHelper.getResourcePath("/kitchensink/kitchen-sink.html"));
-    return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+    // Windows checkouts may carry CRLF; rendered output is always LF (the scanner normalizes)
+    return FileUtils.readFileToString(file, StandardCharsets.UTF_8).replace("\r", "");
   }
 
   @Test
