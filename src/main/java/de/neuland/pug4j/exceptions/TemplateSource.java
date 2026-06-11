@@ -41,7 +41,10 @@ public final class TemplateSource {
       return result;
     } catch (Exception e) {
       // also catches RuntimeException, e.g. from ReaderTemplateLoader name checks
-      logger.warn("Failed to read template lines from file: {}", filename, e);
+      // single-line warn: this fires while an exception is already being constructed,
+      // so a full stack trace here only buries the original error
+      logger.warn("Failed to read template lines from file: {} ({})", filename, e.toString());
+      logger.debug("Failed to read template lines from file: {}", filename, e);
       return result;
     }
   }
