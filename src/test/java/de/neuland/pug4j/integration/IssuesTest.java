@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class IssuesTest {
   private static final Charset FILES_ENCODING = Charset.forName("UTF-8");
-  private static String[] ignoredCases = new String[] {"131"};
+  private static String[] ignoredCases = new String[] {};
 
   private String file;
 

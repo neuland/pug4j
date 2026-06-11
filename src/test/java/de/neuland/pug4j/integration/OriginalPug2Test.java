@@ -34,10 +34,8 @@ public class OriginalPug2Test {
         // to test
         "pipeless-filters", // maybe missing markdown-it or different markdown syntax as in js
         // markdown
-        "each.else", // js issues
-        "code.conditionals", // maybe js conditionals problem
-        "filters.coffeescript", // missing filter
-        "blocks-in-if" // js block not suppoerted
+        "each.else", // JEXL: unquoted object keys evaluate to null keys; Object.create unavailable
+        "filters.coffeescript" // missing filter
       };
 
   private static final IntegrationTestSetup testSetup;

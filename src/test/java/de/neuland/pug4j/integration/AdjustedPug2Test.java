@@ -32,10 +32,7 @@ public class AdjustedPug2Test {
         "filters.stylus", // missing filter
         "filters.less", // missing filter
         //            "attrs-data", // nice to have
-        "each.else", // js issues
-        "code.conditionals", // maybe js conditionals problem
-        "filters.coffeescript", // missing filter
-        "blocks-in-if" // js block not suppoerted
+        "filters.coffeescript" // missing filter
       };
 
   private static final IntegrationTestSetup testSetup;
