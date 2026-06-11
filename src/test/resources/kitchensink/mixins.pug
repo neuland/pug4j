@@ -1,0 +1,20 @@
+//- Mixin library for the kitchen-sink integration test.
+
+mixin card(title, subtitle)
+    section.card&attributes(attributes)
+        h3.card-title= title
+        if subtitle
+            h4.card-subtitle= subtitle
+        .card-body
+            if block
+                block
+            else
+                p.card-empty No content
+
+mixin tagList(...tags)
+    ul.tags
+        each tag in tags
+            li.tag= tag
+
+mixin priceTag(amount)
+    span.price #{amount} EUR

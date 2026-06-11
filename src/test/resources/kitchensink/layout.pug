@@ -1,0 +1,18 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="utf-8")
+        title= pageTitle
+        block head
+            meta(name="default-head" content="from layout")
+    body
+        header
+            h1 #{pageTitle}
+            block nav
+                nav.default-nav
+                    a(href="/") Home
+        main
+            block content
+        footer
+            block footer
+                p.default-footer Default footer from layout

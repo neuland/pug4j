@@ -1,0 +1,137 @@
+//- Kitchen-sink template: exercises the full pug feature set with model-driven
+//- expressions restricted to the JEXL/GraalJS common subset, so both expression
+//- handlers must produce identical output.
+extends layout
+
+include mixins
+
+block append head
+    meta(name="appended" content="kitchen-sink")
+    script(src="/js/app.js")
+
+block prepend head
+    meta(name="prepended" content="first")
+
+block nav
+    nav.custom-nav
+        a(href="/products") Products
+        a(href="/about") About
+
+block content
+    // rendered comment for HTML readers
+    //- hidden comment for template authors only
+    //-
+        hidden block comment
+        spanning multiple lines
+
+    h2#welcome.section-title.highlight Welcome
+    p.intro
+        | Hello #{user.name}, you are #{user.age} years old.
+        | Escaped interpolation stays literal: \#{user.name}
+    p.unescaped Unescaped model HTML: !{htmlSnippet}
+    p.tag-interpolation Inline #[strong important] and #[a(href="/docs") linked#[em !]] text.
+
+    include partial
+
+    //- attributes: quoted, computed, boolean, conditional class, data, style map
+    section#attributes
+        input(type="checkbox" name="newsletter" checked=user.admin)
+        input(type="checkbox" name="spam" checked=false)
+        a.btn(href="/users/" + user.id class=user.admin ? 'btn-admin' : 'btn-user' data-user-id=user.id) Profile
+        div(class=user.tags class={"active": user.age > 18, "junior": user.age < 18})
+            | classes from list, object and literal
+        p(style={"color": "red", "border": "1px solid black"}) styled
+        div&attributes({"data-extra": "merged", "class": "attr-merged"}) extended
+
+    //- conditionals
+    section#conditionals
+        if user.admin
+            p.admin-panel Admin panel visible
+        else if user.age > 18
+            p.member-panel Member panel visible
+        else
+            p.guest-panel Guest panel visible
+        unless user.admin
+            p.no-admin This never renders for admins.
+        - var verdict = user.age > 30 ? "experienced" : "rookie"
+        p.verdict= verdict
+
+    //- case / when
+    section#case
+        case productCount
+            when 0
+                p No products
+            when 1
+                p One product
+            default
+                p #{productCount} products in stock
+
+    //- iteration: each with index, nested each, each over object, each-else, while
+    section#iteration
+        ul.products
+            each product, index in products
+                li(class=product.inStock ? 'in-stock' : 'sold-out')
+                    span.index= index
+                    span.name= product.name
+                    +priceTag(product.price)
+                    ul.features
+                        each feature in product.features
+                            li.feature= feature
+        dl.user-properties
+            each value, key in userProperties
+                dt= key
+                dd= value
+        ul.empty-handling
+            each item in emptyList
+                li= item
+            else
+                li.empty Nothing here
+        - var countdown = 3
+        ol.countdown
+            while countdown > 0
+                li step #{countdown}
+                - countdown = countdown - 1
+
+    //- mixins: args, defaults, block, rest args, &attributes
+    section#mixins
+        +card("Plain card")
+        +card("Card with body", "and subtitle")(data-kind="rich").card-extra
+            p Body content with #{user.name}
+            +tagList("alpha", "beta", "gamma")
+        +card("Empty card", null)
+
+    //- buffered / unbuffered code, method calls, arithmetic
+    section#code
+        - var greeting = "Hello " + user.name
+        p.greeting= greeting
+        p.shouting= user.name.toUpperCase()
+        p.math= (user.age + 1) * 2
+        p.logic= user.admin && user.age > 18 ? "adult admin" : "other"
+
+    //- plain text bodies, raw html line, script/style blocks
+    section#text
+        p.
+            Multi line text block
+            with #{user.name} interpolated
+            across lines.
+        | Piped text line
+        <hr class="raw-html-line"/>
+        script.
+            var inline = "not evaluated";
+        style.
+            .generated { color: green; }
+
+    //- filters
+    section#filters
+        :plain
+            Plain filter content #{user.name}
+        pre
+            :cdata
+                Raw <xml> content & such
+
+    //- include of a non-pug file
+    pre.static-include
+        include static.txt
+
+block footer
+    p.custom-footer Custom footer for #{pageTitle}
