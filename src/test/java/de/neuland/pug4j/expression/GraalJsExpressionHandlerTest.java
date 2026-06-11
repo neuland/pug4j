@@ -183,6 +183,114 @@ public class GraalJsExpressionHandlerTest {
   }
 
   @Test
+  public void testLetTopLevel() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("let x = 5", pugModel);
+    assertEquals("5", pugModel.get("x").toString());
+  }
+
+  @Test
+  public void testLetTopLevelEvaluatedTwice() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("let x = 5", pugModel);
+    graalJsExpressionHandler.evaluateExpression("let x = 5", pugModel);
+    assertEquals("5", pugModel.get("x").toString());
+  }
+
+  @Test
+  public void testConstTopLevel() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("const y = [1,2]", pugModel);
+    List y = (List) pugModel.get("y");
+    assertEquals(2, y.size());
+  }
+
+  @Test
+  public void testConstTopLevelEvaluatedTwice() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("const y = [1,2]", pugModel);
+    graalJsExpressionHandler.evaluateExpression("const y = [1,2]", pugModel);
+    List y = (List) pugModel.get("y");
+    assertEquals(2, y.size());
+  }
+
+  @Test
+  public void testDeclarationWithTripleEqualsInitializer() throws ExpressionException {
+    pugModel.put("a", true);
+    graalJsExpressionHandler.evaluateExpression("let isTrue = a === true", pugModel);
+    assertEquals(Boolean.TRUE, pugModel.get("isTrue"));
+  }
+
+  @Test
+  public void testArrowFunctionInitializer() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("var f = (n) => n + 1", pugModel);
+    assertNotNull(pugModel.get("f"));
+    Object result = graalJsExpressionHandler.evaluateExpression("f(2)", pugModel);
+    assertEquals("3", result.toString());
+  }
+
+  @Test
+  public void testMultipleDeclarators() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("var a = 1, b = 2", pugModel);
+    assertEquals("1", pugModel.get("a").toString());
+    assertEquals("2", pugModel.get("b").toString());
+  }
+
+  @Test
+  public void testVarNoInitializerThenRead() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("var list;", pugModel);
+    Object result = graalJsExpressionHandler.evaluateExpression("list", pugModel);
+    assertNull(result);
+  }
+
+  @Test
+  public void testObjectDestructuringDeclaration() throws ExpressionException {
+    HashMap<String, Object> obj = new HashMap<>();
+    obj.put("a", 1);
+    obj.put("b", 2);
+    pugModel.put("obj", obj);
+    graalJsExpressionHandler.evaluateExpression("var {a, b} = obj", pugModel);
+    Object a = graalJsExpressionHandler.evaluateExpression("a", pugModel);
+    assertEquals("1", a.toString());
+    assertEquals("1", pugModel.get("a").toString());
+    assertEquals("2", pugModel.get("b").toString());
+  }
+
+  @Test
+  public void testDollarIdentifier() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("var $x = 1", pugModel);
+    assertEquals("1", pugModel.get("$x").toString());
+  }
+
+  @Test
+  public void testKeywordInsideStringLiteralUntouched() throws ExpressionException {
+    graalJsExpressionHandler.evaluateExpression("var s = \"let it be\"", pugModel);
+    assertEquals("let it be", pugModel.get("s"));
+  }
+
+  @Test
+  public void testNestedBlockCallbackLetDeclaration() throws ExpressionException {
+    List<Object> captured = new ArrayList<>();
+    Runnable blockRenderer =
+        () -> {
+          try {
+            graalJsExpressionHandler.evaluateExpression("let d = item * 2", pugModel);
+            captured.add(graalJsExpressionHandler.evaluateExpression("d", pugModel));
+          } catch (ExpressionException e) {
+            throw new RuntimeException(e);
+          }
+        };
+    pugModel.put(
+        "pug4j__runnable_test",
+        graalJsExpressionHandler.createBlockCallback(blockRenderer, pugModel));
+    graalJsExpressionHandler.evaluateExpression(
+        "[1,2,3].forEach(function(item){"
+            + graalJsExpressionHandler.getBlockInvocation("pug4j__runnable_test")
+            + "})",
+        pugModel);
+    assertEquals(3, captured.size());
+    assertEquals("2", captured.get(0).toString());
+    assertEquals("4", captured.get(1).toString());
+    assertEquals("6", captured.get(2).toString());
+  }
+
+  @Test
   public void testNestedBlockCallbackResolvesFunctionLocals() throws ExpressionException {
     List<Object> captured = new ArrayList<>();
     Runnable blockRenderer =

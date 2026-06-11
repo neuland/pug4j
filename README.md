@@ -423,11 +423,18 @@ ul
 ```
 
 This works for arbitrarily deep nesting. Limitations:
-- The JEXL Expression Handler does not support function blocks around pug content.
+- The JEXL Expression Handler supports plain `for`/`if` blocks around pug content (e.g.
+  `- for (item : items)`) — block variables pass through the model and stay in scope. JS-style
+  function callbacks (`function(item){`) are not supported with JEXL: the callback is silently
+  never invoked, producing empty output. Use the GraalJS Expression Handler for those.
 - A pug `each` variable that shares its name with an enclosing JS function parameter is
   shadowed by the JS variable.
-- Under `'use strict'`, `var` declarations inside such blocks do not persist between
-  sibling expressions.
+
+`var`, `let` and `const` are all supported in buffered code. A leading declaration is
+rewritten to a plain assignment internally, which means `const` reassignment does not
+raise an error and a `let`/`const` declaration that is not the first statement of a
+multi-statement code line keeps its native (lexical) semantics — avoid redeclaring such
+names across renders.
 
 <a name="framework-integrations"></a>
 ## Framework Integrations

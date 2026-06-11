@@ -155,23 +155,12 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         // Evaluate via direct eval in the lexical scope of the enclosing JS function, so
         // function-local variables resolve. Eval'd strings cannot be pre-parsed against a scope,
         // therefore the source cache is bypassed here.
-        String expr = expression.startsWith("{") ? "(" + expression + ")" : expression;
-        // A var/let/const declaration would die with the resolver invocation; strip the keyword
-        // so the assignment persists on the scope chain (matching top-level semantics).
-        if (isLocalAssignment.matcher(expr).matches()) {
-          expr = expr.replaceFirst("^(var|let|const)\\s+", "");
-        }
-        eval = stack.peek().execute(expr);
+        eval = stack.peek().execute(rewriteLeadingDeclaration(expression));
         writeBackBindingsToModel(jsContextBindings, model, false);
       } else {
         Value parsed = cache.get(expression);
         if (parsed == null) {
-          Source js;
-          if (expression.startsWith("{")) {
-            js = Source.create("js", "(" + expression + ")");
-          } else {
-            js = Source.create("js", expression);
-          }
+          Source js = Source.create("js", rewriteLeadingDeclaration(expression));
           parsed = context.parse(js);
           cache.put(expression, parsed);
         }
@@ -216,6 +205,38 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     }
   }
 
+  /**
+   * Rewrites a leading var/let/const declaration into a plain assignment. Declarations become
+   * configurable global-object properties, so the writeback can sync and remove them, and the
+   * persistent thread-local context accumulates no global lexical bindings (re-evaluating a cached
+   * {@code let x = ...} Source would otherwise throw "has already been declared" on the next
+   * render; {@code const} bindings additionally are neither removable nor writable). Tradeoff:
+   * {@code const} reassignment no longer errors. Non-declarations are returned unchanged, except
+   * for the object-literal paren wrap.
+   */
+  static String rewriteLeadingDeclaration(String expression) {
+    DeclarationScanner.Result declaration = DeclarationScanner.scan(expression);
+    if (declaration == null) {
+      return expression.startsWith("{") ? "(" + expression + ")" : expression;
+    }
+    StringBuilder statement = new StringBuilder();
+    for (int i = 0; i < declaration.declarators.size(); i++) {
+      DeclarationScanner.Declarator declarator = declaration.declarators.get(i);
+      if (i > 0) {
+        statement.append(", ");
+      }
+      statement.append(declarator.source);
+      if (!declarator.destructuring && !declarator.hasInitializer) {
+        statement.append(" = undefined");
+      }
+    }
+    String statementString = statement.toString();
+    if (statementString.startsWith("{")) {
+      statementString = "(" + statementString + ")";
+    }
+    return statementString + expression.substring(declaration.boundary);
+  }
+
   private void writeBackBindingsToModel(
       Value jsContextBindings, PugModel model, boolean removeFromBindings) {
     Set<String> memberKeys = jsContextBindings.getMemberKeys();
@@ -228,7 +249,12 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
             try {
               jsContextBindings.removeMember(memberKey);
             } catch (UnsupportedOperationException e) {
-              jsContextBindings.putMember(memberKey, null);
+              try {
+                jsContextBindings.putMember(memberKey, null);
+              } catch (UnsupportedOperationException e2) {
+                // non-removable, non-writable binding (e.g. a const or function declared inside a
+                // multi-statement expression): leave it in the context
+              }
             }
           }
         }

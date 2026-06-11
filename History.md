@@ -1,6 +1,8 @@
 # History
 ## Unreleased (3.0.0-alpha-3)
 * GraalJsExpressionHandler: JS function blocks in buffered code (e.g. `forEach(function(item){ ... })` around pug content) now resolve function-local variables via a lexical-scope resolver; enables the original pug3 `code.iteration` case
+* GraalJsExpressionHandler: fixed top-level `const` crashing the render and top-level `let`/`const` breaking the second render on the same thread ("has already been declared"); leading declarations are now rewritten to plain assignments. Tradeoff: `const` reassignment no longer errors.
+* Replaced the fragile local-variable regex with a declaration scanner: multiple declarators (`var a = 1, b = 2`), missing initializers (`var x;`), `==`/`===`/arrow functions in initializers, `$` identifiers and flat destructuring patterns (`var {a, b} = obj`) are now registered and synced to the model correctly (JEXL and GraalJS)
 ## 3.0.0-alpha-2 / 2025-11-14
 * Extended support records in GraalsJSExpressionHandler and method syntax like person.name()  
 ## 3.0.0-alpha.1 / 2025-11-13
