@@ -465,6 +465,7 @@ names across renders.
   - Use `Pug4J.render(filename, ...)` for simple cases or `PugEngine` for advanced use
 
 ### Other Breaking Changes
+- **Default mode changed for templates without a doctype** (new API only): `RenderContext` defaults to `Mode.XHTML`, matching pug.js — void tags self-close (`<input/>`), boolean attributes get a value (`checked="checked"`). The 2.x `PugConfiguration` defaulted to `Mode.HTML` (terse: `<input checked>`) and keeps that default in 3.0.0. When migrating to `PugEngine`/`RenderContext`, set `defaultMode(Mode.HTML)` explicitly to keep 2.x output. Templates with an explicit doctype are unaffected.
 - **Java 17+ required**: Minimum Java version raised from Java 8 to Java 17
 - **Dependency updates**:
   - GraalVM updated to 25.0.3 (simplified dependencies using `polyglot` and `js-community`)
