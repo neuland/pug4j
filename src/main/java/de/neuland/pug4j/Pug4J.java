@@ -60,7 +60,7 @@ public class Pug4J {
   /**
    * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(PugTemplate template, Map<String, Object> model)
       throws PugCompilerException {
     return render(template, model, false);
@@ -69,7 +69,7 @@ public class Pug4J {
   /**
    * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(PugTemplate template, Map<String, Object> model, boolean pretty)
       throws PugCompilerException {
     PugEngine engine = PugEngine.builder().build();
@@ -81,7 +81,7 @@ public class Pug4J {
   /**
    * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext, Writer)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static void render(PugTemplate template, Map<String, Object> model, Writer writer)
       throws PugCompilerException {
     render(template, model, writer, false);
@@ -90,7 +90,7 @@ public class Pug4J {
   /**
    * @deprecated Use {@link PugEngine#render(PugTemplate, Map, RenderContext, Writer)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static void render(
       PugTemplate template, Map<String, Object> model, Writer writer, boolean pretty)
       throws PugCompilerException {
@@ -104,7 +104,7 @@ public class Pug4J {
    * @deprecated This method is rarely used. Create a {@link PugEngine} and use {@link
    *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(URL url, Map<String, Object> model)
       throws IOException, PugCompilerException {
     return render(url, model, false);
@@ -114,7 +114,7 @@ public class Pug4J {
    * @deprecated This method is rarely used. Create a {@link PugEngine} and use {@link
    *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(URL url, Map<String, Object> model, boolean pretty)
       throws IOException, PugCompilerException {
     try (BufferedReader reader =
@@ -133,7 +133,7 @@ public class Pug4J {
    *     de.neuland.pug4j.template.ReaderTemplateLoader} and use {@link
    *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(Reader reader, String filename, Map<String, Object> model)
       throws IOException, PugCompilerException {
     return render(reader, filename, model, false);
@@ -144,7 +144,7 @@ public class Pug4J {
    *     de.neuland.pug4j.template.ReaderTemplateLoader} and use {@link
    *     PugEngine#render(PugTemplate, Map, RenderContext)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static String render(
       Reader reader, String filename, Map<String, Object> model, boolean pretty)
       throws IOException, PugCompilerException {
@@ -160,7 +160,7 @@ public class Pug4J {
    * @deprecated This method is not part of the simple API. Create a {@link PugEngine} and use
    *     {@link PugEngine#getTemplate(String)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static PugTemplate getTemplate(String filename) throws IOException {
     if (filename == null) {
       throw new IllegalArgumentException("Filename can not be null");
@@ -181,7 +181,7 @@ public class Pug4J {
    * @deprecated This method is not part of the simple API. Create a {@link PugEngine} and use
    *     {@link PugEngine#getTemplate(String)} instead.
    */
-  @Deprecated
+  @Deprecated(since = "3.0.0", forRemoval = true)
   public static PugTemplate getTemplate(String filename, String extension) throws IOException {
     if (filename == null) {
       throw new IllegalArgumentException("Filename can not be null");
