@@ -9,6 +9,14 @@ import org.slf4j.LoggerFactory;
 public class IndentWriter {
   private static final Logger logger = LoggerFactory.getLogger(IndentWriter.class);
   public static final String INDENT = "  ";
+  private static final String[] CACHED_INDENTS = new String[33];
+
+  static {
+    for (int i = 0; i < CACHED_INDENTS.length; i++) {
+      CACHED_INDENTS[i] = StringUtils.repeat(INDENT, i);
+    }
+  }
+
   private int indent = 0;
   private boolean useIndent = false;
   private final Writer writer;
@@ -46,15 +54,28 @@ public class IndentWriter {
 
   public void newline() {
     if (isPp()) {
-      write("\n" + StringUtils.repeat(INDENT, indent));
+      write("\n");
+      write(indentString(indent));
     }
   }
 
   public void prettyIndent(int offset, boolean newline) {
     if (isPp()) {
-      String newlineChar = newline ? "\n" : "";
-      write(newlineChar + StringUtils.repeat(INDENT, indent + offset - 1));
+      if (newline) {
+        write("\n");
+      }
+      write(indentString(indent + offset - 1));
     }
+  }
+
+  private static String indentString(int level) {
+    if (level <= 0) {
+      return "";
+    }
+    if (level < CACHED_INDENTS.length) {
+      return CACHED_INDENTS[level];
+    }
+    return StringUtils.repeat(INDENT, level);
   }
 
   public void setUseIndent(boolean useIndent) {

@@ -9,32 +9,32 @@ import de.neuland.pug4j.expression.ExpressionHandler;
 import de.neuland.pug4j.model.PugModel;
 import de.neuland.pug4j.template.TemplateLoader;
 import java.util.LinkedList;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Set;
 
 public class TagNode extends AttrsNode {
-  private static final String[] selfClosingTags = {
-    "area",
-    "base",
-    "br",
-    "col",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "menuitem",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr"
-  };
-  private static final String[] inlineTags = {
-    "a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map",
-    "samp", "small", "span", "strong", "sub", "sup"
-  };
-  private static final String[] whitespaceSensitiveTags = {"pre", "textarea"};
+  private static final Set<String> selfClosingTags =
+      Set.of(
+          "area",
+          "base",
+          "br",
+          "col",
+          "embed",
+          "hr",
+          "img",
+          "input",
+          "keygen",
+          "link",
+          "menuitem",
+          "meta",
+          "param",
+          "source",
+          "track",
+          "wbr");
+  private static final Set<String> inlineTags =
+      Set.of(
+          "a", "abbr", "acronym", "b", "br", "code", "em", "font", "i", "img", "ins", "kbd", "map",
+          "samp", "small", "span", "strong", "sub", "sup");
+  private static final Set<String> whitespaceSensitiveTags = Set.of("pre", "textarea");
   private boolean interpolated = false;
 
   public TagNode() {
@@ -42,11 +42,11 @@ public class TagNode extends AttrsNode {
   }
 
   public boolean isInline() {
-    return ArrayUtils.indexOf(inlineTags, this.name) > -1;
+    return name != null && inlineTags.contains(name);
   }
 
   public boolean isWhitespaceSensitive() {
-    return ArrayUtils.indexOf(whitespaceSensitiveTags, this.name) > -1;
+    return name != null && whitespaceSensitiveTags.contains(name);
   }
 
   private boolean isInline(Node node) {
@@ -118,7 +118,7 @@ public class TagNode extends AttrsNode {
   }
 
   public boolean isSelfClosingTag() {
-    return ArrayUtils.contains(selfClosingTags, name);
+    return name != null && selfClosingTags.contains(name);
   }
 
   public boolean isInterpolated() {

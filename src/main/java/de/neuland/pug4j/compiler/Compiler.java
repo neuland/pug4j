@@ -16,7 +16,6 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 public class Compiler implements NodeVisitor {
 
@@ -118,29 +117,30 @@ public class Compiler implements NodeVisitor {
 
   @Override
   public void visit(BlockNode node, IndentWriter writer, PugModel model) {
+    // Indexed access below requires random access; node lists are linked lists.
+    final Node[] childNodes = node.getNodes().toArray(new Node[0]);
     // Pretty print multi-line text
     if (writer.isPp()
-        && node.getNodes().size() > 1
+        && childNodes.length > 1
         && !writer.isEscape()
-        && node.isTextNode(node.getNodes().get(0))
-        && node.isTextNode(node.getNodes().get(1))) writer.prettyIndent(1, true);
+        && node.isTextNode(childNodes[0])
+        && node.isTextNode(childNodes[1])) writer.prettyIndent(1, true);
     bufferedExpressionString = "";
-    for (int i = 0; i < node.getNodes().size(); ++i) {
+    for (int i = 0; i < childNodes.length; ++i) {
       // Pretty print text
-      Node childNode = node.getNodes().get(i);
+      Node childNode = childNodes[i];
       if (writer.isPp()
           && i > 0
           && !writer.isEscape()
           && node.isTextNode(childNode)
-          && node.isTextNode(node.getNodes().get(i - 1))
-          && (node.getNodes().get(i - 1).getValue() != null
-              && node.getNodes().get(i - 1).getValue().contains("\n")))
+          && node.isTextNode(childNodes[i - 1])
+          && (childNodes[i - 1].getValue() != null && childNodes[i - 1].getValue().contains("\n")))
         writer.prettyIndent(1, false);
 
       visit(writer, model, childNode);
 
       Node nextChildNode = null;
-      if (i + 1 < node.getNodes().size()) nextChildNode = node.getNodes().get(i + 1);
+      if (i + 1 < childNodes.length) nextChildNode = childNodes[i + 1];
 
       // If multiple expressions in a row evaluate buffered code
       if (bufferedExpressionString.isEmpty()
@@ -216,16 +216,16 @@ public class Compiler implements NodeVisitor {
 
     if (node.isCall()) {
       model.pushScope();
-      model.putLocal("block", node.getBlock());
+      model.setLocal("block", node.getBlock());
       final LinkedHashMap<String, Object> mixinVariables =
           node.getMixinVariables(model, mixin, getExpressionHandler(), getTemplateLoader());
       model.putAll(mixinVariables);
       Map<String, String> attrs =
           attributesCompiler.getAttributesMap(model, node, template.isTerse());
-      model.putLocal("attributes", attrs);
+      model.setLocal("attributes", attrs);
 
       visit(writer, model, mixin.getBlock());
-      model.putLocal("block", null);
+      model.setLocal("block", null);
       model.popScope();
     }
   }
@@ -364,7 +364,7 @@ public class Compiler implements NodeVisitor {
         expressionValue = result.toString();
       }
       if (node.isEscape()) {
-        expressionValue = StringEscapeUtils.escapeHtml4(expressionValue);
+        expressionValue = HtmlEscaping.escapeHtml4(expressionValue);
       }
       writer.append(expressionValue);
     }

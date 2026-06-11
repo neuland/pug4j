@@ -6,7 +6,6 @@ import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.model.PugModel;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.IteratorUtils;
 
@@ -67,8 +66,8 @@ public class EachNode extends Node {
     }
 
     while (iterator.hasNext()) {
-      model.putLocal(getValue(), iterator.next());
-      model.putLocal(getKey(), index);
+      model.setLocal(getValue(), iterator.next());
+      model.setLocal(getKey(), index);
       nodeConsumer.accept(getBlock());
       index++;
     }
@@ -79,14 +78,13 @@ public class EachNode extends Node {
       PugModel model,
       IndentWriter writer,
       final Consumer<Node> nodeConsumer) {
-    Set<Object> keys = result.keySet();
-    if (keys.isEmpty()) {
+    if (result.isEmpty()) {
       executeElseNode(model, writer, nodeConsumer);
       return;
     }
-    for (Object key : keys) {
-      model.putLocal(getValue(), result.get(key));
-      model.putLocal(getKey(), key);
+    for (Map.Entry<Object, Object> entry : result.entrySet()) {
+      model.setLocal(getValue(), entry.getValue());
+      model.setLocal(getKey(), entry.getKey());
       nodeConsumer.accept(getBlock());
     }
   }

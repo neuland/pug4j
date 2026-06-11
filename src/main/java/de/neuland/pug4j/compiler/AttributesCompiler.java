@@ -38,9 +38,10 @@ public class AttributesCompiler {
 
   public Map<String, String> getAttributesMap(
       final PugModel model, final AttrsNode node, final boolean terse) {
-    LinkedList<Attr> attributesList = new LinkedList<Attr>(node.getAttributes());
-    // if attributes block than add to attributes from tag
+    // copy only when attribute blocks get merged in; attrs() does not mutate the list
+    LinkedList<Attr> attributesList = node.getAttributes();
     if (!node.getAttributeBlocks().isEmpty()) {
+      attributesList = new LinkedList<Attr>(attributesList);
       for (String attributeBlockExpression : node.getAttributeBlocks()) {
         addAttributesBlockToAttributesList(model, node, attributeBlockExpression, attributesList);
       }
@@ -119,7 +120,7 @@ public class AttributesCompiler {
       final String className;
       final Boolean escaped = classEscaping.get(i);
 
-      if (escaped) className = StringEscapeUtils.escapeHtml4(classes.get(i));
+      if (escaped) className = HtmlEscaping.escapeHtml4(classes.get(i));
       else className = classes.get(i);
 
       if (i > 0) classList.append(" ");
@@ -159,7 +160,7 @@ public class AttributesCompiler {
       value = renderNormalValue(attributeValue, name, terse);
     }
 
-    if (escaped) value = StringEscapeUtils.escapeHtml4(value);
+    if (escaped) value = HtmlEscaping.escapeHtml4(value);
 
     newAttributes.put(name, value);
   }

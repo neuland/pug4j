@@ -103,8 +103,9 @@ public class PugModel implements Map<String, Object> {
   public Object get(Object key) {
     for (Iterator<Map<String, Object>> i = scopes.descendingIterator(); i.hasNext(); ) {
       Map<String, Object> scope = i.next();
-      if (scope.containsKey(key)) {
-        return scope.get(key);
+      Object value = scope.get(key);
+      if (value != null || scope.containsKey(key)) {
+        return value;
       }
     }
     return null;
@@ -154,9 +155,13 @@ public class PugModel implements Map<String, Object> {
   // adds the object to the current scope
   public Object putLocal(String key, Object value) {
     Object currentValue = get(key);
-    Map<String, Object> scope = scopes.getLast();
-    scope.put(key, RecordWrapper.wrapIfRecord(value));
+    setLocal(key, value);
     return currentValue;
+  }
+
+  // adds the object to the current scope without resolving the previous value
+  public void setLocal(String key, Object value) {
+    scopes.getLast().put(key, RecordWrapper.wrapIfRecord(value));
   }
 
   // adds the object to the scope where the variable was last defined
