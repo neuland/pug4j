@@ -89,7 +89,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>3.0.0-alpha-2</version>
+  <version>3.0.0</version>
 </dependency>
 ```
 
@@ -108,7 +108,7 @@ cd pug4j
 mvn install
 ```
 
-... and use the `pug4j-2.x.x.jar` located in your target directory.
+... and use the `pug4j-3.x.x.jar` located in your target directory.
 
 <a name="simple-api"></a>
 ## Simple static API
@@ -204,9 +204,16 @@ Configure caching at build time:
 
 ```java
 PugEngine engine = PugEngine.builder()
-    .caching(false)  // Disable for development
-    .maxCacheSize(500)  // Limit cache size
-    .expressionCacheSize(1000)  // Configure expression cache
+    .caching(false)  // Disable template caching for development
+    .maxCacheSize(500)  // Limit template cache size
+    .build();
+```
+
+The expression cache belongs to the expression handler and is configured there:
+
+```java
+PugEngine engine = PugEngine.builder()
+    .expressionHandler(new JexlExpressionHandler(1000))  // Expression cache size
     .build();
 ```
 
@@ -225,7 +232,7 @@ String html = engine.render(template, model, context);
 
 Pug detects if it has to generate (X)HTML or XML code by your specified [doctype](https://github.com/pugjs/pug#syntax).
 
-If you are rendering partial templates that don't include a doctype, pug4j generates HTML code. You can set the `defaultMode` manually:
+If you are rendering partial templates that don't include a doctype, pug4j renders pug.js-style output by default (`Mode.XHTML`: void tags self-close, boolean attributes get a value). You can set the `defaultMode` manually — it applies whenever the template itself has no doctype:
 
 ```java
 RenderContext context = RenderContext.builder()
@@ -429,6 +436,9 @@ This works for arbitrarily deep nesting. Limitations:
   never invoked, producing empty output. Use the GraalJS Expression Handler for those.
 - A pug `each` variable that shares its name with an enclosing JS function parameter is
   shadowed by the JS variable.
+- Program-level `'use strict'` in expressions is not supported — the model is bound via a
+  `with` scope (the same mechanism pug.js uses), which is illegal in strict mode.
+  Function-level strict mode is unaffected.
 
 `var`, `let` and `const` are all supported in buffered code. A leading declaration is
 rewritten to a plain assignment internally, which means `const` reassignment does not
@@ -457,8 +467,8 @@ names across renders.
 ### Other Breaking Changes
 - **Java 17+ required**: Minimum Java version raised from Java 8 to Java 17
 - **Dependency updates**:
-  - GraalVM updated to 25.0.0 (simplified dependencies using `polyglot` and `js-community`)
-  - Caffeine cache updated to 3.2.2
+  - GraalVM updated to 25.0.3 (simplified dependencies using `polyglot` and `js-community`)
+  - Caffeine cache updated to 3.2.4
   - Flexmark updated to 0.64.8
 
 ### New Features
@@ -510,7 +520,7 @@ Special thanks to [TJ Holowaychuk](https://github.com/visionmedia) the creator o
 
 The MIT License
 
-Copyright (C) 2011-2025 [neuland Büro für Informatik](http://www.neuland-bfi.de/), Bremen, Germany
+Copyright (C) 2011-2026 [neuland Büro für Informatik](http://www.neuland-bfi.de/), Bremen, Germany
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
