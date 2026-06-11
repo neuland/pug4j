@@ -63,6 +63,37 @@ model entry loop) and the bindings→model write-back
 removes: cost becomes proportional to the variables an expression actually
 references instead of the model size.
 
+## Graal JIT compiler experiment (jargraal, 2026-06-11)
+
+Tested whether enabling Truffle runtime compilation (Graal compiler via
+`--upgrade-module-path` on a stock Temurin JDK) speeds up rendering further
+after the with-scope rework. Setup that worked:
+
+- Temurin 25 + `org.graalvm.compiler:compiler:25.0.3` (+ `truffle-compiler`,
+  `word`, `collections`, `nativeimage`) on `--upgrade-module-path`
+- `-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI`
+- `-Ddebug.jdk.graal.jvmciConfigCheck=warn` — Temurin's JVMCI lacks a VM
+  config value (`NMethodPatchingType::conc_data_patch`) the Graal compiler
+  expects, hard failure without the override
+- Compiler version must match the JDK's JVMCI version (25.0.0 jars failed
+  against Temurin 25.0.3); Temurin 21 fails earlier (qualified JVMCI exports
+  target the old `jdk.internal.vm.compiler` module name)
+
+Results (warm steady state, direct `java` runs):
+
+| Workload | Interpreter | jargraal | Speedup |
+|---|---:|---:|---:|
+| Kitchen-sink, 1000 renders | ~143 ms | ~134 ms | ~6% |
+| Compute-heavy JS expression (200k-iteration loop), 50 renders | ~240 ms | ~14 ms | ~17× |
+
+Conclusion: after the with-scope rework, typical template rendering is bound
+by host interop (proxy calls, value conversion, context enter/leave), not by
+JS execution — the JIT barely helps. It only pays off for compute-heavy JS
+inside expressions, which is rare in templates. Given the deployment friction
+(flag soup, exact version coupling, config-check override on non-GraalVM
+JDKs), this is a documentation-level recommendation for affected users, not
+something pug4j should wire up.
+
 ## Feasibility note
 
 `with` + `ProxyObject` as scope was verified to work in GraalJS (see
