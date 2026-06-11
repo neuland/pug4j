@@ -14,7 +14,9 @@ import org.apache.commons.logging.LogFactory;
 public class JexlExpressionHandler extends AbstractExpressionHandler {
 
   private static final int MAX_ENTRIES = 5000;
-  private JexlEngine jexl;
+  // Replaced on setCache/setCacheSize; volatile so concurrent renders on a shared
+  // engine never observe a torn reference.
+  private volatile JexlEngine jexl;
   private final JexlExpressionHandlerOptions options;
   private final RecordWrapperUberspect pugUberspect =
       new RecordWrapperUberspect(
