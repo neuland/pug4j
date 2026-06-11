@@ -1,0 +1,17 @@
+- var total = 0
+- var letters = ['a','b']
+- var nums = [1,2]
+ul
+  - letters.forEach(function(letter){
+    - nums.forEach(function(num){
+      - var local = num * 2
+      li #{letter}#{num}:#{local}
+      - total = total + num
+    - })
+  - })
+p= total
+ul
+  - letters.forEach(function(letter){
+    each num in nums
+      li= letter + num
+  - })

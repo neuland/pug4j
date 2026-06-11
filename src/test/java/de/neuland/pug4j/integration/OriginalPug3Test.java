@@ -29,10 +29,9 @@ public class OriginalPug3Test {
         "filter-in-include", // missing less filter
         "pipeless-filters", // maybe missing markdown-it or different markdown syntax as in js
         // markdown
-        "code.iteration", // function block not working in buffered code. Maybe report to GraalVM
-        // Bugtracker.
         "filters.coffeescript", // missing filter
-        "blocks-in-if" // blocks in buffered code not recognozed. Should be fixable.
+        "blocks-in-if" // named blocks inside buffered code are a parser/block-expansion
+        // limitation, unrelated to the expression-scope handling
       };
 
   private static String[] casesWithoutLinebreak = new String[] {"filters.nested"};

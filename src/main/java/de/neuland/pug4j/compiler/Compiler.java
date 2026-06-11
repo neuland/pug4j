@@ -327,14 +327,17 @@ public class Compiler implements NodeVisitor {
               model.popScope();
             };
         final String runnableKey = PUG4J_MODEL_PREFIX + "runnable_" + node.getNodeId();
-        model.put(runnableKey, runnable);
+        model.put(runnableKey, getExpressionHandler().createBlockCallback(runnable, model));
         StringBuilder stringBuilder = new StringBuilder().append(value);
         if (!value.trim().endsWith("{")) {
           stringBuilder.append("{");
         }
 
         bufferedExpressionString =
-            stringBuilder.append(runnableKey).append(".run();").append("}").toString();
+            stringBuilder
+                .append(getExpressionHandler().getBlockInvocation(runnableKey))
+                .append("}")
+                .toString();
       } else {
         bufferedExpressionString = value;
       }

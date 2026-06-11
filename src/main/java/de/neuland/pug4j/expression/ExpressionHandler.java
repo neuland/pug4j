@@ -16,4 +16,31 @@ public interface ExpressionHandler {
   void setCache(boolean cache);
 
   void clearCache();
+
+  /**
+   * Wraps the Java-side block renderer into the object that is exposed to the expression language
+   * when a buffered code block contains nested pug content, e.g. a {@code forEach} callback
+   * followed by indented pug lines.
+   *
+   * <p>The default implementation exposes the {@link Runnable} directly; the generated code from
+   * {@link #getBlockInvocation(String)} then calls {@code run()} on it. Handlers that can provide
+   * access to the surrounding lexical scope (such as {@code GraalJsExpressionHandler}) may return a
+   * richer callback instead.
+   *
+   * @param blockRenderer renders the nested pug block against the current model
+   * @param model the model the block will be rendered with
+   * @return the object stored in the model and invoked from the buffered expression
+   */
+  default Object createBlockCallback(Runnable blockRenderer, PugModel model) {
+    return blockRenderer;
+  }
+
+  /**
+   * Returns the statement injected into buffered code to invoke the block callback created by
+   * {@link #createBlockCallback(Runnable, PugModel)}. {@code callbackKey} is the model key under
+   * which the callback is stored.
+   */
+  default String getBlockInvocation(String callbackKey) {
+    return callbackKey + ".run();";
+  }
 }

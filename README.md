@@ -408,6 +408,26 @@ PugEngine engine = PugEngine.builder()
     .build();
 ```
 
+#### JavaScript function blocks in buffered code
+
+With the GraalJS Expression Handler, buffered code blocks may contain JavaScript functions
+that wrap nested pug content. Function-local variables (callback parameters, closure
+variables) are resolved in the lexical scope of the enclosing function:
+
+```pug
+- var items = [1,2,3]
+ul
+  - items.forEach(function(item){
+    li= item
+  - })
+```
+
+This works for arbitrarily deep nesting. Limitations:
+- The JEXL Expression Handler does not support function blocks around pug content.
+- A pug `each` variable that shares its name with an enclosing JS function parameter is
+  shadowed by the JS variable.
+- Under `'use strict'`, `var` declarations inside such blocks do not persist between
+  sibling expressions.
 
 <a name="framework-integrations"></a>
 ## Framework Integrations

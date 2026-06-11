@@ -183,6 +183,75 @@ public class GraalJsExpressionHandlerTest {
   }
 
   @Test
+  public void testNestedBlockCallbackResolvesFunctionLocals() throws ExpressionException {
+    List<Object> captured = new ArrayList<>();
+    Runnable blockRenderer =
+        () -> {
+          try {
+            captured.add(graalJsExpressionHandler.evaluateExpression("item", pugModel));
+          } catch (ExpressionException e) {
+            throw new RuntimeException(e);
+          }
+        };
+    pugModel.put(
+        "pug4j__runnable_test",
+        graalJsExpressionHandler.createBlockCallback(blockRenderer, pugModel));
+    graalJsExpressionHandler.evaluateExpression(
+        "[1,2,3].forEach(function(item){"
+            + graalJsExpressionHandler.getBlockInvocation("pug4j__runnable_test")
+            + "})",
+        pugModel);
+    assertEquals(Arrays.asList(1, 2, 3), captured);
+  }
+
+  @Test
+  public void testNestedBlockCallbackUnknownIdentifierReturnsNull() throws ExpressionException {
+    List<Object> captured = new ArrayList<>();
+    Runnable blockRenderer =
+        () -> {
+          try {
+            captured.add(graalJsExpressionHandler.evaluateExpression("doesNotExist", pugModel));
+          } catch (ExpressionException e) {
+            throw new RuntimeException(e);
+          }
+        };
+    pugModel.put(
+        "pug4j__runnable_test",
+        graalJsExpressionHandler.createBlockCallback(blockRenderer, pugModel));
+    graalJsExpressionHandler.evaluateExpression(
+        "[1].forEach(function(item){"
+            + graalJsExpressionHandler.getBlockInvocation("pug4j__runnable_test")
+            + "})",
+        pugModel);
+    assertEquals(1, captured.size());
+    assertNull(captured.get(0));
+  }
+
+  @Test
+  public void testResolverStackEmptyAfterThrowingBlockRenderer() {
+    Runnable blockRenderer =
+        () -> {
+          throw new IllegalStateException("boom");
+        };
+    pugModel.put(
+        "pug4j__runnable_test",
+        graalJsExpressionHandler.createBlockCallback(blockRenderer, pugModel));
+    try {
+      graalJsExpressionHandler.evaluateExpression(
+          "[1].forEach(function(item){"
+              + graalJsExpressionHandler.getBlockInvocation("pug4j__runnable_test")
+              + "})",
+          pugModel);
+      fail("expected exception");
+    } catch (IllegalStateException e) {
+      assertEquals("boom", e.getMessage());
+    } catch (ExpressionException e) {
+      fail("host exception should not be wrapped as ExpressionException");
+    }
+    assertTrue(graalJsExpressionHandler.resolverStack.get().isEmpty());
+  }
+
+  @Test
   public void testArrayAccess() throws ExpressionException {
     HashMap<String, Object> product = new HashMap<>();
     List images = new ArrayList();

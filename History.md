@@ -1,4 +1,6 @@
 # History
+## Unreleased (3.0.0-alpha-3)
+* GraalJsExpressionHandler: JS function blocks in buffered code (e.g. `forEach(function(item){ ... })` around pug content) now resolve function-local variables via a lexical-scope resolver; enables the original pug3 `code.iteration` case
 ## 3.0.0-alpha-2 / 2025-11-14
 * Extended support records in GraalsJSExpressionHandler and method syntax like person.name()  
 ## 3.0.0-alpha.1 / 2025-11-13

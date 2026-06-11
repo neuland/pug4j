@@ -5,6 +5,7 @@ import static org.graalvm.polyglot.HostAccess.newBuilder;
 
 import de.neuland.pug4j.exceptions.ExpressionException;
 import de.neuland.pug4j.model.PugModel;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,54 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
               return context;
             }
           });
+  final ThreadLocal<ArrayDeque<Value>> resolverStack =
+      ThreadLocal.withInitial(ArrayDeque::new);
+
+  /**
+   * Callback exposed to buffered JS code that contains a nested pug block. The generated code
+   * passes a JS closure {@code function(pug4j__expr){ return eval(pug4j__expr); }} whose direct
+   * eval resolves expressions in the lexical scope of the enclosing JS function. While the block
+   * renders, that resolver is the innermost entry on {@link #resolverStack}, so nested expression
+   * evaluations (e.g. {@code li= item} inside {@code forEach(function(item){...})}) see the
+   * function-local variables.
+   *
+   * <p>Note: under {@code 'use strict'} reading lexical variables still works, but {@code var}
+   * declarations made by nested {@code - var x = ...} lines do not persist between sibling
+   * expressions.
+   */
+  public final class NestedBlockCallback {
+    private final Runnable blockRenderer;
+    private final PugModel model;
+
+    NestedBlockCallback(Runnable blockRenderer, PugModel model) {
+      this.blockRenderer = blockRenderer;
+      this.model = model;
+    }
+
+    public void accept(Value resolver) {
+      // Sync globals mutated by the outer JS code earlier in this iteration into the model, so
+      // the nested model->bindings copy does not clobber them with stale values.
+      Value bindings = contextThreadLocal.get().getBindings("js");
+      writeBackBindingsToModel(bindings, model, false);
+      ArrayDeque<Value> stack = resolverStack.get();
+      stack.push(resolver);
+      try {
+        blockRenderer.run();
+      } finally {
+        stack.pop();
+      }
+    }
+  }
+
+  @Override
+  public Object createBlockCallback(Runnable blockRenderer, PugModel model) {
+    return new NestedBlockCallback(blockRenderer, model);
+  }
+
+  @Override
+  public String getBlockInvocation(String callbackKey) {
+    return callbackKey + ".accept(function(pug4j__expr){ return eval(pug4j__expr); });";
+  }
 
   @Override
   public Boolean evaluateBooleanExpression(String expression, PugModel model)
@@ -99,34 +148,44 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         }
       }
 
-      Source js;
-      Value eval = cache.get(expression);
-      if (eval == null) {
-        if (expression.startsWith("{")) {
-          js = Source.create("js", "(" + expression + ")");
-        } else {
-          js = Source.create("js", expression);
+      Value eval;
+      ArrayDeque<Value> stack = resolverStack.get();
+      boolean nested = !stack.isEmpty();
+      if (nested) {
+        // Evaluate via direct eval in the lexical scope of the enclosing JS function, so
+        // function-local variables resolve. Eval'd strings cannot be pre-parsed against a scope,
+        // therefore the source cache is bypassed here.
+        String expr = expression.startsWith("{") ? "(" + expression + ")" : expression;
+        // A var/let/const declaration would die with the resolver invocation; strip the keyword
+        // so the assignment persists on the scope chain (matching top-level semantics).
+        if (isLocalAssignment.matcher(expr).matches()) {
+          expr = expr.replaceFirst("^(var|let|const)\\s+", "");
         }
-        eval = context.parse(js);
-        cache.put(expression, eval);
-      }
-      eval = eval.execute();
-      Set<String> memberKeys = jsContextBindings.getMemberKeys();
-      for (String memberKey : memberKeys) {
-        if (model.knowsKey(memberKey)) {
-          if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
-            Value member = jsContextBindings.getMember(memberKey);
-            model.put(memberKey, member.as(Object.class));
-            try {
-              jsContextBindings.removeMember(memberKey);
-            } catch (UnsupportedOperationException e) {
-              jsContextBindings.putMember(memberKey, null);
-            }
+        eval = stack.peek().execute(expr);
+        writeBackBindingsToModel(jsContextBindings, model, false);
+      } else {
+        Value parsed = cache.get(expression);
+        if (parsed == null) {
+          Source js;
+          if (expression.startsWith("{")) {
+            js = Source.create("js", "(" + expression + ")");
+          } else {
+            js = Source.create("js", expression);
           }
+          parsed = context.parse(js);
+          cache.put(expression, parsed);
         }
+        eval = parsed.execute();
+        writeBackBindingsToModel(jsContextBindings, model, true);
       }
       return eval.as(Object.class);
     } catch (PolyglotException ex) {
+      // Exceptions thrown by the Java-side block renderer (e.g. PugCompilerException) must keep
+      // their original location info instead of being wrapped as an ExpressionException of the
+      // outer buffered string.
+      if (ex.isHostException() && ex.asHostException() instanceof RuntimeException re) {
+        throw re;
+      }
       String msg = ex.getMessage();
       if (msg != null) {
         if (msg.startsWith("ReferenceError:")) {
@@ -135,7 +194,8 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         // Retry strategy for record components written with method-call syntax under GraalJS.
         // If evaluation failed, and the expression contains zero-arg member calls like .name(),
         // try rewriting them to property access .name and evaluate once.
-        if (expression.matches(".*\\.[A-Za-z_$][A-Za-z0-9_$]*\\(\\).*")) {
+        if (resolverStack.get().isEmpty()
+            && expression.matches(".*\\.[A-Za-z_$][A-Za-z0-9_$]*\\(\\).*")) {
           String generalRewritten = removeAllEmptyMemberCalls(expression);
           if (!generalRewritten.equals(expression)) {
             try {
@@ -153,6 +213,26 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
       throw new ExpressionException(expression, ex);
     } finally {
       context.leave();
+    }
+  }
+
+  private void writeBackBindingsToModel(
+      Value jsContextBindings, PugModel model, boolean removeFromBindings) {
+    Set<String> memberKeys = jsContextBindings.getMemberKeys();
+    for (String memberKey : memberKeys) {
+      if (model.knowsKey(memberKey)) {
+        if (!memberKey.startsWith(PUG4J_MODEL_PREFIX)) {
+          Value member = jsContextBindings.getMember(memberKey);
+          model.put(memberKey, member.as(Object.class));
+          if (removeFromBindings) {
+            try {
+              jsContextBindings.removeMember(memberKey);
+            } catch (UnsupportedOperationException e) {
+              jsContextBindings.putMember(memberKey, null);
+            }
+          }
+        }
+      }
     }
   }
 
