@@ -81,11 +81,61 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
     }
   }
 
-  private String removeVar(String expression) {
-    expression = expression.replace("var ", ";");
-    expression = expression.replace("let ", ";");
-    expression = expression.replace("const ", ";");
-    return expression;
+  /**
+   * Replaces {@code var}/{@code let}/{@code const} declaration keywords with {@code ;} so the
+   * declared variables resolve through the model context instead of becoming JEXL script locals.
+   * Keywords inside string literals are left untouched, and a keyword must start at a word boundary
+   * ({@code myvar x} is not a declaration).
+   */
+  private static String removeVar(String expression) {
+    if (!expression.contains("var ")
+        && !expression.contains("let ")
+        && !expression.contains("const ")) {
+      return expression;
+    }
+    StringBuilder result = new StringBuilder(expression.length());
+    char inString = 0;
+    for (int i = 0; i < expression.length(); i++) {
+      char c = expression.charAt(i);
+      if (inString != 0) {
+        result.append(c);
+        if (c == '\\' && i + 1 < expression.length()) {
+          result.append(expression.charAt(++i));
+        } else if (c == inString) {
+          inString = 0;
+        }
+        continue;
+      }
+      if (c == '\'' || c == '"' || c == '`') {
+        inString = c;
+        result.append(c);
+        continue;
+      }
+      int keywordLength = declarationKeywordLength(expression, i);
+      if (keywordLength > 0) {
+        result.append(';');
+        i += keywordLength - 1; // skip keyword and the following space; loop adds one more
+      } else {
+        result.append(c);
+      }
+    }
+    return result.toString();
+  }
+
+  /**
+   * Length of a declaration keyword incl. trailing space at {@code i}, or 0 if none starts here.
+   */
+  private static int declarationKeywordLength(String expression, int i) {
+    if (i > 0 && Character.isJavaIdentifierPart(expression.charAt(i - 1))) {
+      return 0;
+    }
+    if (expression.startsWith("var ", i) || expression.startsWith("let ", i)) {
+      return 4;
+    }
+    if (expression.startsWith("const ", i)) {
+      return 6;
+    }
+    return 0;
   }
 
   public void assertExpression(String expression) throws ExpressionException {
