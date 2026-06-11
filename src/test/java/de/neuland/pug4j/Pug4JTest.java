@@ -194,7 +194,7 @@ public class Pug4JTest {
           "End of line was reached with no closing bracket for interpolation.",
           exception.getMessage());
       assertEquals(
-          "class de.neuland.pug4j.exceptions.PugLexerException: pug006.pug:1:16\n"
+          "de.neuland.pug4j.exceptions.PugLexerException: pug006.pug:1:16\n"
               + "  > 1| h1 #{variable'}\n"
               + "----------------------^\n"
               + "\n"

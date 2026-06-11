@@ -131,7 +131,9 @@ public abstract class PugException extends RuntimeException {
 
   @Override
   public String toString() {
-    return getClass() + ": " + createErrorMessage(getMessage(), lineNumber, colNumber, filename);
+    return getClass().getName()
+        + ": "
+        + createErrorMessage(getMessage(), lineNumber, colNumber, filename);
   }
 
   /**

@@ -52,7 +52,7 @@ public class PugExceptionTest {
     } catch (PugLexerException | FileNotFoundException | URISyntaxException e) {
       assertEquals("invalid indentation; expecting 2 spaces", e.getMessage());
       assertEquals(
-          "class de.neuland.pug4j.exceptions.PugLexerException: index.jade:10:20\n"
+          "de.neuland.pug4j.exceptions.PugLexerException: index.jade:10:20\n"
               + "\n"
               + "invalid indentation; expecting 2 spaces",
           e.toString());
