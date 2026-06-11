@@ -18,6 +18,7 @@ pug4j was formerly known as jade4j. Because of the naming change of the javascri
     - [Helpers](#api-helpers)
     - [Model Defaults](#api-model-defaults)
     - [Java Records Support](#api-records)
+    - [Error Pages](#api-error-pages)
     - [Template Loader](#api-template-loader)
 - [Expressions](#expressions)
 - [Reserved Words](#reserved-words)
@@ -349,6 +350,21 @@ div
 
 **Requirements:**
 - Java 17 or higher (required for record support)
+
+<a name="api-error-pages"></a>
+### Error Pages
+
+When template processing fails, pug4j throws a `PugException` carrying the template name, line, column, and a snapshot of the template source. `PugErrorRenderer` turns it into a styled HTML debug page showing the error location and source context:
+
+```java
+try {
+    html = engine.render(template, model);
+} catch (PugException e) {
+    response.status(500).send(PugErrorRenderer.renderHtml(e));
+}
+```
+
+`PugErrorRenderer.renderHtml(e, partialHtml)` additionally shows the HTML generated before the error occurred. The error page is rendered by an internal engine, independent of your engine configuration.
 
 <a name="api-template-loader"></a>
 ### Template Loader
