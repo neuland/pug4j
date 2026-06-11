@@ -352,8 +352,11 @@ public class Parser {
     blockNode.setFileName(this.filename);
     blockNode.setMode(mode);
 
+    // Merging same-named blocks is the extends-override mechanism. Within a single template
+    // (no extends), same-named blocks are independent and each renders its own default content
+    // (e.g. a named block in both branches of a conditional, pug#1589).
     BlockNode prev = this.blocks.get(name);
-    if (prev != null) {
+    if (prev != null && extending != null) {
       LinkedList<Node> nodes = new LinkedList<>();
       if ("replace".equals(mode)) {
         nodes = blockNode.getNodes();
