@@ -24,6 +24,10 @@ public class Compiler implements NodeVisitor {
   private final de.neuland.pug4j.PugEngine engine;
   private String bufferedExpressionString = "";
   private final AttributesCompiler attributesCompiler;
+  // Effective output mode: an explicit doctype on the template wins, otherwise the
+  // RenderContext defaultMode decides terse/xml behavior.
+  private final boolean terse;
+  private final boolean xml;
 
   public Compiler(
       PugTemplate pugTemplate, RenderContext context, de.neuland.pug4j.PugEngine engine) {
@@ -31,6 +35,13 @@ public class Compiler implements NodeVisitor {
     this.context = context;
     this.engine = engine;
     this.attributesCompiler = new AttributesCompiler(engine);
+    if (pugTemplate.hasDoctype()) {
+      this.terse = pugTemplate.isTerse();
+      this.xml = pugTemplate.isXml();
+    } else {
+      this.terse = context.getDefaultMode() == de.neuland.pug4j.Pug4J.Mode.HTML;
+      this.xml = context.getDefaultMode() == de.neuland.pug4j.Pug4J.Mode.XML;
+    }
   }
 
   private ExpressionHandler getExpressionHandler() {
@@ -76,11 +87,10 @@ public class Compiler implements NodeVisitor {
     }
 
     final String tagName = node.bufferName(getExpressionHandler(), getTemplateLoader(), model);
-    final boolean terse = template.isTerse();
     final String tagAttributes = attributesCompiler.visitAttributes(model, node, terse);
 
-    if (node.isSelfClosing() || (!template.isXml() && node.isSelfClosingTag())) {
-      boolean selfClosing = !(template.isTerse() && !node.isSelfClosing());
+    if (node.isSelfClosing() || (!xml && node.isSelfClosingTag())) {
+      boolean selfClosing = !(terse && !node.isSelfClosing());
       writer.append("<").append(tagName).append(tagAttributes);
 
       if (selfClosing) {
@@ -224,7 +234,7 @@ public class Compiler implements NodeVisitor {
           node.getMixinVariables(model, mixin, getExpressionHandler(), getTemplateLoader());
       model.putAll(mixinVariables);
       Map<String, String> attrs =
-          attributesCompiler.getAttributesMap(model, node, template.isTerse());
+          attributesCompiler.getAttributesMap(model, node, terse);
       model.setLocal("attributes", attrs);
 
       visit(writer, model, mixin.getBlock());

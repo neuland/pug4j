@@ -33,8 +33,12 @@ public class RenderContext {
   }
 
   /**
-   * Returns a default RenderContext with: - prettyPrint = false - defaultMode = Mode.HTML - no
+   * Returns a default RenderContext with: - prettyPrint = false - defaultMode = Mode.XHTML - no
    * global variables
+   *
+   * <p>Mode.XHTML matches pug.js behavior for templates without a doctype: void tags self-close
+   * ({@code <input/>}) and boolean attributes render with a value ({@code checked="checked"}). Set
+   * {@link Builder#defaultMode(Mode)} to Mode.HTML for terse HTML output.
    *
    * @return a default RenderContext instance
    */
@@ -72,7 +76,7 @@ public class RenderContext {
   /** Builder for creating RenderContext instances. */
   public static class Builder {
     private boolean prettyPrint = false;
-    private Mode defaultMode = Mode.HTML;
+    private Mode defaultMode = Mode.XHTML;
     private Map<String, Object> globalVariables = new HashMap<>();
 
     /**

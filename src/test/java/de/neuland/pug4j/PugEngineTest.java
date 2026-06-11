@@ -88,7 +88,10 @@ public class PugEngineTest {
     RenderContext context = RenderContext.defaults();
 
     assertFalse("Pretty print should be disabled by default", context.isPrettyPrint());
-    assertEquals("Default mode should be HTML", Pug4J.Mode.HTML, context.getDefaultMode());
+    assertEquals(
+        "Default mode should be XHTML (pug.js behavior without doctype)",
+        Pug4J.Mode.XHTML,
+        context.getDefaultMode());
     assertTrue("Global variables should be empty", context.getGlobalVariables().isEmpty());
   }
 

@@ -17,6 +17,7 @@ public class PugTemplate {
   private Node rootNode;
   private boolean terse = false;
   private boolean xml = false;
+  private boolean doctypePresent = false;
 
   public PugTemplate() {}
 
@@ -51,8 +52,20 @@ public class PugTemplate {
   }
 
   private void setDoctype(String name) {
+    this.doctypePresent = true;
     this.terse = "html".equals(name);
     this.xml = "xml".equals(name);
+  }
+
+  /**
+   * Returns whether this template carries an explicit doctype — either from a doctype node in the
+   * template source or from the deprecated {@link #PugTemplate(Node, Mode)} constructor. If false,
+   * the renderer falls back to {@link de.neuland.pug4j.RenderContext#getDefaultMode()}.
+   *
+   * @return true if a doctype is present
+   */
+  public boolean hasDoctype() {
+    return doctypePresent;
   }
 
   /**
