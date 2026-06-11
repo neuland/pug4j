@@ -21,6 +21,7 @@ public class IndentWriter {
   private boolean useIndent = false;
   private final Writer writer;
   private boolean escape;
+  private char lastChar = 0;
 
   public IndentWriter(Writer writer) {
     this.writer = writer;
@@ -42,10 +43,22 @@ public class IndentWriter {
   private void write(String string) {
     try {
       writer.write(string);
+      if (!string.isEmpty()) {
+        lastChar = string.charAt(string.length() - 1);
+      }
     } catch (IOException e) {
       logger.error("Failed to write to output: {}", string, e);
       throw new RuntimeException("Failed to write template output", e);
     }
+  }
+
+  /**
+   * Whether the last written character was a newline. Needed for pretty-printing after filters,
+   * whose output is only known at render time (unlike pug.js, where filters run at compile time and
+   * their output is part of a text node).
+   */
+  public boolean isLastCharNewline() {
+    return lastChar == '\n';
   }
 
   public String toString() {

@@ -133,8 +133,11 @@ public class Compiler implements NodeVisitor {
           && i > 0
           && !writer.isEscape()
           && node.isTextNode(childNode)
-          && node.isTextNode(childNodes[i - 1])
-          && (childNodes[i - 1].getValue() != null && childNodes[i - 1].getValue().contains("\n")))
+          && ((node.isTextNode(childNodes[i - 1])
+                  && childNodes[i - 1].getValue() != null
+                  && childNodes[i - 1].getValue().contains("\n"))
+              // filter output is only known at render time; indent when it ended with a newline
+              || (childNodes[i - 1] instanceof FilterNode && writer.isLastCharNewline())))
         writer.prettyIndent(1, false);
 
       visit(writer, model, childNode);

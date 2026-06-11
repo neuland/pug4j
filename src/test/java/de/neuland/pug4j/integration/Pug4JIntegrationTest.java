@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class Pug4JIntegrationTest {
 
-  private static String[] ignoredCases = new String[] {"include-with-filter"};
+  private static String[] ignoredCases = new String[] {};
   private static final IntegrationTestSetup testSetup;
 
   static {
