@@ -9,3 +9,4 @@ release.properties
 bin/
 .serena
 .claude/settings.local.json
+.secrets-profile
