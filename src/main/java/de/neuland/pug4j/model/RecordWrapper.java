@@ -3,6 +3,7 @@ package de.neuland.pug4j.model;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.graalvm.polyglot.Value;
@@ -37,7 +38,7 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
       throw new IllegalArgumentException("Object must be a record");
     }
     this.record = record;
-    this.componentValues = new HashMap<>();
+    this.componentValues = new LinkedHashMap<>();
     extractComponents();
   }
 
@@ -220,11 +221,6 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public Object getMember(String key) {
-    // Special internal marker to allow JS-side detection/wrapping
-    if ("__isRecordWrapper".equals(key)) {
-      return Boolean.TRUE;
-    }
-
     // First, check if this is a record component - return the cached value directly
     // This ensures record components are accessed as properties (person.name)
     // rather than methods (person.name())
@@ -236,30 +232,26 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
     // This allows calling custom methods like person.customMethod()
     // Since component accessors were already checked above, we won't
     // accidentally expose them as callable functions
-    try {
-      Method method = record.getClass().getMethod(key);
-      method.setAccessible(true);
-      // Return a ProxyExecutable that invokes the method when called as a function
-      return (ProxyExecutable)
-          args -> {
-            try {
-              Object result = method.invoke(record);
-              // Wrap record results to support nested records
-              return wrapIfRecord(result);
-            } catch (Exception e) {
-              throw new RuntimeException(
-                  "Failed to invoke method '"
-                      + key
-                      + "' on record "
-                      + record.getClass().getSimpleName(),
-                  e);
-            }
-          };
-    } catch (NoSuchMethodException e) {
-      // Method not found, return null (property doesn't exist)
+    Method method = findNoArgMethod(key);
+    if (method == null) {
+      return null;
     }
-
-    return null;
+    // Return a ProxyExecutable that invokes the method when called as a function
+    return (ProxyExecutable)
+        args -> {
+          try {
+            Object result = method.invoke(record);
+            // Wrap record results to support nested records
+            return wrapIfRecord(result);
+          } catch (Exception e) {
+            throw new RuntimeException(
+                "Failed to invoke method '"
+                    + key
+                    + "' on record "
+                    + record.getClass().getSimpleName(),
+                e);
+          }
+        };
   }
 
   @Override
@@ -269,18 +261,39 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public boolean hasMember(String key) {
-    // Check if it's a component value
-    if (componentValues.containsKey(key)) {
-      return true;
-    }
+    // Component value or a no-arg method with this name
+    return componentValues.containsKey(key) || findNoArgMethod(key) != null;
+  }
 
-    // Also check if there's a no-arg method with this name
-    try {
-      record.getClass().getMethod(key);
-      return true;
-    } catch (NoSuchMethodException e) {
-      return false;
-    }
+  /**
+   * Reflective no-arg method lookups are cached per record class; ClassValue keeps the cache
+   * GC-friendly with respect to class unloading. Misses are cached too, since hasMember probes
+   * arbitrary keys.
+   */
+  private static final ClassValue<Map<String, Optional<Method>>> NO_ARG_METHODS =
+      new ClassValue<>() {
+        @Override
+        protected Map<String, Optional<Method>> computeValue(Class<?> type) {
+          return new ConcurrentHashMap<>();
+        }
+      };
+
+  private Method findNoArgMethod(String key) {
+    Class<?> recordClass = record.getClass();
+    return NO_ARG_METHODS
+        .get(recordClass)
+        .computeIfAbsent(
+            key,
+            k -> {
+              try {
+                Method method = recordClass.getMethod(k);
+                method.setAccessible(true);
+                return Optional.of(method);
+              } catch (NoSuchMethodException e) {
+                return Optional.empty();
+              }
+            })
+        .orElse(null);
   }
 
   @Override
@@ -291,33 +304,6 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
   @Override
   public String toString() {
     return record.toString();
-  }
-
-  // Attempt to support method-style access like person.name() on ProxyObject
-  // GraalJS should dispatch member calls to this if supported by the ProxyObject API
-  public Object invokeMember(String key, Object... args) {
-    try {
-      Method method = record.getClass().getMethod(key);
-      method.setAccessible(true);
-      Object result = method.invoke(record);
-      return wrapIfRecord(result);
-    } catch (NoSuchMethodException e) {
-      // Not a no-arg method; try with arity
-      try {
-        Class<?>[] types = new Class<?>[args.length];
-        for (int i = 0; i < args.length; i++) {
-          types[i] = args[i] == null ? Object.class : args[i].getClass();
-        }
-        Method method = record.getClass().getMethod(key, types);
-        method.setAccessible(true);
-        Object result = method.invoke(record, args);
-        return wrapIfRecord(result);
-      } catch (Exception ex) {
-        throw new RuntimeException("Failed to invoke member '" + key + "' on record", ex);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to invoke member '" + key + "' on record", e);
-    }
   }
 
   @Override

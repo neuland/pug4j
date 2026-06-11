@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.graalvm.polyglot.*;
 
 public class GraalJsExpressionHandler extends AbstractExpressionHandler {
@@ -180,22 +182,13 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
         if (msg.startsWith("ReferenceError:")) {
           return null;
         }
-        // Retry strategy for record components written with method-call syntax under GraalJS.
-        // If evaluation failed, and the expression contains zero-arg member calls like .name(),
-        // try rewriting them to property access .name and evaluate once.
-        if (resolverStack.get().isEmpty()
-            && expression.matches(".*\\.[A-Za-z_$][A-Za-z0-9_$]*\\(\\).*")) {
-          String generalRewritten = removeAllEmptyMemberCalls(expression);
-          if (!generalRewritten.equals(expression)) {
-            try {
-              Source js2 = generalRewritten.startsWith("{")
-                  ? Source.create("js", "(" + generalRewritten + ")")
-                  : Source.create("js", generalRewritten);
-              Value eval2 = context.parse(js2).execute();
-              return eval2.as(Object.class);
-            } catch (PolyglotException retryEx) {
-              // fall through to normal handling below
-            }
+        // Record components are exposed as properties, so method-call syntax like person.name()
+        // fails with a TypeError. Retry with the offending zero-arg member calls rewritten to
+        // property access.
+        if (resolverStack.get().isEmpty() && isNotInvocable(msg)) {
+          Object result = retryWithPropertyAccessRewrite(expression, context, cache, model);
+          if (result != RETRY_FAILED) {
+            return result;
           }
         }
       }
@@ -262,10 +255,58 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     }
   }
 
-  private static String removeAllEmptyMemberCalls(String expression) {
-    // Replace all occurrences like .name() -> .name (zero-arg member calls)
-    // This aims to support record component access written as method calls in templates.
-    return expression.replaceAll("\\.([A-Za-z_$][A-Za-z0-9_$]*)\\(\\)", ".$1");
+  private static final Pattern EMPTY_MEMBER_CALL =
+      Pattern.compile("\\.([A-Za-z_$][A-Za-z0-9_$]*)\\(\\)");
+  private static final Object RETRY_FAILED = new Object();
+
+  /**
+   * Matches the two TypeErrors GraalJS raises when a member is called but not callable: plain
+   * values yield "... is not a function", ProxyObject members (e.g. record components) yield
+   * "invokeMember (name) on ... failed due to: Message not supported".
+   */
+  private static boolean isNotInvocable(String message) {
+    return message.startsWith("TypeError:")
+        && (message.contains("is not a function")
+            || message.contains("failed due to: Message not supported"));
+  }
+
+  /**
+   * Retries a failed evaluation with zero-arg member calls progressively rewritten to property
+   * access, leftmost first ({@code person.name()} becomes {@code person.name}). A TypeError occurs
+   * at the first member that is not callable, so rewriting left to right converges on the working
+   * variant without touching real method calls further right (e.g. {@code
+   * person.name().toUpperCase()} only needs the first rewrite). On success the parsed rewrite is
+   * cached under the original expression, so subsequent renders skip the failing evaluation
+   * entirely.
+   */
+  private Object retryWithPropertyAccessRewrite(
+      String expression, Context context, Map<String, Value> cache, PugModel model) {
+    String rewritten = rewriteLeadingDeclaration(expression);
+    Matcher matcher = EMPTY_MEMBER_CALL.matcher(rewritten);
+    while (matcher.find()) {
+      rewritten =
+          rewritten.substring(0, matcher.start())
+              + "."
+              + matcher.group(1)
+              + rewritten.substring(matcher.end());
+      try {
+        Value parsed = context.parse(Source.create("js", rewritten));
+        Value eval = parsed.execute();
+        cache.put(expression, parsed);
+        writeBackBindingsToModel(context.getBindings("js"), model, true);
+        return eval.as(Object.class);
+      } catch (PolyglotException retryEx) {
+        if (retryEx.isHostException() && retryEx.asHostException() instanceof RuntimeException re) {
+          throw re;
+        }
+        String retryMsg = retryEx.getMessage();
+        if (retryMsg == null || !isNotInvocable(retryMsg)) {
+          return RETRY_FAILED;
+        }
+      }
+      matcher = EMPTY_MEMBER_CALL.matcher(rewritten);
+    }
+    return RETRY_FAILED;
   }
 
   @Override

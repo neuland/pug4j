@@ -56,6 +56,57 @@ public class RecordsGraalJsTest {
     }
 
     @Test
+    public void record_accessor_chained_with_real_js_method() throws Exception {
+        Person person = new Person("Bob", 19, new Address("Berlin", "Unter den Linden"));
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", person);
+
+        String html = render("p= person.name().toUpperCase()", model);
+        assertThat("only .name() should be rewritten, .toUpperCase() must stay a call", html, is("<p>BOB</p>"));
+    }
+
+    @Test
+    public void chained_record_accessors_with_parens() throws Exception {
+        Person person = new Person("Clara", 30, new Address("Cologne", "Domplatz"));
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", person);
+
+        String html = render("p= person.address().city()", model);
+        assertThat(html, is("<p>Cologne</p>"));
+    }
+
+    @Test
+    public void declaration_with_record_accessor_call() throws Exception {
+        Person person = new Person("Alice", 41, new Address("Hamburg", "Reeperbahn"));
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", person);
+
+        String pug = String.join("\n",
+                "- let n = person.name()",
+                "p= n"
+        );
+        String html = render(pug, model);
+        assertThat(html, is("<p>Alice</p>"));
+    }
+
+    @Test
+    public void rewritten_expression_is_cached_across_renders() throws Exception {
+        Person person = new Person("Gus", 33, new Address("Kiel", "Hafen"));
+        Map<String, Object> model = new HashMap<>();
+        model.put("person", person);
+
+        ReaderTemplateLoader loader = new ReaderTemplateLoader(new StringReader("p= person.name()"), "inline");
+        PugEngine engine = PugEngine.builder()
+                .templateLoader(loader)
+                .expressionHandler(new GraalJsExpressionHandler())
+                .build();
+        PugTemplate template = engine.getTemplate("inline");
+        RenderContext context = RenderContext.defaults();
+        assertThat(engine.render(template, model, context), is("<p>Gus</p>"));
+        assertThat(engine.render(template, model, context), is("<p>Gus</p>"));
+    }
+
+    @Test
     public void nested_record_access_dot_and_parens() throws Exception {
         Person person = new Person("Clara", 30, new Address("Cologne", "Domplatz"));
         Map<String, Object> model = new HashMap<>();
