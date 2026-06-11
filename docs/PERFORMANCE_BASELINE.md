@@ -63,6 +63,29 @@ model entry loop) and the bindings→model write-back
 removes: cost becomes proportional to the variables an expression actually
 references instead of the model size.
 
+## Compiler/render-path optimizations (branch `improve-overall-performance`, 2026-06-11)
+
+Handler-independent optimizations in the render path (no expression-handler
+changes): BlockNode child access via array instead of indexed LinkedList gets
+(O(n²) → O(n)), PugModel single-lookup `get` and walk-free `setLocal` for
+loop/mixin variables, TagNode tag classification via `Set` instead of linear
+array scans, `escapeHtml4` fast path for strings without escapable characters,
+attribute-list copy only when attribute blocks are merged, cached indent
+strings. Parse path: precompiled patterns, chunked reader, regex-free string
+cleanups.
+
+Kitchen-sink perf smoke, 3 runs each, median (same machine/JDK as above,
+baseline commit `5a14fdd`):
+
+| Handler | Baseline | After | Delta |
+|---|---:|---:|---:|
+| JexlExpressionHandler | 142 ms (142/142/173) | 124 ms (123/124/127) | **~13% faster** |
+| GraalJsExpressionHandler | 634 ms (619/634/635) | 532 ms (503/532/588) | **~16% faster** |
+
+Expression evaluation still dominates per-render cost for both handlers; the
+remaining known render-path issue is `Scanner.consume()` (O(n²) substring
+during lexing), which only affects template compilation, not cached renders.
+
 ## Graal JIT compiler experiment (jargraal, 2026-06-11)
 
 Tested whether enabling Truffle runtime compilation (Graal compiler via
