@@ -1,4 +1,4 @@
-[![Test Status](https://github.com/neuland/pug4j/actions/workflows/test.yaml/badge.svg)](https://github.com/neuland/pug4j/actions)
+[![Test Status](https://github.com/neuland/pug4j/actions/workflows/test.yaml/badge.svg)](https://github.com/neuland/pug4j/actions) [![Maven Central](https://img.shields.io/maven-central/v/de.neuland-bfi/pug4j)](https://central.sonatype.com/artifact/de.neuland-bfi/pug4j)
 
 # pug4j - a pug implementation written in Java
 pug4j's intention is to be able to process pug templates in Java without the need of a JavaScript environment, while being **fully compatible** with the original pug syntax.
@@ -525,10 +525,10 @@ In Version 1.0.0 we added a lot of features of JadeJs 1.11. There are also some 
 <a name="authors"></a>
 ## Authors
 
+- Christoph Blömer / [chbloemer](https://github.com/chbloemer)
 - Artur Tomas / [atomiccoder](https://github.com/atomiccoder)
 - Stefan Kuper / [planetk](https://github.com/planetk)
 - Michael Geers / [naltatis](https://github.com/naltatis)
-- Christoph Blömer / [chbloemer](https://github.com/chbloemer)
 
 Special thanks to [TJ Holowaychuk](https://github.com/visionmedia) the creator of jade!
 
