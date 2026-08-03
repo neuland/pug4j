@@ -1,4 +1,32 @@
 # History
+## 3.1.0 / 2026-08-03
+**Upgrade recommended for all 3.0.0 users.** This release fixes a data-correctness bug where a
+method call on a Java record (e.g. `item.key()`, `identity.email()`) was evaluated once per
+compiled expression and the result then reused — for every iteration of an `each` loop and for
+every later render of the same engine. In long-lived setups (e.g. spring-pug4j, where the engine
+is a singleton) this could serve one request's value — including per-user data — to subsequent
+requests, without any exception. Property-style access (`item.key`) was never affected.
+
+* Fix: record method calls are evaluated against the current receiver on every evaluation. JEXL
+  caches resolved methods on the parsed expression's AST; the record method wrappers now take the
+  receiver from the invocation instead of capturing it at resolution time (the root cause).
+* Records: component resolution moved from model-boundary wrapping into the expression layer
+  (JEXL Uberspect property resolver / lazy GraalJS proxy view). Property access now also works for
+  records reached without passing through the model, e.g. list elements (`items[0].key`) — this
+  rendered empty before (JEXL handler). Method results on records are returned raw instead of
+  wrapped; `each` over a bare record still iterates its components like a map.
+* Performance: rendering records in `each` loops is significantly faster than 3.0.0 (JMH, 50
+  records per render: JEXL ~3x, GraalJS ~1.3x) — the per-iteration reflective extraction of all
+  components is gone; `RecordWrapper` now reads components lazily with accessors cached per
+  record class.
+* `ClasspathTemplateLoader`: a leading slash in `templateLoaderPath` ("/templates/") is now
+  normalized instead of failing with a `NullPointerException`; a missing resource path throws
+  `PugTemplateLoaderException` naming the expected format.
+* Dependency updates: JEXL 3.6.2 → 3.7.0 (the hardened 3.7 default features are neutralized for
+  template expressions — behavior is unchanged), GraalVM 25.0.3 → 25.2.4, jackson-bom 2.22.1
+  (test). Java 17 baseline verified against the full suite on a JDK 17.
+* Docs: README notes the `Multi-Release: true` manifest requirement when repackaging the GraalJS
+  handler into an uber JAR (maven-shade / fat JARs).
 ## 3.0.0 / 2026-06-11
 First stable release of the 3.x line. Includes everything from the 3.0.0 alpha releases below — see the 3.0.0-alpha.1 entry for the summary of breaking changes since 2.x (Java 17+ baseline, PugEngine/RenderContext API, Java records support) and the README section "Breaking Changes in 3.0.0" for migration notes. The deprecated 2.x API (`PugConfiguration` and friends) keeps working in 3.0.0; removal is planned for 4.0.0.
 

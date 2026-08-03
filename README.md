@@ -90,7 +90,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
 </dependency>
 ```
 
@@ -312,7 +312,7 @@ String html = engine.render(template, model, context);
 <a name="api-records"></a>
 ### Java Records Support
 
-Since version 3.0.0, pug4j supports Java records as model objects. Records are automatically wrapped to make their components accessible in templates using property syntax, just like with Maps or POJOs.
+Since version 3.0.0, pug4j supports Java records as model objects. Record components are accessible in templates using property syntax, just like with Maps or POJOs. Since 3.1.0 this is resolved directly in the expression layer, so it also works for records reached without passing through the model (e.g. elements of a list: `items[0].title`).
 
 **Example:**
 
@@ -341,10 +341,10 @@ div
 ```
 
 **Key features:**
-- **Automatic wrapping**: Records are automatically wrapped when added to the model
 - **Nested records**: Nested records are fully supported (e.g., `book.author.name`)
-- **Property access**: Use dot notation (`book.title`) instead of method calls (`book.title()`)
+- **Property access**: Use dot notation (`book.title`); accessor-call syntax (`book.title()`) works too
 - **Custom methods**: Records with custom methods can call them using function syntax (`record.customMethod()`)
+- **Records in collections**: Property access works on records inside lists, arrays and maps (JEXL handler)
 - **Both expression handlers**: Works with both JEXL (default) and GraalJS expression handlers
 - **Immutable**: Records remain immutable in templates
 
