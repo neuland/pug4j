@@ -24,8 +24,29 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   private static final Log logger = LogFactory.getLog(RecordWrapper.class);
 
+  /**
+   * Component accessors per record class, in declaration order. Cached via ClassValue so wrapper
+   * construction costs a single allocation - components are read lazily, one reflective call per
+   * actually accessed component. ClassValue keeps the cache GC-friendly with respect to class
+   * unloading.
+   */
+  private static final ClassValue<LinkedHashMap<String, Method>> COMPONENT_ACCESSORS =
+      new ClassValue<>() {
+        @Override
+        protected LinkedHashMap<String, Method> computeValue(Class<?> type) {
+          LinkedHashMap<String, Method> accessors = new LinkedHashMap<>();
+          for (RecordComponent component : type.getRecordComponents()) {
+            Method accessor = component.getAccessor();
+            accessor.setAccessible(
+                true); // Required for accessing records in different packages/modules
+            accessors.put(component.getName(), accessor);
+          }
+          return accessors;
+        }
+      };
+
   private final Object record;
-  private final Map<String, Object> componentValues;
+  private final Map<String, Method> componentAccessors;
 
   /**
    * Creates a wrapper for the given record instance.
@@ -38,49 +59,37 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
       throw new IllegalArgumentException("Object must be a record");
     }
     this.record = record;
-    this.componentValues = new LinkedHashMap<>();
-    extractComponents();
+    this.componentAccessors = COMPONENT_ACCESSORS.get(record.getClass());
   }
 
-  /**
-   * Extracts all component values from the record using reflection.
-   */
-  private void extractComponents() {
-    Class<?> recordClass = record.getClass();
-    RecordComponent[] components = recordClass.getRecordComponents();
-
-    for (RecordComponent component : components) {
-      try {
-        String name = component.getName();
-        var accessor = component.getAccessor();
-        accessor.setAccessible(
-            true); // Required for accessing records in different packages/modules
-        Object value = accessor.invoke(record);
-
-        // Recursively wrap nested records
-        if (value != null && value.getClass().isRecord()) {
-          value = new RecordWrapper(value);
-        }
-
-        componentValues.put(name, value);
-      } catch (IllegalAccessException e) {
-        // This can happen if the record accessor is not accessible due to module restrictions
-        logger.warn(
-            "Cannot access record component '"
-                + component.getName()
-                + "' on record type "
-                + recordClass.getName()
-                + ": "
-                + e.getMessage());
-      } catch (Exception e) {
-        // Unexpected error - log as error since this shouldn't happen with valid records
-        logger.error(
-            "Unexpected error accessing record component '"
-                + component.getName()
-                + "' on record type "
-                + recordClass.getName(),
-            e);
+  /** Reads a single component value, wrapping nested records. */
+  private Object readComponent(Method accessor) {
+    try {
+      Object value = accessor.invoke(record);
+      // Recursively wrap nested records
+      if (value != null && value.getClass().isRecord()) {
+        value = new RecordWrapper(value);
       }
+      return value;
+    } catch (IllegalAccessException e) {
+      // This can happen if the record accessor is not accessible due to module restrictions
+      logger.warn(
+          "Cannot access record component '"
+              + accessor.getName()
+              + "' on record type "
+              + record.getClass().getName()
+              + ": "
+              + e.getMessage());
+      return null;
+    } catch (Exception e) {
+      // Unexpected error - log as error since this shouldn't happen with valid records
+      logger.error(
+          "Unexpected error accessing record component '"
+              + accessor.getName()
+              + "' on record type "
+              + record.getClass().getName(),
+          e);
+      return null;
     }
   }
 
@@ -101,27 +110,28 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public int size() {
-    return componentValues.size();
+    return componentAccessors.size();
   }
 
   @Override
   public boolean isEmpty() {
-    return componentValues.isEmpty();
+    return componentAccessors.isEmpty();
   }
 
   @Override
   public boolean containsKey(Object key) {
-    return componentValues.containsKey(key);
+    return componentAccessors.containsKey(key);
   }
 
   @Override
   public boolean containsValue(Object value) {
-    return componentValues.containsValue(value);
+    return values().contains(value);
   }
 
   @Override
   public Object get(Object key) {
-    return componentValues.get(key);
+    Method accessor = componentAccessors.get(key);
+    return accessor == null ? null : readComponent(accessor);
   }
 
   @Override
@@ -146,17 +156,25 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public Set<String> keySet() {
-    return componentValues.keySet();
+    return componentAccessors.keySet();
   }
 
   @Override
   public Collection<Object> values() {
-    return componentValues.values();
+    List<Object> values = new ArrayList<>(componentAccessors.size());
+    for (Method accessor : componentAccessors.values()) {
+      values.add(readComponent(accessor));
+    }
+    return values;
   }
 
   @Override
   public Set<Entry<String, Object>> entrySet() {
-    return componentValues.entrySet();
+    Map<String, Object> snapshot = new LinkedHashMap<>();
+    for (Entry<String, Method> entry : componentAccessors.entrySet()) {
+      snapshot.put(entry.getKey(), readComponent(entry.getValue()));
+    }
+    return snapshot.entrySet();
   }
 
   /**
@@ -221,11 +239,12 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public Object getMember(String key) {
-    // First, check if this is a record component - return the cached value directly
+    // First, check if this is a record component - return its value directly
     // This ensures record components are accessed as properties (person.name)
     // rather than methods (person.name())
-    if (componentValues.containsKey(key)) {
-      return componentValues.get(key);
+    Method accessor = componentAccessors.get(key);
+    if (accessor != null) {
+      return readComponent(accessor);
     }
 
     // If not a component, check for custom methods on the record
@@ -256,13 +275,13 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public Object getMemberKeys() {
-    return componentValues.keySet().toArray();
+    return componentAccessors.keySet().toArray();
   }
 
   @Override
   public boolean hasMember(String key) {
     // Component value or a no-arg method with this name
-    return componentValues.containsKey(key) || findNoArgMethod(key) != null;
+    return componentAccessors.containsKey(key) || findNoArgMethod(key) != null;
   }
 
   /**
