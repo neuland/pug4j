@@ -101,8 +101,12 @@ public class GraalJsExpressionHandler extends AbstractExpressionHandler {
     @Override
     public Object getMember(String key) {
       Object value = model.get(key);
-      // GraalJS treats objects implementing Map specially, ignoring their ProxyObject
-      // implementation, so RecordWrapper needs its pure-proxy view
+      // Records get a proxy view so components read as properties (person.name); GraalJS treats
+      // objects implementing Map specially, ignoring their ProxyObject implementation, so the
+      // pure-proxy view is needed instead of the RecordWrapper itself
+      if (value != null && value.getClass().isRecord()) {
+        return new RecordWrapper(value).asGraalProxy();
+      }
       if (value instanceof RecordWrapper wrapper) {
         return wrapper.asGraalProxy();
       }

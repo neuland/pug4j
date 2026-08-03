@@ -141,6 +141,17 @@ public class RecordMethodCallStalenessTest {
       """;
 
   @Test
+  public void jexlResolvesComponentOnRecordInsideCollection() throws Exception {
+    // records reached without passing through the model (e.g. list index access) must resolve
+    // components too - with boundary wrapping this rendered empty
+    PugEngine engine = newJexlEngine("p= items[0].key\np= items[1].key()");
+    PugTemplate template = engine.getTemplate("inline");
+    Map<String, Object> model = new HashMap<>();
+    model.put("items", navItems());
+    assertEquals("<p>overview</p><p>profile</p>", engine.render(template, model));
+  }
+
+  @Test
   public void jexlPlainClassMethodCallInEachStaysCorrect() throws Exception {
     PugEngine engine = newJexlEngine(PLAIN_CLASS_EACH_PUG);
     PugTemplate template = engine.getTemplate("inline");

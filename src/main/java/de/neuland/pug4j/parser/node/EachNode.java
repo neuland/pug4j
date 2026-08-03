@@ -4,6 +4,7 @@ import de.neuland.pug4j.PugConfiguration;
 import de.neuland.pug4j.compiler.IndentWriter;
 import de.neuland.pug4j.compiler.NodeVisitor;
 import de.neuland.pug4j.model.PugModel;
+import de.neuland.pug4j.model.RecordWrapper;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -30,6 +31,9 @@ public class EachNode extends Node {
       runIterator(iterator, model, writer, nodeConsumer);
     } else if (result instanceof Map) {
       runMap((Map<Object, Object>) result, model, writer, nodeConsumer);
+    } else if (result.getClass().isRecord()) {
+      // iterate a record like a map of its components, matching pug.js object iteration
+      runMap((Map<Object, Object>) (Map<?, ?>) new RecordWrapper(result), model, writer, nodeConsumer);
     }
   }
 

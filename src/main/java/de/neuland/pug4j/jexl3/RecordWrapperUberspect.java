@@ -2,23 +2,92 @@ package de.neuland.pug4j.jexl3;
 
 import de.neuland.pug4j.model.RecordWrapper;
 import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
+import java.util.List;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.internal.introspection.Uberspect;
 import org.apache.commons.jexl3.introspection.JexlMethod;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
+import org.apache.commons.jexl3.introspection.JexlPropertyGet;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.apache.commons.logging.Log;
 
 /**
- * Custom Uberspect that enables method calls on RecordWrapper by delegating to the underlying
- * record.
+ * Custom Uberspect for Java records. Property-style access ({@code person.name}) resolves to the
+ * record's component accessor, so records work like the JavaBeans and Maps that pug templates are
+ * usually written against. Method calls on records need no help - records are plain objects to
+ * JEXL. The RecordWrapper delegation in {@link #getMethod} remains for callers that put wrapper
+ * instances into the model themselves.
  */
 public class RecordWrapperUberspect extends Uberspect {
 
   public RecordWrapperUberspect(
       Log log, JexlUberspect.ResolverStrategy strategy, JexlPermissions permissions) {
     super(log, strategy, permissions);
+  }
+
+  @Override
+  public JexlPropertyGet getPropertyGet(
+      List<PropertyResolver> resolvers, Object obj, Object identifier) {
+    JexlPropertyGet propertyGet = super.getPropertyGet(resolvers, obj, identifier);
+    if (propertyGet == null && obj != null && obj.getClass().isRecord() && identifier != null) {
+      return getRecordComponentGet(obj.getClass(), identifier.toString());
+    }
+    return propertyGet;
+  }
+
+  private static JexlPropertyGet getRecordComponentGet(Class<?> recordClass, String name) {
+    for (RecordComponent component : recordClass.getRecordComponents()) {
+      if (component.getName().equals(name)) {
+        Method accessor = component.getAccessor();
+        accessor.setAccessible(true);
+        return new RecordComponentGet(accessor, name);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Property getter backed by a record component accessor. JEXL caches resolved property getters
+   * on the parsed script's AST nodes, so tryInvoke must take the receiver from its arguments and
+   * signal TRY_FAILED on a mismatch - never rely on state captured at resolution time.
+   */
+  private static class RecordComponentGet implements JexlPropertyGet {
+    private final Method accessor;
+    private final String name;
+
+    RecordComponentGet(Method accessor, String name) {
+      this.accessor = accessor;
+      this.name = name;
+    }
+
+    @Override
+    public Object invoke(Object obj) throws Exception {
+      return accessor.invoke(obj);
+    }
+
+    @Override
+    public Object tryInvoke(Object obj, Object key) {
+      if (obj == null || !accessor.getDeclaringClass().isInstance(obj) || !name.equals(key)) {
+        return JexlEngine.TRY_FAILED;
+      }
+      try {
+        return accessor.invoke(obj);
+      } catch (Exception xany) {
+        return JexlEngine.TRY_FAILED;
+      }
+    }
+
+    @Override
+    public boolean tryFailed(Object rval) {
+      return rval == JexlEngine.TRY_FAILED;
+    }
+
+    @Override
+    public boolean isCacheable() {
+      return true;
+    }
   }
 
   @Override
@@ -48,7 +117,20 @@ public class RecordWrapperUberspect extends Uberspect {
     }
 
     // For all other objects, use default behavior
-    return super.getMethod(obj, method, args);
+    JexlMethod resolved = super.getMethod(obj, method, args);
+    // Records themselves are often not public (e.g. nested in a class), which defeats JEXL's
+    // introspection; fall back to direct reflection with setAccessible for no-arg methods
+    if (resolved == null
+        && obj != null
+        && obj.getClass().isRecord()
+        && (args == null || args.length == 0)) {
+      try {
+        return new DirectRecordMethod(obj.getClass().getMethod(method));
+      } catch (NoSuchMethodException e) {
+        return null;
+      }
+    }
+    return resolved;
   }
 
   /**
@@ -73,9 +155,7 @@ public class RecordWrapperUberspect extends Uberspect {
     @Override
     public Object invoke(Object obj, Object... params) throws Exception {
       // Invoke on the underlying record, not the wrapper
-      Object result = method.invoke(unwrapReceiver(obj), params);
-      // Wrap the result if it's a record
-      return RecordWrapper.wrapIfRecord(result);
+      return method.invoke(unwrapReceiver(obj), params);
     }
 
     @Override
@@ -88,7 +168,7 @@ public class RecordWrapperUberspect extends Uberspect {
         return JexlEngine.TRY_FAILED;
       }
       try {
-        return RecordWrapper.wrapIfRecord(method.invoke(target));
+        return method.invoke(target);
       } catch (JexlException.TryFailed xjexl) {
         throw xjexl;
       } catch (Exception xany) {
@@ -123,18 +203,12 @@ public class RecordWrapperUberspect extends Uberspect {
     @Override
     public Object invoke(Object obj, Object... params) throws Exception {
       // Invoke on the underlying record, not the wrapper
-      Object result = delegate.invoke(unwrapReceiver(obj), params);
-      // Wrap the result if it's a record
-      return RecordWrapper.wrapIfRecord(result);
+      return delegate.invoke(unwrapReceiver(obj), params);
     }
 
     @Override
     public Object tryInvoke(String name, Object obj, Object... params) {
-      Object result = delegate.tryInvoke(name, unwrapReceiver(obj), params);
-      if (delegate.tryFailed(result)) {
-        return JexlEngine.TRY_FAILED;
-      }
-      return RecordWrapper.wrapIfRecord(result);
+      return delegate.tryInvoke(name, unwrapReceiver(obj), params);
     }
 
     @Override
