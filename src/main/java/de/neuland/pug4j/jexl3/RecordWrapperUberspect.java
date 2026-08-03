@@ -34,7 +34,7 @@ public class RecordWrapperUberspect extends Uberspect {
         try {
           Method javaMethod = recordClass.getMethod(method);
           // Found a matching method, create a JexlMethod wrapper for it
-          return new DirectRecordMethod(javaMethod, wrapper);
+          return new DirectRecordMethod(javaMethod);
         } catch (NoSuchMethodException e) {
           // Method not found, fall through to default handling
         }
@@ -43,7 +43,7 @@ public class RecordWrapperUberspect extends Uberspect {
       // If not a record or method not found, try standard JEXL resolution
       JexlMethod recordMethod = super.getMethod(record, method, args);
       if (recordMethod != null) {
-        return new RecordDelegatingMethod(recordMethod, wrapper);
+        return new RecordDelegatingMethod(recordMethod);
       }
     }
 
@@ -51,29 +51,44 @@ public class RecordWrapperUberspect extends Uberspect {
     return super.getMethod(obj, method, args);
   }
 
+  /**
+   * Returns the underlying record for a RecordWrapper receiver, any other receiver unchanged. JEXL
+   * caches resolved JexlMethods on the parsed script's AST nodes and reuses them across
+   * evaluations, so the receiver must always come from the invocation arguments — never from state
+   * captured at resolution time.
+   */
+  private static Object unwrapReceiver(Object obj) {
+    return obj instanceof RecordWrapper wrapper ? wrapper.getRecord() : obj;
+  }
+
   /** Direct wrapper around a Java Method for record accessors. */
   private static class DirectRecordMethod implements JexlMethod {
     private final Method method;
-    private final RecordWrapper wrapper;
 
-    DirectRecordMethod(Method method, RecordWrapper wrapper) {
+    DirectRecordMethod(Method method) {
       this.method = method;
-      this.wrapper = wrapper;
       method.setAccessible(true);
     }
 
     @Override
     public Object invoke(Object obj, Object... params) throws Exception {
       // Invoke on the underlying record, not the wrapper
-      Object result = method.invoke(wrapper.getRecord(), params);
+      Object result = method.invoke(unwrapReceiver(obj), params);
       // Wrap the result if it's a record
       return RecordWrapper.wrapIfRecord(result);
     }
 
     @Override
     public Object tryInvoke(String name, Object obj, Object... params) {
+      Object target = unwrapReceiver(obj);
+      if (!method.getName().equals(name)
+          || target == null
+          || !method.getDeclaringClass().isInstance(target)
+          || (params != null && params.length != 0)) {
+        return JexlEngine.TRY_FAILED;
+      }
       try {
-        return invoke(obj, params);
+        return RecordWrapper.wrapIfRecord(method.invoke(target));
       } catch (JexlException.TryFailed xjexl) {
         throw xjexl;
       } catch (Exception xany) {
@@ -100,30 +115,26 @@ public class RecordWrapperUberspect extends Uberspect {
   /** Wraps a JexlMethod to invoke it on the underlying record instead of the RecordWrapper. */
   private static class RecordDelegatingMethod implements JexlMethod {
     private final JexlMethod delegate;
-    private final RecordWrapper wrapper;
 
-    RecordDelegatingMethod(JexlMethod delegate, RecordWrapper wrapper) {
+    RecordDelegatingMethod(JexlMethod delegate) {
       this.delegate = delegate;
-      this.wrapper = wrapper;
     }
 
     @Override
     public Object invoke(Object obj, Object... params) throws Exception {
       // Invoke on the underlying record, not the wrapper
-      Object result = delegate.invoke(wrapper.getRecord(), params);
+      Object result = delegate.invoke(unwrapReceiver(obj), params);
       // Wrap the result if it's a record
       return RecordWrapper.wrapIfRecord(result);
     }
 
     @Override
     public Object tryInvoke(String name, Object obj, Object... params) {
-      try {
-        return invoke(obj, params);
-      } catch (JexlException.TryFailed xjexl) {
-        throw xjexl;
-      } catch (Exception xany) {
+      Object result = delegate.tryInvoke(name, unwrapReceiver(obj), params);
+      if (delegate.tryFailed(result)) {
         return JexlEngine.TRY_FAILED;
       }
+      return RecordWrapper.wrapIfRecord(result);
     }
 
     @Override
