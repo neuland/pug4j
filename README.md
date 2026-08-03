@@ -462,6 +462,33 @@ raise an error and a `let`/`const` declaration that is not the first statement o
 multi-statement code line keeps its native (lexical) semantics — avoid redeclaring such
 names across renders.
 
+#### Uber JARs (maven-shade, Spring Boot fat JARs)
+
+GraalJS ships multi-release JARs. If you repackage pug4j and its dependencies into a
+single uber JAR, the `Multi-Release: true` manifest attribute is lost by default and
+Truffle refuses to start:
+
+```
+java.lang.InternalError: Truffle could not be initialized because Multi-Release classes
+are not configured correctly.
+```
+
+With maven-shade, restore the attribute via the manifest transformer (and merge service
+files, which Truffle also relies on):
+
+```xml
+<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+    <manifestEntries>
+        <Multi-Release>true</Multi-Release>
+    </manifestEntries>
+</transformer>
+<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+```
+
+See the [GraalVM uber JAR documentation](https://www.graalvm.org/latest/reference-manual/embed-languages/#uber-jar-file-creation)
+for other build tools. This only affects the GraalJS Expression Handler — the default
+JEXL handler is unaffected.
+
 <a name="framework-integrations"></a>
 ## Framework Integrations
 - [neuland/spring-pug4j](https://github.com/neuland/spring-pug4j) pug4j spring integration.
