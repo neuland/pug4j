@@ -17,9 +17,20 @@ public class ClasspathTemplateLoader implements TemplateLoader {
   private final FileTemplateLoader fileTemplateLoader;
 
   private String getResourcePath(String path) {
+    // ClassLoader.getResource expects paths without a leading slash ("templates", not
+    // "/templates") and returns null otherwise, so normalize instead of failing with an NPE
+    String resourceName = path;
+    while (resourceName.startsWith("/")) {
+      resourceName = resourceName.substring(1);
+    }
+    java.net.URL resource = Thread.currentThread().getContextClassLoader().getResource(resourceName);
+    if (resource == null) {
+      throw new PugTemplateLoaderException(
+          "Classpath resource '" + path + "' does not exist. Expected a path relative to the "
+              + "classpath root, e.g. \"templates\" or \"templates/pug\".");
+    }
     try {
-      return Paths.get(Thread.currentThread().getContextClassLoader().getResource(path).toURI())
-          .toString();
+      return Paths.get(resource.toURI()).toString();
     } catch (URISyntaxException e) {
       throw new PugTemplateLoaderException("Path '" + path + "' does not exist.");
     }
