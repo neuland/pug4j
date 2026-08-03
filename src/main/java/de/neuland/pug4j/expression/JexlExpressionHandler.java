@@ -75,7 +75,11 @@ public class JexlExpressionHandler extends AbstractExpressionHandler {
   }
 
   private JexlBuilder getPugJexlBuilder(JexlExpressionHandlerOptions options) {
+    // JEXL 3.7.0 hardened the engine's default features (no global assignment, no new, lexical
+    // scoping) - template expressions rely on the permissive pre-3.7 semantics, which the
+    // JexlFeatures constructor still provides
     return new PugJexlBuilder()
+        .features(new JexlFeatures())
         .arithmetic(pugJexlArithmetic)
         .uberspect(pugUberspect)
         .safe(true)
