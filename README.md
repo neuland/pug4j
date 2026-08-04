@@ -90,7 +90,7 @@ Just add following dependency definitions to your `pom.xml`.
 <dependency>
   <groupId>de.neuland-bfi</groupId>
   <artifactId>pug4j</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1</version>
 </dependency>
 ```
 
@@ -385,7 +385,7 @@ PugEngine engine = PugEngine.builder()
 
 **Available loaders:**
 - `FileTemplateLoader` - loads from filesystem
-- `ClasspathTemplateLoader` - loads from classpath
+- `ClasspathTemplateLoader` - loads from classpath; since 3.1.1 templates are read through the ClassLoader, so they also resolve from inside JARs and uber JARs
 - `ReaderTemplateLoader` - loads from Reader instances
 
 You can also implement the `TemplateLoader` interface to create your own custom loader.

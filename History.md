@@ -1,4 +1,20 @@
 # History
+## 3.1.1 / 2026-08-04
+* `ClasspathTemplateLoader` now reads templates through the ClassLoader
+  (`getResourceAsStream`) instead of resolving them to filesystem paths. Templates packaged
+  inside JARs and uber JARs work now — previously loading failed with
+  `FileSystemNotFoundException` for `jar:` URIs. Path semantics (leading `/`, `basePath`,
+  default extension) are unchanged; `extends`/`include` resolution works inside JARs as well.
+  A missing template now throws `FileNotFoundException` naming the classpath resource, and
+  template paths escaping the loader root (`../`) are rejected. Note: constructor validation of
+  `templateLoaderPath` requires a directory entry in the JAR (standard build tooling writes
+  these); for JARs with stripped directory entries use the classpath root (`""`) as loader path.
+* Records: reflective access failures under strong module encapsulation
+  (`InaccessibleObjectException`) no longer abort rendering — property resolution and method
+  lookup fall back gracefully, component reads log a warning and yield `null`.
+* GraalJS: nested records reached through a record proxy or returned from record method calls
+  stay in the pure-proxy view, keeping property access consistent at any nesting depth.
+* `RecordWrapper.containsValue` short-circuits instead of snapshotting all components first.
 ## 3.1.0 / 2026-08-03
 **Upgrade recommended for all 3.0.0 users.** This release fixes a data-correctness bug where a
 method call on a Java record (e.g. `item.key()`, `identity.email()`) was evaluated once per
