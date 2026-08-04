@@ -1,74 +1,101 @@
 package de.neuland.pug4j.template;
 
 import de.neuland.pug4j.exceptions.PugTemplateLoaderException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * Loads a Pug template from Classpath It is useful when Pug templates are in the same JAR or WAR
+ * Loads a Pug template from the classpath. It is useful when Pug templates are in the same JAR or
+ * WAR. Templates are read through the ClassLoader, so they resolve both from exploded directories
+ * and from inside JAR files (including uber JARs).
  *
  * @author emiguel
  */
 public class ClasspathTemplateLoader implements TemplateLoader {
 
-  private final FileTemplateLoader fileTemplateLoader;
+  private final String templateLoaderPath;
+  private Charset encoding = StandardCharsets.UTF_8;
+  private String extension = "pug";
+  private String basePath = "";
 
-  private String getResourcePath(String path) {
-    // ClassLoader.getResource expects paths without a leading slash ("templates", not
-    // "/templates") and returns null otherwise, so normalize instead of failing with an NPE
-    String resourceName = path;
+  /**
+   * Normalizes a classpath resource prefix: forward slashes, no leading or trailing slash.
+   * ClassLoader.getResource expects paths without a leading slash ("templates", not "/templates")
+   * and returns null otherwise.
+   */
+  private static String normalizeLoaderPath(String path) {
+    String resourceName = FilenameUtils.separatorsToUnix(path);
     while (resourceName.startsWith("/")) {
       resourceName = resourceName.substring(1);
     }
-    java.net.URL resource = Thread.currentThread().getContextClassLoader().getResource(resourceName);
-    if (resource == null) {
+    while (resourceName.endsWith("/")) {
+      resourceName = resourceName.substring(0, resourceName.length() - 1);
+    }
+    return resourceName;
+  }
+
+  private static ClassLoader classLoader() {
+    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+    return contextClassLoader != null
+        ? contextClassLoader
+        : ClasspathTemplateLoader.class.getClassLoader();
+  }
+
+  private static String validateLoaderPath(String path) {
+    String normalized = normalizeLoaderPath(path);
+    // The classpath root ("") always exists but is not addressable via getResource inside JARs,
+    // so only non-root prefixes can be validated eagerly. Directory lookups require a directory
+    // entry (present on the filesystem and in JARs built by standard tooling); JARs with stripped
+    // directory entries fail this check even though their templates exist - repackage with
+    // directory entries or use the classpath root as loader path in that case.
+    if (!normalized.isEmpty()
+        && classLoader().getResource(normalized) == null
+        && classLoader().getResource(normalized + "/") == null) {
       throw new PugTemplateLoaderException(
           "Classpath resource '" + path + "' does not exist. Expected a path relative to the "
               + "classpath root, e.g. \"templates\" or \"templates/pug\".");
     }
-    try {
-      return Paths.get(resource.toURI()).toString();
-    } catch (URISyntaxException e) {
-      throw new PugTemplateLoaderException("Path '" + path + "' does not exist.");
-    }
+    return normalized;
   }
 
   public ClasspathTemplateLoader() {
-    String path = getResourcePath("");
-    fileTemplateLoader = new FileTemplateLoader(path);
+    this("");
   }
 
   public ClasspathTemplateLoader(Charset encoding) {
-    String path = getResourcePath("");
-    fileTemplateLoader = new FileTemplateLoader(path, encoding);
+    this("");
+    this.encoding = encoding;
   }
 
   public ClasspathTemplateLoader(Charset encoding, String extension) {
-    String path = getResourcePath("");
-    fileTemplateLoader = new FileTemplateLoader(path, encoding, extension);
+    this(encoding);
+    this.extension = extension;
   }
 
   public ClasspathTemplateLoader(String templateLoaderPath) {
-    String path = getResourcePath(templateLoaderPath);
-    fileTemplateLoader = new FileTemplateLoader(path);
+    this.templateLoaderPath = validateLoaderPath(templateLoaderPath);
   }
 
   public ClasspathTemplateLoader(String templateLoaderPath, Charset encoding) {
-    String path = getResourcePath(templateLoaderPath);
-    fileTemplateLoader = new FileTemplateLoader(path, encoding);
+    this(templateLoaderPath);
+    this.encoding = encoding;
   }
 
   public ClasspathTemplateLoader(String templateLoaderPath, String extension) {
-    String path = getResourcePath(templateLoaderPath);
-    fileTemplateLoader = new FileTemplateLoader(path, extension);
+    this(templateLoaderPath);
+    this.extension = extension;
   }
 
   public ClasspathTemplateLoader(String templateLoaderPath, Charset encoding, String extension) {
-    String path = getResourcePath(templateLoaderPath);
-    fileTemplateLoader = new FileTemplateLoader(path, encoding, extension);
+    this(templateLoaderPath, extension);
+    this.encoding = encoding;
   }
 
   public long getLastModified(String name) {
@@ -77,21 +104,59 @@ public class ClasspathTemplateLoader implements TemplateLoader {
 
   @Override
   public Reader getReader(String name) throws IOException {
-    return fileTemplateLoader.getReader(name);
+    if (name == null) {
+      throw new IllegalArgumentException("Filename not provided!");
+    }
+    String resourceName = getResourceName(name);
+    InputStream inputStream = classLoader().getResourceAsStream(resourceName);
+    if (inputStream == null) {
+      throw new FileNotFoundException(
+          "Template '" + name + "' not found on classpath (resource '" + resourceName + "').");
+    }
+    return new InputStreamReader(inputStream, encoding);
+  }
+
+  /**
+   * Resolves a template name to a classpath resource name, mirroring FileTemplateLoader's path
+   * semantics: names starting with "/" are rooted at the loader path plus basePath, relative names
+   * at the loader path directly.
+   */
+  private String getResourceName(String name) {
+    name = FilenameUtils.separatorsToUnix(name);
+    name = ensurePugExtension(name);
+    String relative = name.startsWith("/") ? basePath + name.substring(1) : name;
+    String full = templateLoaderPath.isEmpty() ? relative : templateLoaderPath + "/" + relative;
+    String normalized = FilenameUtils.normalize(full, true);
+    if (normalized == null) {
+      throw new PugTemplateLoaderException(
+          "Template path '" + name + "' escapes the template loader path.");
+    }
+    while (normalized.startsWith("/")) {
+      normalized = normalized.substring(1);
+    }
+    return normalized;
+  }
+
+  private String ensurePugExtension(String templateName) {
+    if (StringUtils.isBlank(FilenameUtils.getExtension(templateName))) {
+      return templateName + "." + getExtension();
+    }
+    return templateName;
   }
 
   @Override
   public String getExtension() {
-    return fileTemplateLoader.getExtension();
+    return extension;
   }
 
   @Override
   public String getBase() {
-    return fileTemplateLoader.getBase();
+    return basePath;
   }
 
   public void setBase(String basePath) {
-    fileTemplateLoader.setBase(basePath);
+    if (basePath.endsWith("/") || "".equals(basePath)) this.basePath = basePath;
+    else this.basePath = basePath + "/";
   }
 
   /**
