@@ -1,6 +1,7 @@
 package de.neuland.pug4j.jexl3;
 
 import de.neuland.pug4j.model.RecordWrapper;
+import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.List;
@@ -41,7 +42,13 @@ public class RecordWrapperUberspect extends Uberspect {
     for (RecordComponent component : recordClass.getRecordComponents()) {
       if (component.getName().equals(name)) {
         Method accessor = component.getAccessor();
-        accessor.setAccessible(true);
+        try {
+          accessor.setAccessible(true);
+        } catch (InaccessibleObjectException e) {
+          // Module encapsulation forbids access - leave the property unresolved instead of
+          // failing the whole render
+          return null;
+        }
         return new RecordComponentGet(accessor, name);
       }
     }
@@ -104,8 +111,8 @@ public class RecordWrapperUberspect extends Uberspect {
           Method javaMethod = recordClass.getMethod(method);
           // Found a matching method, create a JexlMethod wrapper for it
           return new DirectRecordMethod(javaMethod);
-        } catch (NoSuchMethodException e) {
-          // Method not found, fall through to default handling
+        } catch (NoSuchMethodException | InaccessibleObjectException e) {
+          // Method not found or blocked by module encapsulation, fall through to default handling
         }
       }
 
@@ -126,7 +133,7 @@ public class RecordWrapperUberspect extends Uberspect {
         && (args == null || args.length == 0)) {
       try {
         return new DirectRecordMethod(obj.getClass().getMethod(method));
-      } catch (NoSuchMethodException e) {
+      } catch (NoSuchMethodException | InaccessibleObjectException e) {
         return null;
       }
     }

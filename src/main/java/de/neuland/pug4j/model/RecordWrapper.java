@@ -1,5 +1,6 @@
 package de.neuland.pug4j.model;
 
+import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.*;
@@ -37,8 +38,20 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
           LinkedHashMap<String, Method> accessors = new LinkedHashMap<>();
           for (RecordComponent component : type.getRecordComponents()) {
             Method accessor = component.getAccessor();
-            accessor.setAccessible(
-                true); // Required for accessing records in different packages/modules
+            try {
+              accessor.setAccessible(
+                  true); // Required for accessing records in different packages/modules
+            } catch (InaccessibleObjectException e) {
+              // Keep the accessor anyway - invoking it fails with IllegalAccessException, which
+              // readComponent logs and maps to null instead of failing the whole render
+              logger.warn(
+                  "Cannot make record component '"
+                      + component.getName()
+                      + "' on record type "
+                      + type.getName()
+                      + " accessible: "
+                      + e.getMessage());
+            }
             accessors.put(component.getName(), accessor);
           }
           return accessors;
@@ -125,7 +138,12 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
   @Override
   public boolean containsValue(Object value) {
-    return values().contains(value);
+    for (Method accessor : componentAccessors.values()) {
+      if (Objects.equals(readComponent(accessor), value)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -211,7 +229,10 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
 
     @Override
     public Object getMember(String key) {
-      return wrapper.getMember(key);
+      Object value = wrapper.getMember(key);
+      // Nested records must stay in the pure-proxy view - as a RecordWrapper (which implements
+      // Map) GraalJS would treat them as Maps and ignore their ProxyObject implementation
+      return value instanceof RecordWrapper nested ? nested.asGraalProxy() : value;
     }
 
     @Override
@@ -260,8 +281,13 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
         args -> {
           try {
             Object result = method.invoke(record);
-            // Wrap record results to support nested records
-            return wrapIfRecord(result);
+            // Wrap record results as pure Graal proxies to support nested records - getMember is
+            // only reached from the GraalJS path, where a Map-implementing RecordWrapper would be
+            // treated as a Map instead of a ProxyObject
+            if (result != null && result.getClass().isRecord()) {
+              return new RecordWrapper(result).asGraalProxy();
+            }
+            return result;
           } catch (Exception e) {
             throw new RuntimeException(
                 "Failed to invoke method '"
@@ -308,7 +334,7 @@ public class RecordWrapper implements Map<String, Object>, ProxyObject {
                 Method method = recordClass.getMethod(k);
                 method.setAccessible(true);
                 return Optional.of(method);
-              } catch (NoSuchMethodException e) {
+              } catch (NoSuchMethodException | InaccessibleObjectException e) {
                 return Optional.empty();
               }
             })
